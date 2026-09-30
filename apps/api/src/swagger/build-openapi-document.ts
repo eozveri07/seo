@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { ORG_ID_SECURITY } from '../common/tenancy/tenant-context';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 
 export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
@@ -8,6 +9,15 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
     .setVersion('0.1.0')
     .addBearerAuth()
     .addCookieAuth('refresh_token', undefined, 'refresh_token')
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: 'X-Org-Id',
+        description: 'Aktif organizasyon (TenantGuard)',
+      },
+      ORG_ID_SECURITY,
+    )
     .build();
 
   return SwaggerModule.createDocument(app, config);

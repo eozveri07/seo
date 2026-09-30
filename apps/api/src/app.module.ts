@@ -8,6 +8,7 @@ import { QueueModule } from './infra/queue/queue.module';
 import { StorageModule } from './infra/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { PingModule } from './modules/ping/ping.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -25,7 +26,10 @@ import { UsersModule } from './modules/users/users.module';
     MailModule,
     StorageModule,
     UsersModule,
+    // Sıra önemli: global guard'lar JwtAuthGuard → TenantGuard → RolesGuard
+    // sırasıyla çalışır (app.module.spec.ts).
     AuthModule,
+    OrganizationsModule,
     HealthModule,
     PingModule,
   ],

@@ -8,11 +8,13 @@ import {
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import type { AuthUser } from '../../common/auth/auth-user';
 import { InvalidAccessTokenError } from '../../common/auth/auth.errors';
+import { SkipTenant } from '../../common/tenancy/skip-tenant.decorator';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
 @ApiBearerAuth()
+@SkipTenant()
 @Controller('me')
 export class MeController {
   constructor(private readonly usersService: UsersService) {}

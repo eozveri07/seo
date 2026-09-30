@@ -6,7 +6,10 @@ import {
   EnvironmentVariables,
 } from '../../config/environment-variables';
 import { PingJobData } from '../../infra/queue/queues';
+import { OrgRole } from '../../common/tenancy/org-role';
 import { PingController } from './ping.controller';
+
+const ORG = { orgId: 'org-1', role: OrgRole.Owner, clientId: null };
 
 function buildQueue() {
   const add = jest.fn(
@@ -35,23 +38,20 @@ describe('PingController', () => {
       buildConfigService(Environment.Production),
     );
 
-    await expect(controller.enqueue({ orgId: 'org-1' })).rejects.toBeInstanceOf(
+    await expect(controller.enqueue({}, ORG)).rejects.toBeInstanceOf(
       NotFoundException,
     );
     expect(add).not.toHaveBeenCalled();
   });
 
-  it("development'ta kuyruğa job ekler", async () => {
+  it("development'ta kuyruğa X-Org-Id'deki org ile job ekler", async () => {
     const { queue, add } = buildQueue();
     const controller = new PingController(
       queue,
       buildConfigService(Environment.Development),
     );
 
-    const result = await controller.enqueue({
-      orgId: 'org-1',
-      message: 'merhaba',
-    });
+    const result = await controller.enqueue({ message: 'merhaba' }, ORG);
 
     expect(result.jobId).toBe('ping:job-1');
     expect(add).toHaveBeenCalledTimes(1);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { normalizeEmail } from './email';
 import { User } from './user.entity';
 
@@ -21,6 +21,18 @@ export class UsersService {
 
   findById(id: string): Promise<User | null> {
     return this.users.findOneBy({ id });
+  }
+
+  /** `manager` verilirse çağıranın transaction'ı içinde çalışır. */
+  findByEmail(email: string, manager?: EntityManager): Promise<User | null> {
+    return this.repository(manager).findOneBy({ email: normalizeEmail(email) });
+  }
+
+  async findByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.users.findBy({ id: In(ids) });
   }
 
   /** `passwordHash` kolonu varsayılan select'te yok; burada açıkça seçilir. */

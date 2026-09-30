@@ -10,9 +10,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  ApiConflictResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiGoneResponse,
+  ApiNotFoundResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
@@ -27,6 +30,7 @@ import { REFRESH_THROTTLE, LOGIN_THROTTLE } from './auth-throttle';
 import { AuthService, AuthSession } from './auth.service';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
+import { RegisterInvitedDto } from './dto/register-invited.dto';
 import { RegisterDto } from './dto/register.dto';
 import { REFRESH_COOKIE_NAME, refreshCookieOptions } from './refresh-cookie';
 import { ClientMeta } from './refresh-token.service';
@@ -52,6 +56,26 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
     const session = await this.authService.register(dto, clientMeta(req));
+    return this.respondWithSession(res, session);
+  }
+
+  /** Davet bağlantısıyla hesap açar, üyeliği ekler ve oturum açar. */
+  @Post('register-invited')
+  @ApiCreatedResponse({ type: AuthResponseDto })
+  @ApiNotFoundResponse({ description: 'INVITATION_NOT_FOUND' })
+  @ApiGoneResponse({ description: 'INVITATION_EXPIRED' })
+  @ApiConflictResponse({
+    description: 'INVITATION_ALREADY_ACCEPTED, INVITATION_ACCOUNT_EXISTS',
+  })
+  async registerInvited(
+    @Body() dto: RegisterInvitedDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseDto> {
+    const session = await this.authService.registerInvited(
+      dto,
+      clientMeta(req),
+    );
     return this.respondWithSession(res, session);
   }
 

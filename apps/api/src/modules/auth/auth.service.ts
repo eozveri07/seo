@@ -5,6 +5,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { AccessTokenPayload } from '../../common/auth/auth-user';
 import { EnvironmentVariables } from '../../config/environment-variables';
+import { InvitationsService } from '../organizations/invitations.service';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import {
@@ -24,6 +25,12 @@ const FIRST_USER_LOCK_KEY = 1_101_001;
 
 export interface RegisterInput {
   email: string;
+  name: string;
+  password: string;
+}
+
+export interface RegisterInvitedInput {
+  token: string;
   name: string;
   password: string;
 }
@@ -51,6 +58,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService<EnvironmentVariables, true>,
     @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly invitationsService: InvitationsService,
   ) {}
 
   /**
@@ -76,6 +84,23 @@ export class AuthService {
       );
     });
 
+    return this.startSession(user, meta);
+  }
+
+  /**
+   * Davetli kayıt: davetteki e-postayla hesap açılır, üyelik eklenir ve oturum
+   * başlatılır. Davet tek kullanımlıktır; hesap zaten varsa reddedilir.
+   */
+  async registerInvited(
+    input: RegisterInvitedInput,
+    meta: ClientMeta,
+  ): Promise<AuthSession> {
+    const passwordHash = await this.passwordHasher.hash(input.password);
+    const { user } = await this.invitationsService.acceptWithSignup({
+      token: input.token,
+      name: input.name,
+      passwordHash,
+    });
     return this.startSession(user, meta);
   }
 

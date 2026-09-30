@@ -9,6 +9,7 @@ import {
   InvalidRefreshTokenError,
   RegistrationClosedError,
 } from './auth.errors';
+import { InvitationsService } from '../organizations/invitations.service';
 import { AuthService } from './auth.service';
 import {
   IssuedRefreshToken,
@@ -71,6 +72,14 @@ function setup() {
         cb(manager as unknown as EntityManager),
     ),
   };
+  const invitationsService = {
+    acceptWithSignup: jest.fn((input: { passwordHash: string }) =>
+      Promise.resolve({
+        user: user({ email: 'davetli@example.com', name: 'Davetli' }),
+        membership: { passwordHash: input.passwordHash },
+      }),
+    ),
+  };
   const jwtService = new JwtService({
     secret: SECRET,
     signOptions: { algorithm: 'HS256', expiresIn: 900 },
@@ -85,6 +94,7 @@ function setup() {
     jwtService,
     config as unknown as ConfigService<EnvironmentVariables, true>,
     dataSource as unknown as DataSource,
+    invitationsService as unknown as InvitationsService,
   );
   return {
     service,
@@ -93,6 +103,7 @@ function setup() {
     refreshTokens,
     manager,
     jwtService,
+    invitationsService,
   };
 }
 
@@ -106,6 +117,43 @@ async function captureError(promise: Promise<unknown>): Promise<unknown> {
 }
 
 describe('AuthService', () => {
+  describe('registerInvited', () => {
+    it('şifreyi hash’leyip davetli kaydı başlatır ve oturum açar', async () => {
+      const { service, invitationsService, refreshTokens, passwordHasher } =
+        setup();
+
+      const session = await service.registerInvited(
+        { token: 'davet-token', name: 'Davetli', password: 'cok-gizli-sifre' },
+        META,
+      );
+
+      expect(passwordHasher.hash).toHaveBeenCalledWith('cok-gizli-sifre');
+      expect(invitationsService.acceptWithSignup).toHaveBeenCalledWith({
+        token: 'davet-token',
+        name: 'Davetli',
+        passwordHash: '$argon2id$hash',
+      });
+      expect(refreshTokens.issue).toHaveBeenCalledWith(user().id, META);
+      expect(session.user.email).toBe('davetli@example.com');
+      expect(session.accessToken).toBeTruthy();
+    });
+
+    it('davet reddedilirse oturum açılmaz', async () => {
+      const { service, invitationsService, refreshTokens } = setup();
+      invitationsService.acceptWithSignup.mockRejectedValueOnce(
+        new Error('INVITATION_EXPIRED'),
+      );
+
+      await expect(
+        service.registerInvited(
+          { token: 'eski', name: 'Davetli', password: 'cok-gizli-sifre' },
+          META,
+        ),
+      ).rejects.toThrow('INVITATION_EXPIRED');
+      expect(refreshTokens.issue).not.toHaveBeenCalled();
+    });
+  });
+
   describe('login', () => {
     it('bilinmeyen e-postada dummy hash doğrular ve INVALID_CREDENTIALS döner', async () => {
       const { service, passwordHasher, refreshTokens } = setup();

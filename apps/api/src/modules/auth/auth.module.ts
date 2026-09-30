@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnvironmentVariables } from '../../config/environment-variables';
+import { OrganizationsModule } from '../organizations/organizations.module';
 import { UsersModule } from '../users/users.module';
 import { buildThrottlerOptions } from './auth-throttle';
 import { AuthController } from './auth.controller';
@@ -17,6 +18,7 @@ import { RefreshTokenService } from './refresh-token.service';
 @Module({
   imports: [
     UsersModule,
+    OrganizationsModule,
     TypeOrmModule.forFeature([RefreshToken]),
     JwtModule.registerAsync({
       inject: [ConfigService],
