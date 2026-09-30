@@ -264,7 +264,7 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Lokal doğrulama bekliyor:** Runner'da `DFS_LOGIN`/`DFS_PASSWORD` (gerçek DataForSEO kimlik bilgisi) yok; "tek bir gerçek live çağrısının maliyeti `api_usage`'da görünüyor" kriteri mock HTTP testleriyle doğrulandı, gerçek API'ye karşı doğrulanmadı. Lokalde doğrulamak için: `.env`'e gerçek `DFS_LOGIN`/`DFS_PASSWORD` girin, `bun run db:up` ile Postgres'i açın, bir serviste (ör. bir Nest REPL/script) `DataForSeoClient.serpLiveAdvanced({ keyword: 'test', locationCode: 2792, languageCode: 'tr' }, { orgId, projectId })` çağırın ve `SELECT * FROM api_usage ORDER BY created_at DESC LIMIT 1;` ile maliyetin yazıldığını doğrulayın.
 
-### [ ] T1.8 Keyword yönetimi
+### [x] T1.8 Keyword yönetimi
 - Tablolar: `keyword_groups`, `tracked_keywords`.
 - CRUD endpoint'leri, gruplar, etiketler.
 - Toplu ekleme: `POST /projects/:id/keywords/bulk`. Satır satır metin ya da CSV kabul eder (keyword, grup, cihaz, hedef URL). Normalizasyon ve tekrar tespiti yapılır, sonuç raporu döner (eklenen, atlanan, hatalı).
@@ -275,6 +275,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - 40 keyword'lük CSV tek istekte ekleniyor.
 - Tekrar eden satırlar atlanıyor.
 - Öneriler takiptekileri hariç tutuyor.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres ve Redis yok; migration'ın gerçek DB'ye uygulanması (unique kısıt, FK'ler), `keyword-volume` kuyruğunun worker'da işlenmesi, `daily-dispatch`'in 30 günden eski `volume_updated_at`'li projeleri toplaması ve `tenant-isolation.e2e-spec.ts`'e eklenen `keyword-groups`/`keywords` satırları mock'lu unit testlerle doğrulandı, gerçek DB/Redis'e karşı doğrulanmadı. Lokalde doğrulamak için: `bun run db:up`, `bun run --filter api migration:run` (ya da `dev:api` ilk açılışta), `bun run dev:api` ve `bun run dev:worker`; bir projeye `POST /projects/:id/keywords/bulk` ile 40 satırlık bir CSV gönderin, `{ added: 40, skipped: 0, errors: [] }` dönmeli; `SELECT * FROM tracked_keywords` ile satırları, `keyword-volume` kuyruğunun (gerçek `DFS_LOGIN`/`DFS_PASSWORD` ile) `search_volume`/`cpc`/`volume_updated_at`'i doldurduğunu ve `api_usage`'a maliyet yazıldığını doğrulayın; `tenant-isolation.e2e-spec.ts`'i `bun run --filter api test:e2e` ile çalıştırın.
 
 ### [ ] T1.9 Rank tracking
 - Tablolar: `rank_tasks`, `rank_daily` (partition), `keyword_rank_latest`.

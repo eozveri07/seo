@@ -655,6 +655,195 @@ export interface Ga4LandingPageListResponseDto {
   limit: number;
 }
 
+export interface KeywordGroupResponseDto {
+  id: string;
+  projectId: string;
+  name: string;
+  /** @nullable */
+  color: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KeywordGroupListResponseDto {
+  items: KeywordGroupResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CreateKeywordGroupDto {
+  /** @maxLength 200 */
+  name: string;
+  /** @maxLength 20 */
+  color?: string;
+}
+
+export interface UpdateKeywordGroupDto {
+  /** @maxLength 200 */
+  name?: string;
+  /** @maxLength 20 */
+  color?: string;
+}
+
+export type TrackedKeywordResponseDtoDevice = typeof TrackedKeywordResponseDtoDevice[keyof typeof TrackedKeywordResponseDtoDevice];
+
+
+export const TrackedKeywordResponseDtoDevice = {
+  desktop: 'desktop',
+  mobile: 'mobile',
+} as const;
+
+export type TrackedKeywordResponseDtoFrequency = typeof TrackedKeywordResponseDtoFrequency[keyof typeof TrackedKeywordResponseDtoFrequency];
+
+
+export const TrackedKeywordResponseDtoFrequency = {
+  daily: 'daily',
+  weekly: 'weekly',
+} as const;
+
+export interface TrackedKeywordResponseDto {
+  id: string;
+  projectId: string;
+  /** @nullable */
+  groupId: string | null;
+  keyword: string;
+  keywordNormalized: string;
+  device: TrackedKeywordResponseDtoDevice;
+  locationCode: number;
+  languageCode: string;
+  frequency: TrackedKeywordResponseDtoFrequency;
+  depth: number;
+  /** @nullable */
+  targetUrl: string | null;
+  tags: string[];
+  isActive: boolean;
+  /** @nullable */
+  searchVolume: number | null;
+  /** @nullable */
+  cpc: number | null;
+  /** @nullable */
+  volumeUpdatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrackedKeywordListResponseDto {
+  items: TrackedKeywordResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface KeywordSuggestionDto {
+  query: string;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  position: number;
+}
+
+export interface KeywordSuggestionsResponseDto {
+  /** Öneri hesaplanan pencere. */
+  from: string;
+  to: string;
+  items: KeywordSuggestionDto[];
+}
+
+/**
+ * Satırda cihaz verilmezse kullanılacak varsayılan; yoksa `desktop`.
+ */
+export type BulkAddKeywordsDtoDefaultDevice = typeof BulkAddKeywordsDtoDefaultDevice[keyof typeof BulkAddKeywordsDtoDefaultDevice];
+
+
+export const BulkAddKeywordsDtoDefaultDevice = {
+  desktop: 'desktop',
+  mobile: 'mobile',
+} as const;
+
+export interface BulkAddKeywordsDto {
+  /**
+     * Satır satır metin. Her satır ya sadece `keyword`, ya da virgülle ayrılmış
+     * `keyword,grup,cihaz,hedef url` (CSV) biçiminde olabilir; grup/cihaz/hedef
+     * url boş bırakılabilir ve o durumda `defaultGroupName`/`defaultDevice`
+     * kullanılır.
+     * @maxLength 501000
+     */
+  text: string;
+  /**
+     * Satırda grup verilmezse kullanılacak grup adı; yoksa grupsuz eklenir.
+     * @maxLength 200
+     */
+  defaultGroupName?: string;
+  /** Satırda cihaz verilmezse kullanılacak varsayılan; yoksa `desktop`. */
+  defaultDevice?: BulkAddKeywordsDtoDefaultDevice;
+}
+
+export interface BulkAddKeywordsErrorDto {
+  /** 1 tabanlı, boş satırlar dahil edilmeden orijinal metindeki satır no. */
+  line: number;
+  message: string;
+}
+
+export interface BulkAddKeywordsResponseDto {
+  added: number;
+  skipped: number;
+  errors: BulkAddKeywordsErrorDto[];
+}
+
+export type CreateTrackedKeywordDtoDevice = typeof CreateTrackedKeywordDtoDevice[keyof typeof CreateTrackedKeywordDtoDevice];
+
+
+export const CreateTrackedKeywordDtoDevice = {
+  desktop: 'desktop',
+  mobile: 'mobile',
+} as const;
+
+export type CreateTrackedKeywordDtoFrequency = typeof CreateTrackedKeywordDtoFrequency[keyof typeof CreateTrackedKeywordDtoFrequency];
+
+
+export const CreateTrackedKeywordDtoFrequency = {
+  daily: 'daily',
+  weekly: 'weekly',
+} as const;
+
+export interface CreateTrackedKeywordDto {
+  /** @maxLength 255 */
+  keyword: string;
+  groupId?: string;
+  device?: CreateTrackedKeywordDtoDevice;
+  /** Verilmezse projenin `dfsLocationCode`'u, o da yoksa varsayılan (US) kullanılır. */
+  locationCode?: number;
+  /**
+     * Verilmezse projenin `dfsLanguageCode`'u, o da yoksa varsayılan (en) kullanılır.
+     * @maxLength 10
+     */
+  languageCode?: string;
+  frequency?: CreateTrackedKeywordDtoFrequency;
+  targetUrl?: string;
+  /** @maxItems 20 */
+  tags?: string[];
+}
+
+export type UpdateTrackedKeywordDtoFrequency = typeof UpdateTrackedKeywordDtoFrequency[keyof typeof UpdateTrackedKeywordDtoFrequency];
+
+
+export const UpdateTrackedKeywordDtoFrequency = {
+  daily: 'daily',
+  weekly: 'weekly',
+} as const;
+
+export interface UpdateTrackedKeywordDto {
+  /** @nullable */
+  groupId?: string | null;
+  frequency?: UpdateTrackedKeywordDtoFrequency;
+  /** @nullable */
+  targetUrl?: string | null;
+  /** @maxItems 20 */
+  tags?: string[];
+  isActive?: boolean;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -902,6 +1091,66 @@ search?: string;
  * @minimum 1
  */
 page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type KeywordGroupsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+/**
+ * Grup adında arama (ILIKE).
+ * @maxLength 200
+ */
+search?: string;
+};
+
+export type TrackedKeywordsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+/**
+ * Keyword metninde arama (ILIKE).
+ * @maxLength 255
+ */
+search?: string;
+groupId?: string;
+device?: TrackedKeywordsControllerListDevice;
+isActive?: boolean;
+/**
+ * Etiketle filtre: keyword'ün tags dizisinde geçmeli.
+ * @maxLength 100
+ */
+tag?: string;
+};
+
+export type TrackedKeywordsControllerListDevice = typeof TrackedKeywordsControllerListDevice[keyof typeof TrackedKeywordsControllerListDevice];
+
+
+export const TrackedKeywordsControllerListDevice = {
+  desktop: 'desktop',
+  mobile: 'mobile',
+} as const;
+
+export type TrackedKeywordsControllerSuggestionsParams = {
 /**
  * @minimum 1
  * @maximum 200

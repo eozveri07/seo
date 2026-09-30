@@ -2378,6 +2378,698 @@
         ]
       }
     },
+    "/api/v1/projects/{projectId}/keyword-groups": {
+      "get": {
+        "operationId": "KeywordGroupsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Grup adında arama (ILIKE).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "post": {
+        "operationId": "KeywordGroupsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKeywordGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keyword-groups/{groupId}": {
+      "get": {
+        "operationId": "KeywordGroupsController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "patch": {
+        "operationId": "KeywordGroupsController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKeywordGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "delete": {
+        "operationId": "KeywordGroupsController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords": {
+      "get": {
+        "operationId": "TrackedKeywordsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Keyword metninde arama (ILIKE).",
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "device",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "mobile"
+              ]
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "description": "Etiketle filtre: keyword'ün tags dizisinde geçmeli.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "post": {
+        "operationId": "TrackedKeywordsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrackedKeywordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND, KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/suggestions": {
+      "get": {
+        "operationId": "TrackedKeywordsController_suggestions",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordSuggestionsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Son 28 günde gösterimi yüksek, takipte olmayan GSC sorguları.",
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/bulk": {
+      "post": {
+        "operationId": "TrackedKeywordsController_bulkAdd",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkAddKeywordsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkAddKeywordsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Satır satır metin ya da CSV; tek transaction, satır numaralı rapor döner.",
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/{keywordId}": {
+      "get": {
+        "operationId": "TrackedKeywordsController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "TRACKED_KEYWORD_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "patch": {
+        "operationId": "TrackedKeywordsController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrackedKeywordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "TRACKED_KEYWORD_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "delete": {
+        "operationId": "TrackedKeywordsController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "TRACKED_KEYWORD_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
     "/api/v1/locations": {
       "get": {
         "operationId": "LocationsController_list",
@@ -4097,6 +4789,415 @@
           "page",
           "limit"
         ]
+      },
+      "KeywordGroupResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name",
+          "color",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "KeywordGroupListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeywordGroupResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "CreateKeywordGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateKeywordGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 20
+          }
+        }
+      },
+      "TrackedKeywordResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyword": {
+            "type": "string"
+          },
+          "keywordNormalized": {
+            "type": "string"
+          },
+          "device": {
+            "enum": [
+              "desktop",
+              "mobile"
+            ],
+            "type": "string"
+          },
+          "locationCode": {
+            "type": "number"
+          },
+          "languageCode": {
+            "type": "string"
+          },
+          "frequency": {
+            "enum": [
+              "daily",
+              "weekly"
+            ],
+            "type": "string"
+          },
+          "depth": {
+            "type": "number"
+          },
+          "targetUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "searchVolume": {
+            "type": "number",
+            "nullable": true
+          },
+          "cpc": {
+            "type": "number",
+            "nullable": true
+          },
+          "volumeUpdatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "groupId",
+          "keyword",
+          "keywordNormalized",
+          "device",
+          "locationCode",
+          "languageCode",
+          "frequency",
+          "depth",
+          "targetUrl",
+          "tags",
+          "isActive",
+          "searchVolume",
+          "cpc",
+          "volumeUpdatedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TrackedKeywordListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "KeywordSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "clicks": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number"
+          },
+          "position": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "query",
+          "impressions",
+          "clicks",
+          "ctr",
+          "position"
+        ]
+      },
+      "KeywordSuggestionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Öneri hesaplanan pencere."
+          },
+          "to": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeywordSuggestionDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "items"
+        ]
+      },
+      "BulkAddKeywordsDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Satır satır metin. Her satır ya sadece `keyword`, ya da virgülle ayrılmış\n`keyword,grup,cihaz,hedef url` (CSV) biçiminde olabilir; grup/cihaz/hedef\nurl boş bırakılabilir ve o durumda `defaultGroupName`/`defaultDevice`\nkullanılır.",
+            "maxLength": 501000
+          },
+          "defaultGroupName": {
+            "type": "string",
+            "description": "Satırda grup verilmezse kullanılacak grup adı; yoksa grupsuz eklenir.",
+            "maxLength": 200
+          },
+          "defaultDevice": {
+            "type": "string",
+            "description": "Satırda cihaz verilmezse kullanılacak varsayılan; yoksa `desktop`.",
+            "enum": [
+              "desktop",
+              "mobile"
+            ]
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "BulkAddKeywordsErrorDto": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "number",
+            "description": "1 tabanlı, boş satırlar dahil edilmeden orijinal metindeki satır no."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "line",
+          "message"
+        ]
+      },
+      "BulkAddKeywordsResponseDto": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "number"
+          },
+          "skipped": {
+            "type": "number"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkAddKeywordsErrorDto"
+            }
+          }
+        },
+        "required": [
+          "added",
+          "skipped",
+          "errors"
+        ]
+      },
+      "CreateTrackedKeywordDto": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "mobile"
+            ]
+          },
+          "locationCode": {
+            "type": "number",
+            "description": "Verilmezse projenin `dfsLocationCode`'u, o da yoksa varsayılan (US) kullanılır."
+          },
+          "languageCode": {
+            "type": "string",
+            "description": "Verilmezse projenin `dfsLanguageCode`'u, o da yoksa varsayılan (en) kullanılır.",
+            "maxLength": 10
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "weekly"
+            ]
+          },
+          "targetUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "keyword"
+        ]
+      },
+      "UpdateTrackedKeywordDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "weekly"
+            ]
+          },
+          "targetUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
       },
       "LocationReferenceDto": {
         "type": "object",

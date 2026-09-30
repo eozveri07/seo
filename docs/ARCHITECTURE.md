@@ -328,6 +328,7 @@ CREATE INDEX ON gsc_daily USING gin (query gin_trgm_ops);
 | `alert-eval` | summary bitişi, sync hatası | 4 | yok | 3 |
 | `notify` | alert-eval, rapor | 4 | yok | 5 |
 | `report` | report_schedules, manuel | 2 | yok | 2 |
+| `keyword-volume` | keyword eklenince, daily-dispatch (30 günden eski) | 2 | 10 istek/sn | 5, exponential 30 sn |
 
 Kurallar:
 - Kuyruk isimleri ve job data tipleri `infra/queue/queues.ts` içinde tek yerde tanımlanır.

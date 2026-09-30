@@ -23,6 +23,11 @@ export enum AuditAction {
   ConnectionCreated = 'connection.created',
   ConnectionVerified = 'connection.verified',
   ConnectionDeleted = 'connection.deleted',
+  KeywordGroupCreated = 'keyword_group.created',
+  KeywordGroupDeleted = 'keyword_group.deleted',
+  KeywordCreated = 'keyword.created',
+  KeywordDeleted = 'keyword.deleted',
+  KeywordsBulkAdded = 'keywords.bulk_added',
 }
 
 export interface AuditEntry {

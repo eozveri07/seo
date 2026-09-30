@@ -33,6 +33,8 @@ interface OrgBFixtures {
   clientId: string;
   projectId: string;
   connectionId: string;
+  keywordGroupId: string;
+  keywordId: string;
 }
 
 interface TenantResource {
@@ -223,6 +225,83 @@ const RESOURCES: TenantResource[] = [
     path: (b) => `/connections/${b.connectionId}`,
     referencesOrgB: true,
   },
+  {
+    name: 'keyword grubu listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/keyword-groups`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword grubu oluşturma',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/keyword-groups`,
+    body: { name: 'Ele geçirilen grup' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword grubu detayı',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/keyword-groups/${b.keywordGroupId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword grubu güncelleme',
+    method: 'patch',
+    path: (b) => `/projects/${b.projectId}/keyword-groups/${b.keywordGroupId}`,
+    body: { name: 'Ele geçirildi' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword grubu silme',
+    method: 'delete',
+    path: (b) => `/projects/${b.projectId}/keyword-groups/${b.keywordGroupId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/keywords`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword oluşturma',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/keywords`,
+    body: { keyword: 'ele geçirilen keyword' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword bulk ekleme',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/keywords/bulk`,
+    body: { text: 'ele geçirilen keyword' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword önerileri',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/keywords/suggestions`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword detayı',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/keywords/${b.keywordId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword güncelleme',
+    method: 'patch',
+    path: (b) => `/projects/${b.projectId}/keywords/${b.keywordId}`,
+    body: { isActive: false },
+    referencesOrgB: true,
+  },
+  {
+    name: 'keyword silme',
+    method: 'delete',
+    path: (b) => `/projects/${b.projectId}/keywords/${b.keywordId}`,
+    referencesOrgB: true,
+  },
 ];
 
 interface ErrorBody {
@@ -285,6 +364,20 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       .set('X-Org-Id', orgId)
       .send({ type: 'gsc', externalId: 'sc-domain:b-project.example.com' });
     expect(connection.status).toBe(201);
+    const keywordGroup = await ctx
+      .http()
+      .post(`/api/v1/projects/${projectId}/keyword-groups`)
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({ name: "B'nin grubu" });
+    expect(keywordGroup.status).toBe(201);
+    const keyword = await ctx
+      .http()
+      .post(`/api/v1/projects/${projectId}/keywords`)
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({ keyword: "b'nin keyword'ü" });
+    expect(keyword.status).toBe(201);
     await ctx.dataSource.query(
       `INSERT INTO gsc_site_daily (date, org_id, project_id, clicks, impressions, ctr, position)
        VALUES ('2026-09-01', $1, $2, 7, 70, 0.1, 3)`,
@@ -302,6 +395,8 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       clientId,
       projectId,
       connectionId: (connection.body as { id: string }).id,
+      keywordGroupId: (keywordGroup.body as { id: string }).id,
+      keywordId: (keyword.body as { id: string }).id,
     };
   }
 
@@ -440,6 +535,18 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       `/projects/${orgB.projectId}/ga4/overview?from=2026-09-01&to=2026-09-01`,
     );
     expect(ga4Overview.body).toMatchObject({ totals: { sessions: 11 } });
+
+    const keywordGroups = await asBob(
+      `/projects/${orgB.projectId}/keyword-groups`,
+    );
+    expect(keywordGroups.body).toMatchObject({
+      items: [{ id: orgB.keywordGroupId, name: "B'nin grubu" }],
+    });
+
+    const keywords = await asBob(`/projects/${orgB.projectId}/keywords`);
+    expect(keywords.body).toMatchObject({
+      items: [{ id: orgB.keywordId, keyword: "b'nin keyword'ü" }],
+    });
 
     const runs = await ctx.dataSource.query<{ count: number }[]>(
       `SELECT COUNT(*)::int AS count FROM job_runs WHERE org_id = $1`,

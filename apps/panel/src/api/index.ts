@@ -5,6 +5,7 @@ export * from './ga4/ga4';
 export * from './gsc/gsc';
 export * from './health/health';
 export * from './invitations/invitations';
+export * from './keywords/keywords';
 export * from './locations/locations';
 export * from './members/members';
 export * from './organizations/organizations';

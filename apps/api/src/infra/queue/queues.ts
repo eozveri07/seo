@@ -17,6 +17,7 @@ export enum QueueName {
   AlertEval = 'alert-eval',
   Notify = 'notify',
   Report = 'report',
+  KeywordVolume = 'keyword-volume',
 }
 
 /** `job_runs.trigger` (ARCHITECTURE §5.6): job'u kim başlattı. */
@@ -103,6 +104,15 @@ export interface ReportJobData extends BaseJobData {
   reportId: string;
 }
 
+/**
+ * `keyword-volume` (PLAN T1.8): keyword eklendiğinde ve ayda bir (işlendiği
+ * anda `volume_updated_at` 30 günden eski olan keyword'ler için) `search_volume`
+ * ve `cpc`'yi DataForSEO'dan günceller.
+ */
+export interface KeywordVolumeJobData extends BaseJobData {
+  projectId: string;
+}
+
 export interface QueueJobDataMap {
   [QueueName.Dispatch]: DispatchJobData;
   [QueueName.GscSync]: GscSyncJobData;
@@ -115,6 +125,7 @@ export interface QueueJobDataMap {
   [QueueName.AlertEval]: AlertEvalJobData;
   [QueueName.Notify]: NotifyJobData;
   [QueueName.Report]: ReportJobData;
+  [QueueName.KeywordVolume]: KeywordVolumeJobData;
 }
 
 /** Tenant job'u taşıyan kuyruklar (`BaseProcessor`); `dispatch` sistem job'udur. */
@@ -212,6 +223,13 @@ export const QUEUE_DEFINITIONS: Record<QueueName, QueueDefinition> = {
     name: QueueName.Report,
     concurrency: 2,
     defaultJobOptions: jobOptions(2, 5000),
+  },
+  [QueueName.KeywordVolume]: {
+    name: QueueName.KeywordVolume,
+    concurrency: 2,
+    // DataForSEO search_volume/live için global rate limit ile aynı sınır.
+    limiter: { max: 10, duration: 1000 },
+    defaultJobOptions: jobOptions(5, 30000),
   },
 };
 

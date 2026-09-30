@@ -39,3 +39,19 @@ export function ga4SyncManualJobId(projectId: string, runId: string): string {
 export function ga4BackfillJobId(projectId: string, date: string): string {
   return `ga4-backfill:${projectId}:${date}`;
 }
+
+/** `daily-dispatch`'in aylık hacim yenilemesi: proje başına günde bir job. */
+export function keywordVolumeJobId(projectId: string, date: string): string {
+  return `keyword-volume:${projectId}:${date}`;
+}
+
+/**
+ * Keyword eklendiğinde anında tetiklenen hacim job'u: `gsc-sync-manual` gibi
+ * her tetiklemede yeni bir çalıştırmadır, bu yüzden benzersiz bir id alır.
+ */
+export function keywordVolumeManualJobId(
+  projectId: string,
+  uniqueId: string,
+): string {
+  return `keyword-volume-manual:${projectId}:${uniqueId}`;
+}

@@ -6,6 +6,7 @@ import {
   GscBackfillProcessorModule,
   GscSyncProcessorModule,
 } from './modules/gsc/gsc-processor.module';
+import { KeywordVolumeProcessorModule } from './modules/keywords/keywords-processor.module';
 
 export interface WorkerProcessorRegistryEntry {
   queueName: QueueName;
@@ -22,4 +23,8 @@ export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
   { queueName: QueueName.GscSync, module: GscSyncProcessorModule },
   { queueName: QueueName.GscBackfill, module: GscBackfillProcessorModule },
   { queueName: QueueName.Ga4Sync, module: Ga4SyncProcessorModule },
+  {
+    queueName: QueueName.KeywordVolume,
+    module: KeywordVolumeProcessorModule,
+  },
 ];

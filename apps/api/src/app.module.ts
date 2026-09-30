@@ -12,6 +12,7 @@ import { ConnectionsModule } from './modules/connections/connections.module';
 import { Ga4Module } from './modules/ga4/ga4.module';
 import { GscModule } from './modules/gsc/gsc.module';
 import { HealthModule } from './modules/health/health.module';
+import { KeywordsModule } from './modules/keywords/keywords.module';
 import { LocationsModule } from './modules/locations/locations.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { UsageModule } from './modules/usage/usage.module';
@@ -39,6 +40,7 @@ import { UsersModule } from './modules/users/users.module';
     ConnectionsModule,
     GscModule,
     Ga4Module,
+    KeywordsModule,
     LocationsModule,
     UsageModule,
     HealthModule,
