@@ -23,7 +23,7 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 
 **Not:** `dev:worker` (T0.5), `db:migrate` (T0.4) ve `gen:api` (T0.7) bu görevde eklenmedi; ilgili görevlerde eklenecek.
 
-### [ ] T0.2 Lokal altyapı
+### [x] T0.2 Lokal altyapı
 - `docker/postgres/Dockerfile` (pgvector + pg_partman) ve `docker-compose.yml` (postgres, redis). Portlar `127.0.0.1`'e bağlı.
 - Redis: `appendonly yes`, `maxmemory-policy noeviction`.
 - `.env.example` (ARCHITECTURE.md §14).
@@ -32,7 +32,9 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 - `bun run db:up` sonrası `psql` ile bağlanılıyor.
 - `SELECT * FROM pg_available_extensions WHERE name IN ('vector','pg_partman','pg_trgm','unaccent')` dört satır dönüyor.
 
-### [ ] T0.3 API çekirdeği
+**Not:** Docker doğrulaması runner'da yapılamadı; kullanıcı lokalde db:up ve extension sorgusunu (4 satır) doğruladı.
+
+### [x] T0.3 API çekirdeği
 - `ConfigModule`: env şeması class-validator ile. Eksik env'de açılış hatası ve anlaşılır mesaj.
 - Global: `ValidationPipe` (whitelist, forbidNonWhitelisted, transform), exception filter (`{ error: { code, message, details } }`), `helmet`, CORS (`PANEL_ORIGIN`), `/api/v1` prefix.
 - `nestjs-cls` kurulumu. Request başına `requestId` üretilir, loglara eklenir.
