@@ -20,6 +20,9 @@ export enum AuditAction {
   ClientDeleted = 'client.deleted',
   ProjectCreated = 'project.created',
   ProjectDeleted = 'project.deleted',
+  ConnectionCreated = 'connection.created',
+  ConnectionVerified = 'connection.verified',
+  ConnectionDeleted = 'connection.deleted',
 }
 
 export interface AuditEntry {

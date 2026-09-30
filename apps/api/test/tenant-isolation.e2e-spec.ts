@@ -29,6 +29,7 @@ interface OrgBFixtures {
   invitationId: string;
   clientId: string;
   projectId: string;
+  connectionId: string;
 }
 
 interface TenantResource {
@@ -128,6 +129,43 @@ const RESOURCES: TenantResource[] = [
     path: (b) => `/projects/${b.projectId}`,
     referencesOrgB: true,
   },
+  {
+    name: 'bağlantı listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/connections`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'bağlantı oluşturma',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/connections`,
+    body: { type: 'gsc', externalId: 'sc-domain:ele-gecirilen.example.com' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'GSC property listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/connections/gsc/sites`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'bağlantı detayı',
+    method: 'get',
+    path: (b) => `/connections/${b.connectionId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'bağlantı doğrulama',
+    method: 'post',
+    path: (b) => `/connections/${b.connectionId}/verify`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'bağlantı silme',
+    method: 'delete',
+    path: (b) => `/connections/${b.connectionId}`,
+    referencesOrgB: true,
+  },
 ];
 
 interface ErrorBody {
@@ -182,12 +220,21 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
         domain: 'b-project.example.com',
       });
     expect(project.status).toBe(201);
+    const projectId = (project.body as { id: string }).id;
+    const connection = await ctx
+      .http()
+      .post(`/api/v1/projects/${projectId}/connections`)
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({ type: 'gsc', externalId: 'sc-domain:b-project.example.com' });
+    expect(connection.status).toBe(201);
     return {
       orgId,
       ownerUserId: bobId[0].id,
       invitationId: (invitation.body as { id: string }).id,
       clientId,
-      projectId: (project.body as { id: string }).id,
+      projectId,
+      connectionId: (connection.body as { id: string }).id,
     };
   }
 
@@ -305,6 +352,16 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
     expect(projects.body).toMatchObject({
       total: 1,
       items: [{ id: orgB.projectId, domain: 'b-project.example.com' }],
+    });
+
+    const connections = await asBob(`/projects/${orgB.projectId}/connections`);
+    expect(connections.body).toMatchObject({
+      items: [
+        {
+          id: orgB.connectionId,
+          externalId: 'sc-domain:b-project.example.com',
+        },
+      ],
     });
   });
 });

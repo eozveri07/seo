@@ -26,5 +26,6 @@ import { ProjectsService } from './projects.service';
     ProjectsService,
     { provide: APP_GUARD, useClass: ProjectAccessGuard },
   ],
+  exports: [ProjectsService],
 })
 export class ClientsModule {}

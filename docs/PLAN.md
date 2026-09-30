@@ -208,6 +208,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Gerçek bir property ile doğrulama `active` sonucunu veriyor.
 - Yetkisiz property'de anlaşılır bir hata mesajı ve `error` durumu.
 
+**Lokal doğrulama bekliyor:** Runner'da Postgres ve gerçek `GOOGLE_SA_JSON_BASE64` yok; `GscClient`/`Ga4Client` yalnız mock'lu unit testlerle (hata sınıflandırması, `verifyProperty`) ve `ConnectionsService`/controller'lar mock servislerle (http spec) doğrulandı. `bun run db:up`, `bun run db:migrate`, gerçek bir service account ve gerçek bir GSC/GA4 property ile: migration'ı uygula, service account e-postasını GSC property'sine ekle, `POST /connections` ile bağlantı oluştur, `POST /connections/:id/verify` çağır ve `active` sonucunu, yetkisiz bir property'de `error` + anlaşılır mesajı doğrula. `tenant-isolation.e2e-spec.ts`'teki yeni bağlantı satırları da `E2E_DATABASE=true` ile çalıştırılmalı.
+
 ### [ ] T1.5 GSC senkronizasyonu
 - Tablolar: `gsc_site_daily`, `gsc_page_daily` (partition), `gsc_daily` (partition), `job_runs`, `api_usage`.
 - Partition migration'ları (ARCHITECTURE §6).

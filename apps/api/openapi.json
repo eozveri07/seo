@@ -1217,6 +1217,292 @@
         ]
       }
     },
+    "/api/v1/projects/{projectId}/connections": {
+      "get": {
+        "operationId": "ConnectionsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      },
+      "post": {
+        "operationId": "ConnectionsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConnectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          },
+          "409": {
+            "description": "CONNECTION_TYPE_TAKEN"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/connections/gsc/sites": {
+      "get": {
+        "operationId": "ConnectionsController_listGscSites",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscSiteListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Kullanıcı elle yazmak yerine service account'un erişebildiği GSC property'lerinden seçsin.",
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/connections/service-account": {
+      "get": {
+        "operationId": "ConnectionController_getServiceAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceAccountResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Kullanıcının property'ye ekleyeceği sistem service account e-postası.",
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/connections/{connectionId}": {
+      "get": {
+        "operationId": "ConnectionController_findOne",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CONNECTION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      },
+      "delete": {
+        "operationId": "ConnectionController_delete",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CONNECTION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/connections/{connectionId}/verify": {
+      "post": {
+        "operationId": "ConnectionController_verify",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CONNECTION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      }
+    },
     "/api/v1/locations": {
       "get": {
         "operationId": "LocationsController_list",
@@ -2285,6 +2571,195 @@
             ]
           }
         }
+      },
+      "ConnectionType": {
+        "type": "string",
+        "enum": [
+          "gsc",
+          "ga4"
+        ]
+      },
+      "ConnectionAuthType": {
+        "type": "string",
+        "enum": [
+          "service_account",
+          "oauth"
+        ]
+      },
+      "ConnectionStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "active",
+          "error",
+          "revoked"
+        ]
+      },
+      "ConnectionBackfillStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "done",
+          "failed"
+        ]
+      },
+      "ConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionType"
+              }
+            ]
+          },
+          "authType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionAuthType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionStatus"
+              }
+            ]
+          },
+          "backfillStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionBackfillStatus"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "lastVerifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          },
+          "backfillProgress": {
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "authType",
+          "status",
+          "backfillStatus",
+          "id",
+          "projectId",
+          "externalId",
+          "lastVerifiedAt",
+          "lastSyncedAt",
+          "lastError",
+          "backfillProgress",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ConnectionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateConnectionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "gsc",
+              "ga4"
+            ]
+          },
+          "externalId": {
+            "type": "string",
+            "description": "GSC: `sc-domain:example.com` ya da `https://example.com/`. GA4: `properties/123456789`.",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "type",
+          "externalId"
+        ]
+      },
+      "GscSiteResponseDto": {
+        "type": "object",
+        "properties": {
+          "siteUrl": {
+            "type": "string"
+          },
+          "permissionLevel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "siteUrl",
+          "permissionLevel"
+        ]
+      },
+      "GscSiteListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GscSiteResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ServiceAccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
       },
       "LocationReferenceDto": {
         "type": "object",

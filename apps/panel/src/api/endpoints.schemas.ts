@@ -381,6 +381,97 @@ export interface UpdateProjectDto {
   status?: UpdateProjectDtoStatus;
 }
 
+export type ConnectionType = typeof ConnectionType[keyof typeof ConnectionType];
+
+
+export const ConnectionType = {
+  gsc: 'gsc',
+  ga4: 'ga4',
+} as const;
+
+export type ConnectionAuthType = typeof ConnectionAuthType[keyof typeof ConnectionAuthType];
+
+
+export const ConnectionAuthType = {
+  service_account: 'service_account',
+  oauth: 'oauth',
+} as const;
+
+export type ConnectionStatus = typeof ConnectionStatus[keyof typeof ConnectionStatus];
+
+
+export const ConnectionStatus = {
+  pending: 'pending',
+  active: 'active',
+  error: 'error',
+  revoked: 'revoked',
+} as const;
+
+export type ConnectionBackfillStatus = typeof ConnectionBackfillStatus[keyof typeof ConnectionBackfillStatus];
+
+
+export const ConnectionBackfillStatus = {
+  pending: 'pending',
+  running: 'running',
+  done: 'done',
+  failed: 'failed',
+} as const;
+
+export type ConnectionResponseDtoBackfillProgress = { [key: string]: unknown };
+
+export interface ConnectionResponseDto {
+  type: ConnectionType;
+  authType: ConnectionAuthType;
+  status: ConnectionStatus;
+  backfillStatus: ConnectionBackfillStatus;
+  id: string;
+  projectId: string;
+  externalId: string;
+  /** @nullable */
+  lastVerifiedAt: string | null;
+  /** @nullable */
+  lastSyncedAt: string | null;
+  /** @nullable */
+  lastError: string | null;
+  backfillProgress: ConnectionResponseDtoBackfillProgress;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConnectionListResponseDto {
+  items: ConnectionResponseDto[];
+}
+
+export type CreateConnectionDtoType = typeof CreateConnectionDtoType[keyof typeof CreateConnectionDtoType];
+
+
+export const CreateConnectionDtoType = {
+  gsc: 'gsc',
+  ga4: 'ga4',
+} as const;
+
+export interface CreateConnectionDto {
+  type: CreateConnectionDtoType;
+  /**
+     * GSC: `sc-domain:example.com` ya da `https://example.com/`. GA4: `properties/123456789`.
+     * @maxLength 255
+     */
+  externalId: string;
+}
+
+export interface GscSiteResponseDto {
+  siteUrl: string;
+  permissionLevel: string;
+}
+
+export interface GscSiteListResponseDto {
+  items: GscSiteResponseDto[];
+}
+
+export interface ServiceAccountResponseDto {
+  email: string;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;

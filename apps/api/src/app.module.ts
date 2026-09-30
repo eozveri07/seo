@@ -8,6 +8,7 @@ import { QueueModule } from './infra/queue/queue.module';
 import { StorageModule } from './infra/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { ConnectionsModule } from './modules/connections/connections.module';
 import { HealthModule } from './modules/health/health.module';
 import { LocationsModule } from './modules/locations/locations.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     OrganizationsModule,
     ClientsModule,
+    ConnectionsModule,
     LocationsModule,
     HealthModule,
     PingModule,
