@@ -9,7 +9,7 @@ Tamamlanan görevi `[x]` ile işaretle. Kapsamda değişiklik olduysa görevin a
 
 Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda hiçbir iş özelliği yok ama her şeyin oturacağı altyapı hazır.
 
-### [ ] T0.1 Monorepo ve uygulama iskeletleri
+### [x] T0.1 Monorepo ve uygulama iskeletleri
 - Root `package.json`: Bun workspaces (`apps/*`), root script'leri (CLAUDE.md'deki komut listesi).
 - `apps/api`: `@nestjs/cli` ile Nest 11 projesi, Express adapter, TypeScript strict, jest.
 - `apps/panel`: Vite + React + TypeScript şablonu.
@@ -20,6 +20,8 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 - `bun install` hatasız.
 - `bun run dev:api` ve `bun run dev:panel` ayağa kalkıyor.
 - `bun run lint` ve `bun run typecheck` iki app için de geçiyor.
+
+**Not:** `dev:worker` (T0.5), `db:migrate` (T0.4) ve `gen:api` (T0.7) bu görevde eklenmedi; ilgili görevlerde eklenecek.
 
 ### [ ] T0.2 Lokal altyapı
 - `docker/postgres/Dockerfile` (pgvector + pg_partman) ve `docker-compose.yml` (postgres, redis). Portlar `127.0.0.1`'e bağlı.
