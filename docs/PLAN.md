@@ -97,7 +97,7 @@ kaydettiği ve worker kapanışının sorunsuz olduğu doğrulanamadı. Lokalde:
 2. `.env`'de `SCHEDULER_ENABLED=true` ile `bun run dev:worker` çalıştır, hata
    olmadan açıldığını doğrula.
 
-### [ ] T0.7 Panel iskeleti
+### [x] T0.7 Panel iskeleti
 - Tailwind + shadcn/ui kurulumu (temel bileşenler: button, input, form, dialog, dropdown-menu, table, card, badge, tabs, toast, sheet, skeleton, select, popover, calendar).
 - TanStack Router (file-based), TanStack Query client, temel layout (sidebar, üst bar, içerik alanı), dark/light tema.
 - Vite proxy: `/api` → `http://localhost:3000`.
@@ -109,6 +109,8 @@ kaydettiği ve worker kapanışının sorunsuz olduğu doğrulanamadı. Lokalde:
 - `bun run gen:api` client'ı üretiyor.
 - Panel health sonucunu gösteriyor.
 - Tema değişimi çalışıyor.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres/Redis olmadığı için `apps/api` gerçek dev sunucusu ayağa kaldırılamadı; health sayfası panel tarafında Vite proxy'sinin 502'si (API kapalı) ve gerçek `HealthResponseDto` şekliyle birebir mock bir sunucu (ok / kısmi arıza / tam arıza) ile doğrulandı. `bun run db:up` sonrası gerçek API'ye karşı da doğrulanmalı.
 
 ---
 
