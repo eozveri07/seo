@@ -323,7 +323,7 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 4. Bir proje için GSC ya da GA4 sync'i (`POST /projects/:id/sync/gsc`) tetikleyin; worker logunda `summary job eklendi` ve `project_daily_summary güncellendi` görünmeli, `SELECT * FROM project_daily_summary` ilgili günün satırını göstermeli.
 5. Aynı günü iki kez tetikleyin (`SELECT count(*)` hâlâ 1 satır); `keyword_rank_latest`'i rank verisi olan bir proje için kontrol edin.
 
-### [ ] T1.11 Panel: auth ve yönetim ekranları
+### [x] T1.11 Panel: auth ve yönetim ekranları
 - Login, davet kabul, şifre belirleme.
 - Org seçici (üst bar), aktif org localStorage'da (try/catch ile), X-Org-Id header'ı mutator'dan.
 - Client listesi ve formu, proje listesi ve formu (lokasyon ve dil seçicili).
@@ -333,6 +333,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Rol bazlı görünürlük: client_viewer yönetim menülerini görmez.
 
 **Kabul:** Sıfırdan org oluşturup client, proje ve GSC bağlantısı eklemek ve backfill'in başladığını görmek panelden yapılabiliyor.
+
+**Lokal doğrulama bekliyor:** Runner'da DB/Redis ve gerçek API çalışmadığı için uçtan uca akış, orval tiplerine uyan ve OpenAPI sözleşmesiyle birebir eşleşen sahte bir HTTP sunucusuyla tarayıcıda doğrulandı (login → org seçici → client/proje CRUD → bağlantılar ekranı, SA e-postası kopyalama, GSC/GA4 bağlama, doğrulama, backfill ilerleme çubuğu → üyeler/davetler; açık/koyu tema ve mobil genişlik). Gerçek API ve DB ile uçtan uca (özellikle davet e-postası gönderimi, gerçek Google SA/GA4 doğrulaması ve backfill polling'i) lokalde tekrar doğrulanmalı.
 
 ### [ ] T1.12 Panel: proje dashboard'u ve GSC explorer
 - **Org ana sayfası:** proje kartları (tıklama, oturum, ortalama pozisyon, visibility; 7/28 günlük değişim, mini grafik).

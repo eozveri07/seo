@@ -1,11 +1,15 @@
 import { Link } from '@tanstack/react-router'
+import { usePermissions } from '@/lib/auth/use-permissions'
 import { cn } from '@/lib/utils'
 import { navItems } from './nav-items'
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const permissions = usePermissions()
+  const visibleItems = navItems.filter((item) => !item.visible || item.visible(permissions))
+
   return (
     <nav className="flex flex-col gap-1 p-2">
-      {navItems.map((item) => (
+      {visibleItems.map((item) => (
         <Link
           key={item.to}
           to={item.to}

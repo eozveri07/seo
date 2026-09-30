@@ -20,7 +20,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/components/ui/**/*.{ts,tsx}', 'src/routes/**/*.{ts,tsx}'],
+    files: ['src/components/ui/**/*.{ts,tsx}', 'src/routes/**/*.{ts,tsx}', 'src/lib/auth/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
     },

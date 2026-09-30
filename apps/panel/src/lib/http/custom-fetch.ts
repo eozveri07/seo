@@ -16,7 +16,7 @@ function buildHeaders(init?: HeadersInit): Headers {
   return headers
 }
 
-async function performRefresh(): Promise<boolean> {
+export async function performRefresh(): Promise<boolean> {
   try {
     const response = await fetch(REFRESH_PATH, {
       method: 'POST',

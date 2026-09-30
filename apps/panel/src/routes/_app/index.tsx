@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_app/')({
   component: HealthPage,
 })
 

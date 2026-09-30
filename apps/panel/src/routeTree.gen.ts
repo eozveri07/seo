@@ -9,50 +9,331 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as OrganizationsNewRouteImport } from './routes/organizations.new'
+import { Route as AppClientsIndexRouteImport } from './routes/_app/clients/index'
+import { Route as AppClientsClientIdRouteImport } from './routes/_app/clients/$clientId'
+import { Route as AppClientsNewRouteImport } from './routes/_app/clients/new'
+import { Route as AppMembersIndexRouteImport } from './routes/_app/members/index'
+import { Route as AppNotificationsIndexRouteImport } from './routes/_app/notifications/index'
+import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
+import { Route as AppProjectsProjectIdRouteImport } from './routes/_app/projects/$projectId'
+import { Route as AppProjectsNewRouteImport } from './routes/_app/projects/new'
+import { Route as AppProjectsProjectIdConnectionsRouteImport } from './routes/_app/projects/$projectId_.connections'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const OrganizationsNewRoute = OrganizationsNewRouteImport.update({
+  id: '/organizations/new',
+  path: '/organizations/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppClientsIndexRoute = AppClientsIndexRouteImport.update({
+  id: '/clients/',
+  path: '/clients/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientsClientIdRoute = AppClientsClientIdRouteImport.update({
+  id: '/clients/$clientId',
+  path: '/clients/$clientId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientsNewRoute = AppClientsNewRouteImport.update({
+  id: '/clients/new',
+  path: '/clients/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersIndexRoute = AppMembersIndexRouteImport.update({
+  id: '/members/',
+  path: '/members/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsIndexRoute = AppNotificationsIndexRouteImport.update({
+  id: '/notifications/',
+  path: '/notifications/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsProjectIdRoute = AppProjectsProjectIdRouteImport.update({
+  id: '/projects/$projectId',
+  path: '/projects/$projectId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
+  id: '/projects/new',
+  path: '/projects/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsProjectIdConnectionsRoute =
+  AppProjectsProjectIdConnectionsRouteImport.update({
+    id: '/projects/$projectId_/connections',
+    path: '/projects/$projectId/connections',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
+  '/login': typeof LoginRoute
+  '/organizations/new': typeof OrganizationsNewRoute
+  '/clients/$clientId': typeof AppClientsClientIdRoute
+  '/clients/new': typeof AppClientsNewRoute
+  '/projects/$projectId': typeof AppProjectsProjectIdRoute
+  '/projects/new': typeof AppProjectsNewRoute
+  '/clients/': typeof AppClientsIndexRoute
+  '/members/': typeof AppMembersIndexRoute
+  '/notifications/': typeof AppNotificationsIndexRoute
+  '/projects/': typeof AppProjectsIndexRoute
+  '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
+  '/login': typeof LoginRoute
+  '/organizations/new': typeof OrganizationsNewRoute
+  '/': typeof AppIndexRoute
+  '/clients/$clientId': typeof AppClientsClientIdRoute
+  '/clients/new': typeof AppClientsNewRoute
+  '/projects/$projectId': typeof AppProjectsProjectIdRoute
+  '/projects/new': typeof AppProjectsNewRoute
+  '/clients': typeof AppClientsIndexRoute
+  '/members': typeof AppMembersIndexRoute
+  '/notifications': typeof AppNotificationsIndexRoute
+  '/projects': typeof AppProjectsIndexRoute
+  '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/accept-invite': typeof AcceptInviteRoute
+  '/login': typeof LoginRoute
+  '/organizations/new': typeof OrganizationsNewRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/clients/$clientId': typeof AppClientsClientIdRoute
+  '/_app/clients/new': typeof AppClientsNewRoute
+  '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
+  '/_app/projects/new': typeof AppProjectsNewRoute
+  '/_app/clients/': typeof AppClientsIndexRoute
+  '/_app/members/': typeof AppMembersIndexRoute
+  '/_app/notifications/': typeof AppNotificationsIndexRoute
+  '/_app/projects/': typeof AppProjectsIndexRoute
+  '/_app/projects/$projectId_/connections': typeof AppProjectsProjectIdConnectionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/accept-invite'
+    | '/login'
+    | '/organizations/new'
+    | '/clients/$clientId'
+    | '/clients/new'
+    | '/projects/$projectId'
+    | '/projects/new'
+    | '/clients/'
+    | '/members/'
+    | '/notifications/'
+    | '/projects/'
+    | '/projects/$projectId/connections'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/accept-invite'
+    | '/login'
+    | '/organizations/new'
+    | '/'
+    | '/clients/$clientId'
+    | '/clients/new'
+    | '/projects/$projectId'
+    | '/projects/new'
+    | '/clients'
+    | '/members'
+    | '/notifications'
+    | '/projects'
+    | '/projects/$projectId/connections'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/accept-invite'
+    | '/login'
+    | '/organizations/new'
+    | '/_app/'
+    | '/_app/clients/$clientId'
+    | '/_app/clients/new'
+    | '/_app/projects/$projectId'
+    | '/_app/projects/new'
+    | '/_app/clients/'
+    | '/_app/members/'
+    | '/_app/notifications/'
+    | '/_app/projects/'
+    | '/_app/projects/$projectId_/connections'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AcceptInviteRoute: typeof AcceptInviteRoute
+  LoginRoute: typeof LoginRoute
+  OrganizationsNewRoute: typeof OrganizationsNewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/organizations/new': {
+      id: '/organizations/new'
+      path: '/organizations/new'
+      fullPath: '/organizations/new'
+      preLoaderRoute: typeof OrganizationsNewRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/clients/': {
+      id: '/_app/clients/'
+      path: '/clients'
+      fullPath: '/clients/'
+      preLoaderRoute: typeof AppClientsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clients/$clientId': {
+      id: '/_app/clients/$clientId'
+      path: '/clients/$clientId'
+      fullPath: '/clients/$clientId'
+      preLoaderRoute: typeof AppClientsClientIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clients/new': {
+      id: '/_app/clients/new'
+      path: '/clients/new'
+      fullPath: '/clients/new'
+      preLoaderRoute: typeof AppClientsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/': {
+      id: '/_app/members/'
+      path: '/members'
+      fullPath: '/members/'
+      preLoaderRoute: typeof AppMembersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications/': {
+      id: '/_app/notifications/'
+      path: '/notifications'
+      fullPath: '/notifications/'
+      preLoaderRoute: typeof AppNotificationsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/projects/': {
+      id: '/_app/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof AppProjectsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/projects/$projectId': {
+      id: '/_app/projects/$projectId'
+      path: '/projects/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof AppProjectsProjectIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/projects/new': {
+      id: '/_app/projects/new'
+      path: '/projects/new'
+      fullPath: '/projects/new'
+      preLoaderRoute: typeof AppProjectsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/projects/$projectId_/connections': {
+      id: '/_app/projects/$projectId_/connections'
+      path: '/projects/$projectId/connections'
+      fullPath: '/projects/$projectId/connections'
+      preLoaderRoute: typeof AppProjectsProjectIdConnectionsRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
+  AppClientsClientIdRoute: typeof AppClientsClientIdRoute
+  AppClientsNewRoute: typeof AppClientsNewRoute
+  AppProjectsProjectIdRoute: typeof AppProjectsProjectIdRoute
+  AppProjectsNewRoute: typeof AppProjectsNewRoute
+  AppClientsIndexRoute: typeof AppClientsIndexRoute
+  AppMembersIndexRoute: typeof AppMembersIndexRoute
+  AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
+  AppProjectsIndexRoute: typeof AppProjectsIndexRoute
+  AppProjectsProjectIdConnectionsRoute: typeof AppProjectsProjectIdConnectionsRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
+  AppClientsClientIdRoute: AppClientsClientIdRoute,
+  AppClientsNewRoute: AppClientsNewRoute,
+  AppProjectsProjectIdRoute: AppProjectsProjectIdRoute,
+  AppProjectsNewRoute: AppProjectsNewRoute,
+  AppClientsIndexRoute: AppClientsIndexRoute,
+  AppMembersIndexRoute: AppMembersIndexRoute,
+  AppNotificationsIndexRoute: AppNotificationsIndexRoute,
+  AppProjectsIndexRoute: AppProjectsIndexRoute,
+  AppProjectsProjectIdConnectionsRoute: AppProjectsProjectIdConnectionsRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AcceptInviteRoute: AcceptInviteRoute,
+  LoginRoute: LoginRoute,
+  OrganizationsNewRoute: OrganizationsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { OrgSwitcher } from './org-switcher'
 import { SidebarNav } from './sidebar-nav'
+import { UserMenu } from './user-menu'
 
 export function AppTopbar() {
   const [open, setOpen] = useState(false)
@@ -25,8 +27,12 @@ export function AppTopbar() {
           </SheetContent>
         </Sheet>
         <span className="font-semibold md:hidden">SEO Platform</span>
+        <OrgSwitcher />
       </div>
-      <ThemeToggle />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <UserMenu />
+      </div>
     </header>
   )
 }
