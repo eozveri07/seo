@@ -41,6 +41,42 @@ describe('validateNotificationChannelConfig', () => {
   });
 });
 
+describe('validateNotificationChannelConfig (SSRF)', () => {
+  it.each([
+    'https://localhost/hook',
+    'https://api.localhost/hook',
+    'https://127.0.0.1/hook',
+    'https://10.0.0.5/hook',
+    'https://172.16.0.1/hook',
+    'https://192.168.1.1/hook',
+    'https://169.254.169.254/latest/meta-data/',
+    'https://100.64.0.1/hook',
+    'https://0.0.0.0/hook',
+    'https://[::1]/hook',
+    'https://[fd00::1]/hook',
+    'https://[fe80::1]/hook',
+    'https://[::ffff:127.0.0.1]/hook',
+    'https://2130706433/hook',
+  ])('dahili host %s reddedilir', (webhookUrl) => {
+    expect(() =>
+      validateNotificationChannelConfig(NotificationChannelType.Slack, {
+        webhookUrl,
+      }),
+    ).toThrow(InvalidAlertRuleConfigError);
+  });
+
+  it.each([
+    'https://discord.com/api/webhooks/123/token',
+    'https://hooks.slack.com/services/T000/B000/XXXX',
+  ])('public URL %s kabul edilir', (webhookUrl) => {
+    expect(
+      validateNotificationChannelConfig(NotificationChannelType.Discord, {
+        webhookUrl,
+      }),
+    ).toEqual({ webhookUrl });
+  });
+});
+
 describe('maskNotificationChannelConfig', () => {
   it('email adreslerini maskeler', () => {
     expect(

@@ -1,5 +1,6 @@
 import { NotificationChannelType } from './entities/notification-channel.entity';
 import { InvalidAlertRuleConfigError } from './alerts.errors';
+import { isBlockedWebhookHostname } from '../../infra/webhook/webhook-address-guard';
 
 export interface EmailChannelConfig {
   to: string[];
@@ -44,6 +45,19 @@ export function validateNotificationChannelConfig(
   if (typeof webhookUrl !== 'string' || !webhookUrl.startsWith('https://')) {
     throw new InvalidAlertRuleConfigError(
       'config.webhookUrl https:// ile başlayan bir URL olmalı.',
+    );
+  }
+  let hostname: string;
+  try {
+    hostname = new URL(webhookUrl).hostname;
+  } catch {
+    throw new InvalidAlertRuleConfigError(
+      'config.webhookUrl geçerli bir URL olmalı.',
+    );
+  }
+  if (isBlockedWebhookHostname(hostname)) {
+    throw new InvalidAlertRuleConfigError(
+      'config.webhookUrl dahili ya da özel bir adrese işaret edemez.',
     );
   }
   return { webhookUrl };
