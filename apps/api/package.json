@@ -22,6 +22,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "openapi:export": "NODE_OPTIONS=--max-old-space-size=4096 nest build && bun run scripts/export-openapi.ts",
+    "seed": "bun run scripts/seed.ts",
     "migration:generate": "NODE_OPTIONS=--max-old-space-size=4096 nest build && typeorm -d dist/database/data-source.js migration:generate",
     "migration:create": "typeorm migration:create",
     "migration:run": "NODE_OPTIONS=--max-old-space-size=4096 nest build && typeorm -d dist/database/data-source.js migration:run",

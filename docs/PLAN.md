@@ -394,12 +394,29 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Kabul:** Temiz bir makinede README takip edilerek 15 dakikada sistem ayağa kalkıyor ve seed verisiyle panel dolu görünüyor.
 
+**Lokal doğrulama bekliyor:** Runner'da Postgres/Redis yok; dört cron'un yalnız `SCHEDULER_ENABLED=true` worker'da kaydolduğu (`HousekeepingModule`'ün API'de hiç import edilmediği) ve her cron'un doğru tabloyu/koşulu hedeflediği unit testlerle (`housekeeping.service.spec.ts`, `housekeeping.module.spec.ts`) doğrulandı; gerçek Postgres'e karşı `partman.run_maintenance_proc()`'un hatasız çalıştığı ve gerçek silinen/failed yapılan satır sayıları lokalde doğrulanmalı. Seed script'i mock veri üretimi ve SQL'i gözden geçirilerek yazıldı; `bun run db:up`, `bun run db:migrate`, `NODE_ENV=development bun run --filter api seed` ile gerçek bir DB'ye karşı hiç çalıştırılmadı — owner/org/client/proje/keyword satırlarının oluştuğu, 60 günlük GSC/GA4/rank verisinin ve hesaplanan `project_daily_summary`/`keyword_rank_latest`'in panelde göründüğü ve `--reset` ile yeniden çalıştırmanın güvenli olduğu lokalde doğrulanmalı. README'deki adımların (service account, DataForSEO, Playwright, ilk proje akışı) temiz bir makinede uçtan uca 15 dakika kriterine uyduğu da lokalde doğrulanmalı.
+
 ### Faz 1 çıkış kriterleri
 - Mevcut ajans müşterilerinin tamamı sistemde, GSC ve GA4 bağlı, backfill tamamlanmış.
 - Proje başına 30-40 keyword takipte, günlük rank verisi akıyor.
 - Haftalık raporlar otomatik gidiyor, alertler Discord'a düşüyor.
 - Tenant izolasyon testi yeşil.
 - Aylık DataForSEO maliyeti `/usage` ekranından okunabiliyor.
+
+### Lokal doğrulama bekleyen görevler
+
+Runner'da DB, Redis ve gerçek dış API kimlik bilgileri (Google service account, DataForSEO,
+SMTP, Discord/Slack webhook) yok; bu yüzden aşağıdaki görevlerin kabul kriterlerinin bir kısmı
+yalnız mock'lu testlerle doğrulandı ve gerçek ortamda tekrar doğrulanmayı bekliyor (her
+görevin kendi "Lokal doğrulama bekliyor" notunda ayrıntı var): T0.5 (BullMQ/Redis), T0.6
+(Redis'le worker cron kaydı), T0.7 (gerçek API'ye karşı panel), T1.1 (Redis throttler), T1.2
+(Redis membership cache), T1.3 (gerçek DB migration), T1.4 (gerçek service account ile
+GSC/GA4 bağlantı doğrulama), T1.5 (GSC sync uçtan uca), T1.6 (GA4 sync uçtan uca), T1.7
+(gerçek DataForSEO live çağrısı), T1.8 (keyword bulk/volume uçtan uca), T1.9 (rank
+post/poll/fetch uçtan uca), T1.10 (performans ölçümü), T1.11 (gerçek API/DB ile panel akışı),
+T1.12 (büyük veri setiyle performans), T1.13 (gerçek API/DB ile panel akışı), T1.14 (gerçek
+Discord/Slack bildirimi), T1.15 (gerçek Playwright/chromium PDF üretimi ve SMTP), T1.16
+(gerçek DB'ye karşı bakım cron'ları ve seed script'i).
 
 ---
 
