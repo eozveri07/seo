@@ -123,7 +123,7 @@ export class DataForSeoClient {
     id: string,
     context: DfsUsageContext = {},
   ): Promise<DfsSerpAdvancedResult | null> {
-    const envelope = await this.requestWithRetry<RawOrganicItem>(
+    const envelope = await this.requestWithRetry<RawSerpResult>(
       `/v3/serp/google/organic/task_get/advanced/${encodeURIComponent(id)}`,
       { method: 'GET' },
     );
@@ -143,7 +143,7 @@ export class DataForSeoClient {
     task: DfsSerpLiveTask,
     context: DfsUsageContext = {},
   ): Promise<DfsSerpAdvancedResult | null> {
-    const envelope = await this.requestWithRetry<RawOrganicItem>(
+    const envelope = await this.requestWithRetry<RawSerpResult>(
       '/v3/serp/google/organic/live/advanced',
       { method: 'POST', body: [toTaskPostBody(task)] },
     );
@@ -313,6 +313,12 @@ interface RawOrganicItem {
   title: string | null;
 }
 
+/** `task_get/advanced` ve `live/advanced`'in `result[]` öğesi: tek bir SERP. */
+interface RawSerpResult {
+  item_types?: string[] | null;
+  items?: RawOrganicItem[] | null;
+}
+
 interface RawLocation {
   location_code: number;
   location_name: string;
@@ -356,22 +362,29 @@ function toTaskPostResult(
 }
 
 function toAdvancedResult(
-  task: DataForSeoTask<RawOrganicItem>,
+  task: DataForSeoTask<RawSerpResult>,
 ): DfsSerpAdvancedResult {
-  const items: DfsSerpOrganicItem[] = (task.result ?? []).map((item) => ({
-    type: item.type,
-    rankGroup: item.rank_group,
-    rankAbsolute: item.rank_absolute,
-    domain: item.domain,
-    url: item.url,
-    title: item.title,
-  }));
+  const serps = task.result ?? [];
+  const items: DfsSerpOrganicItem[] = serps
+    .flatMap((serp) => serp.items ?? [])
+    .map((item) => ({
+      type: item.type,
+      rankGroup: item.rank_group ?? null,
+      rankAbsolute: item.rank_absolute ?? null,
+      domain: item.domain ?? null,
+      url: item.url ?? null,
+      title: item.title ?? null,
+    }));
+  const itemTypes = [
+    ...new Set(serps.flatMap((serp) => serp.item_types ?? [])),
+  ];
   return {
     id: task.id,
     statusCode: task.status_code,
     statusMessage: task.status_message,
     cost: task.cost,
     tag: (task.data?.tag as string | undefined) ?? null,
+    itemTypes,
     items,
   };
 }

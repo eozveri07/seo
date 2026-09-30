@@ -7,6 +7,11 @@ import {
   ConnectorPermanentError,
   ConnectorTransientError,
 } from '../errors';
+import {
+  SERP_FIXTURE_TAG,
+  SERP_FIXTURE_TASK_ID,
+  serpTaskGetAdvancedFixture,
+} from './__fixtures__/serp-task-get-advanced.fixture';
 import { DataForSeoClient } from './dataforseo.client';
 import { DfsSerpTaskPostItem } from './dataforseo.types';
 
@@ -245,56 +250,39 @@ describe('DataForSeoClient', () => {
     });
   });
 
-  it('serpTaskGetAdvanced organik sonuçları tipli döner', async () => {
-    const fetchFn = jest.fn().mockResolvedValue(
-      jsonResponse(
-        envelope({
-          tasks: [
-            {
-              id: 'task-1',
-              status_code: 20000,
-              status_message: 'Ok.',
-              time: '0 sec.',
-              cost: 0.002,
-              result_count: 1,
-              path: [],
-              data: { tag: 'kw-1' },
-              result: [
-                {
-                  type: 'organic',
-                  rank_group: 3,
-                  rank_absolute: 4,
-                  domain: 'example.com',
-                  url: 'https://example.com/page',
-                  title: 'Example',
-                },
-              ],
-            },
-          ],
-        }),
-      ),
-    );
+  it("serpTaskGetAdvanced SERP öğelerini ve item_types'ı tipli döner", async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(jsonResponse(serpTaskGetAdvancedFixture()));
     const { client } = buildClient({ fetchFn });
 
-    const result = await client.serpTaskGetAdvanced('task-1');
+    const result = await client.serpTaskGetAdvanced(SERP_FIXTURE_TASK_ID);
 
-    expect(result).toEqual({
-      id: 'task-1',
+    expect(result).toMatchObject({
+      id: SERP_FIXTURE_TASK_ID,
       statusCode: 20000,
-      statusMessage: 'Ok.',
-      cost: 0.002,
-      tag: 'kw-1',
-      items: [
-        {
-          type: 'organic',
-          rankGroup: 3,
-          rankAbsolute: 4,
-          domain: 'example.com',
-          url: 'https://example.com/page',
-          title: 'Example',
-        },
-      ],
+      tag: SERP_FIXTURE_TAG,
+      itemTypes: ['paid', 'featured_snippet', 'organic', 'people_also_ask'],
     });
+    expect(result?.items).toHaveLength(14);
+    expect(result?.items[5]).toEqual({
+      type: 'organic',
+      rankGroup: 3,
+      rankAbsolute: 6,
+      domain: 'blog.example.com',
+      url: 'https://blog.example.com/seo-araclari/',
+      title: 'blog.example.com başlığı',
+    });
+    // people_also_ask'ın domain/url'i yok; null'a çevrilir.
+    expect(result?.items[4]).toMatchObject({
+      type: 'people_also_ask',
+      domain: null,
+      url: null,
+    });
+    expect(fetchFn).toHaveBeenCalledWith(
+      `https://api.dataforseo.com/v3/serp/google/organic/task_get/advanced/${SERP_FIXTURE_TASK_ID}`,
+      expect.objectContaining({ method: 'GET' }),
+    );
   });
 
   it('locations ve languages ücretsizdir; UsageService çağrılmaz', async () => {

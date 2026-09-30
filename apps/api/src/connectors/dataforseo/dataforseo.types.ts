@@ -65,6 +65,9 @@ export interface DfsSerpAdvancedResult {
   statusMessage: string;
   cost: number;
   tag: string | null;
+  /** SERP'teki öğe tipleri (`item_types`), ör. `organic`, `featured_snippet`. */
+  itemTypes: string[];
+  /** SERP öğeleri sayfadaki sırasıyla; yalnız organik değil, tüm tipler. */
   items: DfsSerpOrganicItem[];
 }
 
