@@ -8,6 +8,7 @@
 bun install
 cp .env.example .env
 bun run db:up         # Postgres + Redis (docker compose)
+bun run db:migrate    # migration'ları uygula
 bun run dev:api       # API, :3000
 bun run dev:panel     # panel, :5173
 ```

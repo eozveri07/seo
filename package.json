@@ -11,6 +11,8 @@
   ],
   "scripts": {
     "db:up": "docker compose up -d postgres redis",
+    "db:migrate": "bun run --filter api migration:run",
+    "db:revert": "bun run --filter api migration:revert",
     "dev:api": "bun run --filter api dev",
     "dev:panel": "bun run --filter panel dev",
     "dev": "concurrently -n api,panel -c blue,magenta \"bun run dev:api\" \"bun run dev:panel\"",
