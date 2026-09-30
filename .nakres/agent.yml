@@ -1,0 +1,8 @@
+version: 1
+setup: bun install --frozen-lockfile
+test: bun run test
+lint: bun run lint
+typecheck: bun run typecheck
+dev:
+  command: bun run dev
+  port: 5173

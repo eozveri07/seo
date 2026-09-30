@@ -13,8 +13,12 @@
     "db:up": "docker compose up -d postgres redis",
     "dev:api": "bun run --filter api dev",
     "dev:panel": "bun run --filter panel dev",
+    "dev": "concurrently -n api,panel -c blue,magenta \"bun run dev:api\" \"bun run dev:panel\"",
     "lint": "bun run --filter api lint && bun run --filter panel lint",
     "typecheck": "bun run --filter api typecheck && bun run --filter panel typecheck",
     "test": "bun run --filter api test"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }
