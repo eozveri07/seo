@@ -75,9 +75,10 @@ açıldığı ve `WORKER_QUEUES` filtresinin doğru modülleri yüklediği doğr
 worker'da işlenmesi ve bull-board'da görünmesi doğrulanamadı. Lokalde:
 1. `bun run db:up` (Redis ayağa kalksın).
 2. `bun run dev:api` ve ayrı bir terminalde `bun run dev:worker`.
-3. `curl -X POST http://localhost:3000/api/v1/dev/ping -H 'content-type: application/json' -d '{"orgId":"0190f0e4-0000-7000-8000-00000000000a"}'`.
-4. Worker log'unda `pong` mesajını, `http://localhost:3000/admin/queues`'ta
-   `ping` kuyruğunda tamamlanan job'u kontrol et.
+3. `ping` kuyruğu T1.5'te silindi; yerine aktif GSC bağlantısı olan bir
+   projede `POST /api/v1/projects/:id/sync/gsc` çağır.
+4. Worker log'unda job'un başladığını, `http://localhost:3000/admin/queues`'ta
+   `gsc-sync` kuyruğunda tamamlanan job'u kontrol et.
 
 ### [x] T0.6 Ortak altyapı servisleri
 - `CryptoService`: AES-256-GCM, `v1:` önekli format, encrypt/decrypt, unit test.
@@ -228,6 +229,14 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Aynı günün sync'i iki kez çalışınca satır sayısı değişmiyor (idempotent).
 - Site toplamları ile GSC arayüzündeki toplamlar tutuyor.
 - Query tablosu 100 binlerce satırda 1 saniyenin altında dönüyor (index kontrolü).
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres, Redis ve gerçek `GOOGLE_SA_JSON_BASE64` yok; sayfalama döngüsü, 3 aşamalı çekim, batch upsert SQL'i, jobId determinizmi, round-robin dispatch, backfill planı, `job_runs` kayıtları ve sorgu endpoint'leri mock'lu unit/http testleriyle doğrulandı. Kabul maddelerinin hiçbiri runner'da doğrulanamadı:
+- Migration: `bun run db:up && bun run db:migrate` sonrası `\d+ gsc_daily` ile partition'ları (2024-01'den itibaren aylık + default) ve `IDX_gsc_daily_query_trgm` index'ini, `bun run --filter api migration:revert` ile `partman.part_config`'ten kaydın ve `partman.template_public_gsc_daily`'nin silindiğini kontrol et.
+- Idempotency: `E2E_DATABASE=true DATABASE_URL=... DATABASE_SKIP_INITIALIZATION=false bun run --filter api test:e2e` ile `test/gsc-sync.e2e-spec.ts` (aynı gün iki kez → satır sayısı aynı, metrikler güncel; hash'ler Postgres `md5(text)` ile aynı) ve `tenant-isolation.e2e-spec.ts`'teki yeni GSC satırları.
+- Backfill: gerçek service account ve property ile bağlantıyı `POST /connections/:id/verify` ile aktifleştir, `bun run dev:worker` çalışırken `/admin/queues`'ta ~488 `gsc-backfill` job'u (priority 10) ve `connections.backfill_progress.done`'ın `total`'a ulaşıp `backfill_status = done` olduğunu gör.
+- Site toplamı: `GET /projects/:id/gsc/overview?from&to` toplamlarını GSC arayüzündeki aynı tarih aralığıyla karşılaştır.
+- Performans: 100 binlerce satırlık projede `GET /projects/:id/gsc/queries` süresini ve `EXPLAIN ANALYZE` ile `IDX_gsc_daily_project_id_date` kullanımını kontrol et.
+- Zamanlama: worker açılışında `daily-dispatch` scheduler'ının (`0 4 * * *` UTC) Redis'e kaydedildiğini ve `POST /projects/:id/sync/gsc`'nin döndüğü `runId`'nin `job_runs`'ta `queued → running → succeeded` ilerlediğini doğrula.
 
 ### [ ] T1.6 GA4 senkronizasyonu
 - Tablo: `ga4_daily` (partition).

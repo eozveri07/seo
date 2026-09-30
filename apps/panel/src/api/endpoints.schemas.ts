@@ -472,6 +472,110 @@ export interface ServiceAccountResponseDto {
   email: string;
 }
 
+export interface GscSyncResponseDto {
+  /** `job_runs` kaydının id'si; durum bu kayıttan izlenir. */
+  runId: string;
+}
+
+export type GscCompareMode = typeof GscCompareMode[keyof typeof GscCompareMode];
+
+
+export const GscCompareMode = {
+  previous: 'previous',
+  year: 'year',
+} as const;
+
+export interface GscTotalsDto {
+  clicks: number;
+  impressions: number;
+  /** clicks / impressions (0-1). */
+  ctr: number;
+  /** Gösterimle ağırlıklı ortalama pozisyon. */
+  position: number;
+}
+
+export interface GscDailyPointDto {
+  date: string;
+  clicks: number;
+  impressions: number;
+  /** clicks / impressions (0-1). */
+  ctr: number;
+  /** Gösterimle ağırlıklı ortalama pozisyon. */
+  position: number;
+}
+
+export interface GscPeriodDto {
+  from: string;
+  to: string;
+  totals: GscTotalsDto;
+  series: GscDailyPointDto[];
+}
+
+export interface GscOverviewResponseDto {
+  from: string;
+  to: string;
+  /** @nullable */
+  compare: GscPeriodDto | null;
+  totals: GscTotalsDto;
+  series: GscDailyPointDto[];
+}
+
+export type GscSortField = typeof GscSortField[keyof typeof GscSortField];
+
+
+export const GscSortField = {
+  clicks: 'clicks',
+  impressions: 'impressions',
+  ctr: 'ctr',
+  position: 'position',
+} as const;
+
+export type SortOrder = typeof SortOrder[keyof typeof SortOrder];
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export interface GscQueryRowDto {
+  clicks: number;
+  impressions: number;
+  /** clicks / impressions (0-1). */
+  ctr: number;
+  /** Gösterimle ağırlıklı ortalama pozisyon. */
+  position: number;
+  /** `md5(query)`; `queries/:hash/pages` için. */
+  queryHash: string;
+  query: string;
+}
+
+export interface GscQueryListResponseDto {
+  items: GscQueryRowDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface GscPageRowDto {
+  clicks: number;
+  impressions: number;
+  /** clicks / impressions (0-1). */
+  ctr: number;
+  /** Gösterimle ağırlıklı ortalama pozisyon. */
+  position: number;
+  /** `md5(page)`; `pages/:hash/queries` için. */
+  pageHash: string;
+  page: string;
+}
+
+export interface GscPageListResponseDto {
+  items: GscPageRowDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -513,14 +617,6 @@ export const HealthResponseDtoStatus = {
 export interface HealthResponseDto {
   status: HealthResponseDtoStatus;
   checks: HealthChecksDto;
-}
-
-export interface CreatePingJobDto {
-  message?: string;
-}
-
-export interface PingJobResponseDto {
-  jobId: string;
 }
 
 export type OrganizationsControllerListParams = {
@@ -600,5 +696,99 @@ search?: string;
  * Yalnız bu client'ın projelerini döner.
  */
 clientId?: string;
+};
+
+export type GscControllerOverviewParams = {
+from?: string;
+to?: string;
+compare?: GscCompareMode;
+};
+
+export type GscControllerQueriesParams = {
+from?: string;
+to?: string;
+sort?: GscSortField;
+order?: SortOrder;
+/**
+ * Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).
+ * @maxLength 200
+ */
+search?: string;
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type GscControllerPagesParams = {
+from?: string;
+to?: string;
+sort?: GscSortField;
+order?: SortOrder;
+/**
+ * Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).
+ * @maxLength 200
+ */
+search?: string;
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type GscControllerQueryPagesParams = {
+from?: string;
+to?: string;
+sort?: GscSortField;
+order?: SortOrder;
+/**
+ * Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).
+ * @maxLength 200
+ */
+search?: string;
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type GscControllerPageQueriesParams = {
+from?: string;
+to?: string;
+sort?: GscSortField;
+order?: SortOrder;
+/**
+ * Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).
+ * @maxLength 200
+ */
+search?: string;
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
 };
 
