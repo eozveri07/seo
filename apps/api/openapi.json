@@ -31,6 +31,37 @@
           "health"
         ]
       }
+    },
+    "/api/v1/dev/ping": {
+      "post": {
+        "operationId": "PingController_enqueue",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePingJobDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PingJobResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dev"
+        ]
+      }
     }
   },
   "info": {
@@ -96,6 +127,32 @@
         "required": [
           "status",
           "checks"
+        ]
+      },
+      "CreatePingJobDto": {
+        "type": "object",
+        "properties": {
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orgId"
+        ]
+      },
+      "PingJobResponseDto": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId"
         ]
       }
     }

@@ -69,6 +69,16 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 - `bun run dev:worker` açılıyor.
 - API'den eklenen ping job'u worker'da işleniyor, bull-board'da görünüyor.
 
+**Lokal doğrulama bekliyor:** Runner'da Redis yok; sandbox'ta `dev:worker`'ın
+açıldığı ve `WORKER_QUEUES` filtresinin doğru modülleri yüklediği doğrulandı
+(bkz. `worker.module.spec.ts` ve manuel çalıştırma), ama gerçek bir job'un
+worker'da işlenmesi ve bull-board'da görünmesi doğrulanamadı. Lokalde:
+1. `bun run db:up` (Redis ayağa kalksın).
+2. `bun run dev:api` ve ayrı bir terminalde `bun run dev:worker`.
+3. `curl -X POST http://localhost:3000/api/v1/dev/ping -H 'content-type: application/json' -d '{"orgId":"0190f0e4-0000-7000-8000-00000000000a"}'`.
+4. Worker log'unda `pong` mesajını, `http://localhost:3000/admin/queues`'ta
+   `ping` kuyruğunda tamamlanan job'u kontrol et.
+
 ### [ ] T0.6 Ortak altyapı servisleri
 - `CryptoService`: AES-256-GCM, `v1:` önekli format, encrypt/decrypt, unit test.
 - `MailService`: nodemailer, dev'de console transport seçeneği.
