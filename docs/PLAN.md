@@ -291,6 +291,18 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Aynı gün tekrar dispatch edilince yeni task açılmıyor.
 - Domain eşleştirme testleri geçiyor (www, subdomain, trailing slash, farklı protokol).
 
+**Durum:** "Aynı gün tekrar dispatch" ve "domain eşleştirme" kriterleri unit testlerle doğrulandı (`rank-post.service.spec.ts`, `rank-flow.spec.ts`, `domain-match.spec.ts`). Post → poll → fetch zinciri 40 keyword'lük bellek içi store ve DataForSEO dokümantasyonu biçimindeki fixture'larla (`__fixtures__/serp-task-get-advanced.fixture.ts`) uçtan uca test edildi; `rank_tasks`'ın aynı gün tekrar ayrılmaması SQL'de `INSERT ... ON CONFLICT (tracked_keyword_id, check_date)` ile sağlanır. Başlık, gerçek Standard queue kriteri doğrulanana kadar işaretsiz.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres, Redis ve gerçek `DFS_LOGIN`/`DFS_PASSWORD` yok. Migration'ın (`rank_daily` partman partition'ı dahil) gerçek DB'ye uygulanması, `rank-poll` Job Scheduler'ının (2 dk) ve `weekly-dispatch`'in (`0 4 * * 1`) Redis'te kaydı, `RankStore`'un raw SQL'i, `check-now` rate limitinin Redis throttler storage'ıyla çalışması ve `tenant-isolation.e2e-spec.ts`'e eklenen rank satırları gerçek ortamda çalıştırılmadı. Lokalde doğrulamak için:
+1. `bun run db:up`, `bun run --filter api migration:run`, `.env`'e gerçek `DFS_LOGIN`/`DFS_PASSWORD`; `bun run dev:api` ve `SCHEDULER_ENABLED=true bun run dev:worker`.
+2. Bir projeye (domain'i gerçek bir site) `POST /projects/:id/keywords/bulk` ile 40 keyword ekleyin.
+3. Dispatch'i elle tetikleyin: bull-board'dan (`/admin/queues`) `dispatch` kuyruğuna `daily-dispatch` adlı, `{}` datalı bir job ekleyin (ya da 04:00 UTC'yi bekleyin). `SELECT status, count(*) FROM rank_tasks GROUP BY 1` 40 `posted` göstermeli; `api_usage`'da `serp/google/organic/task_post` satırı (units 40) olmalı.
+4. Aynı job'u tekrar ekleyin: `rank_tasks` hâlâ 40 satır, yeni `task_post` maliyeti yok.
+5. Birkaç dakika içinde `rank-poll` task'ları `ready`/`fetched` yapmalı; `SELECT * FROM rank_daily WHERE project_id = ...` 40 satır (bulunamayanlarda `position` null), `competitors_top` ve `serp_features` dolu. Worker logunda `rank günü tamamlandı` görünmeli.
+6. `GET /projects/:id/rankings/history?keywordIds=<id>` ve `GET /projects/:id/rankings/serp/<id>` sonuçları dönmeli; panelde bir keyword'ün pozisyonunu Google'da elle kontrol edin.
+7. `POST /projects/:id/keywords/:kid/check-now` 202 ve `runId` dönmeli; `job_runs` kaydı `succeeded`, `rank_daily`'de bugünün satırı `source = dfs_live`. Aynı kullanıcıyla dakikada 6. istek 429 dönmeli.
+8. `bun run --filter api test:e2e` ile `tenant-isolation.e2e-spec.ts`'i çalıştırın.
+
 ### [ ] T1.10 Özetler
 - Tablo: `project_daily_summary`.
 - `summary` processor'ı (ARCHITECTURE §10): project_daily_summary upsert, keyword_rank_latest güncelleme, visibility skoru.

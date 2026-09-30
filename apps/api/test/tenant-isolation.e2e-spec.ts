@@ -302,6 +302,26 @@ const RESOURCES: TenantResource[] = [
     path: (b) => `/projects/${b.projectId}/keywords/${b.keywordId}`,
     referencesOrgB: true,
   },
+  {
+    name: 'keyword anlık rank kontrolü',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/keywords/${b.keywordId}/check-now`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'rank geçmişi',
+    method: 'get',
+    path: (b) =>
+      `/projects/${b.projectId}/rankings/history?keywordIds=${b.keywordId}&from=2026-09-01&to=2026-09-01`,
+    referencesOrgB: true,
+  },
+  {
+    name: "günün SERP'i",
+    method: 'get',
+    path: (b) =>
+      `/projects/${b.projectId}/rankings/serp/${b.keywordId}?date=2026-09-01`,
+    referencesOrgB: true,
+  },
 ];
 
 interface ErrorBody {
@@ -388,6 +408,12 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
        VALUES ('2026-09-01', $1, $2, '/b', md5('/b'), 'Organic Search', 11, 9, 1, 4.5)`,
       [orgId, projectId],
     );
+    const keywordId = (keyword.body as { id: string }).id;
+    await ctx.dataSource.query(
+      `INSERT INTO rank_daily (date, org_id, project_id, tracked_keyword_id, position, rank_absolute, url, serp_features, competitors_top, checked_at, source)
+       VALUES ('2026-09-01', $1, $2, $3, 4, 5, 'https://b-project.example.com/', '{featured_snippet}', '[{"domain":"b-project.example.com","position":4}]', now(), 'dfs_standard')`,
+      [orgId, projectId, keywordId],
+    );
     return {
       orgId,
       ownerUserId: bobId[0].id,
@@ -396,7 +422,7 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       projectId,
       connectionId: (connection.body as { id: string }).id,
       keywordGroupId: (keywordGroup.body as { id: string }).id,
-      keywordId: (keyword.body as { id: string }).id,
+      keywordId,
     };
   }
 
@@ -546,6 +572,20 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
     const keywords = await asBob(`/projects/${orgB.projectId}/keywords`);
     expect(keywords.body).toMatchObject({
       items: [{ id: orgB.keywordId, keyword: "b'nin keyword'ü" }],
+    });
+
+    const serp = await asBob(
+      `/projects/${orgB.projectId}/rankings/serp/${orgB.keywordId}?date=2026-09-01`,
+    );
+    expect(serp.body).toMatchObject({ position: 4, source: 'dfs_standard' });
+
+    const history = await asBob(
+      `/projects/${orgB.projectId}/rankings/history?keywordIds=${orgB.keywordId}&from=2026-09-01&to=2026-09-01`,
+    );
+    expect(history.body).toMatchObject({
+      keywords: [
+        { trackedKeywordId: orgB.keywordId, points: [{ position: 4 }] },
+      ],
     });
 
     const runs = await ctx.dataSource.query<{ count: number }[]>(

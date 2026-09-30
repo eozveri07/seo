@@ -7,6 +7,7 @@ import {
   QUEUE_DEFINITIONS,
   QueueName,
 } from '../../infra/queue/queues';
+import { WEEKLY_DISPATCH_SCHEDULER_ID } from './dispatch-scheduler';
 import { DispatchService } from './dispatch.service';
 
 /**
@@ -29,8 +30,11 @@ export class DispatchProcessor extends WorkerHost {
     // Scheduler şablonu sabit; gün, job'un işlendiği andaki UTC gündür.
     const date = job.data?.date ?? todayUtc();
     this.logger.log(
-      `dispatch başladı: jobId=${job.id ?? 'unknown'} date=${date}`,
+      `dispatch başladı: name=${job.name} jobId=${job.id ?? 'unknown'} date=${date}`,
     );
+    if (job.name === WEEKLY_DISPATCH_SCHEDULER_ID) {
+      return this.dispatchService.dispatchWeekly(date);
+    }
     return this.dispatchService.dispatchDaily(date);
   }
 }

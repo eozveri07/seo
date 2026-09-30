@@ -12,11 +12,13 @@ import { KeywordSuggestionsService } from './keyword-suggestions.service';
 import { KeywordVolumeJobsService } from './keyword-volume-jobs.service';
 import { KeywordVolumeService } from './keyword-volume.service';
 import { KeywordsBulkService } from './keywords-bulk.service';
+import { RankableKeywordsService } from './rankable-keywords.service';
 import { TrackedKeywordsService } from './tracked-keywords.service';
 
 /**
- * API (CRUD, bulk, öneriler) ve worker'ın (keyword-volume processor, dispatch
- * kaynağı) ortak kullandığı keyword servisleri. HTTP katmanı içermez.
+ * API (CRUD, bulk, öneriler), worker (keyword-volume processor, dispatch
+ * kaynağı) ve rank tracking'in (`RankableKeywordsService`) ortak kullandığı
+ * keyword servisleri. HTTP katmanı içermez.
  */
 @Module({
   imports: [
@@ -35,6 +37,7 @@ import { TrackedKeywordsService } from './tracked-keywords.service';
     KeywordSuggestionsService,
     KeywordVolumeJobsService,
     KeywordVolumeService,
+    RankableKeywordsService,
   ],
   exports: [
     KeywordGroupsService,
@@ -43,6 +46,7 @@ import { TrackedKeywordsService } from './tracked-keywords.service';
     KeywordSuggestionsService,
     KeywordVolumeJobsService,
     KeywordVolumeService,
+    RankableKeywordsService,
   ],
 })
 export class KeywordsSharedModule {}

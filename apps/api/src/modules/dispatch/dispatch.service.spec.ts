@@ -1,5 +1,6 @@
 import { DailyDispatchSource, DispatchItem } from './daily-dispatch-source';
 import { DispatchService } from './dispatch.service';
+import { WeeklyDispatchSource } from './weekly-dispatch-source';
 
 function item(
   orgId: string,
@@ -32,7 +33,7 @@ describe('DispatchService', () => {
     const other: DailyDispatchSource = {
       collect: jest.fn().mockResolvedValue([item('org-c', 'c1', order, 'x')]),
     };
-    const service = new DispatchService([gsc, other]);
+    const service = new DispatchService([gsc, other], []);
 
     const stats = await service.dispatchDaily('2026-09-30');
 
@@ -60,11 +61,29 @@ describe('DispatchService', () => {
         .fn()
         .mockResolvedValue([failing, item('org-b', 'b1', order)]),
     };
-    const service = new DispatchService([source]);
+    const service = new DispatchService([source], []);
 
     await expect(service.dispatchDaily('2026-09-30')).rejects.toThrow(
       '1 job kuyruğa eklenemedi',
     );
     expect(order).toEqual(['gsc-sync:b1']);
+  });
+
+  it('weekly-dispatch yalnız haftalık kaynakların işlerini ekler', async () => {
+    const order: string[] = [];
+    const collect = jest.fn().mockResolvedValue([item('org-a', 'a1', order)]);
+    const collectWeekly = jest
+      .fn()
+      .mockResolvedValue([item('org-a', 'a1', order, 'rank-post-weekly')]);
+    const daily: DailyDispatchSource = { collect };
+    const weekly: WeeklyDispatchSource = { collectWeekly };
+    const service = new DispatchService([daily], [weekly]);
+
+    const stats = await service.dispatchWeekly('2026-09-28');
+
+    expect(collectWeekly).toHaveBeenCalledWith('2026-09-28');
+    expect(collect).not.toHaveBeenCalled();
+    expect(order).toEqual(['rank-post-weekly:a1']);
+    expect(stats.byKind).toEqual({ 'rank-post-weekly': 1 });
   });
 });

@@ -323,7 +323,7 @@ CREATE INDEX ON gsc_daily USING gin (query gin_trgm_ops);
 | `ga4-sync` | dispatch, manuel | 4 | 5 istek/sn | 5 |
 | `rank-post` | dispatch | 2 | yok | 3 |
 | `rank-poll` | Job Scheduler (2 dk) | 1 | yok | 3 |
-| `rank-fetch` | rank-poll | 8 | 20 istek/sn | 5 |
+| `rank-fetch` | rank-poll, anlık kontrol (`rank-live` job'u) | 8 | 20 istek/sn | 5 (`rank-live`: 1) |
 | `summary` | sync ve rank job'larının bitişi | 4 | yok | 3 |
 | `alert-eval` | summary bitişi, sync hatası | 4 | yok | 3 |
 | `notify` | alert-eval, rapor | 4 | yok | 5 |
@@ -348,8 +348,8 @@ Worker açılışında `upsertJobScheduler` ile kaydedilir:
 | Scheduler | Pattern (UTC) | İş |
 |---|---|---|
 | `daily-dispatch` | `0 4 * * *` | Aktif projeler için gsc-sync, ga4-sync, rank-post (daily keyword'ler) job'larını ekler |
-| `weekly-dispatch` | `0 4 * * 1` | Haftalık keyword'ler için rank-post |
-| `rank-poll` | her 2 dakika | DataForSEO `tasks_ready` kontrolü |
+| `weekly-dispatch` | `0 4 * * 1` | Haftalık keyword'ler için rank-post (jobId `rank-post-weekly:{projectId}:{date}`; günlükler `rank-post-daily:`) |
+| `rank-poll` | her 2 dakika (`every: 120000`, `rank-poll` kuyruğunda) | DataForSEO `tasks_ready` kontrolü ve 24 saatlik takılan task temizliği |
 | `report-dispatch` | `0 * * * *` | Zamanı gelen `report_schedules` kayıtları için report job'u |
 
 Dispatcher deterministik jobId kullanır: `gsc-sync:{projectId}:{YYYY-MM-DD}`. Aynı gün ikinci kez tetiklenirse BullMQ aynı id'li job'u tekrar eklemez.
@@ -407,6 +407,12 @@ Proje timezone'u raporlarda ve "gün" tanımında kullanılır. Sync zamanlamas�
 - **Maliyet:** Her response'taki `cost` alanı `api_usage`'a yazılır.
 - **Postback:** Faz 1'de kullanılmaz (public URL gerektiriyor), polling yeterli. Deploy sonrası `postback_url` ile polling kaldırılabilir.
 - **Takılan task'lar:** 24 saat içinde `ready` olmayan task'lar `failed` işaretlenir ve bir sonraki dispatch'te yeniden gönderilir.
+- **Uygulama notları (T1.9):**
+  - `rank-post` task'ları önce `rank_tasks`'ta ayırır (`INSERT ... ON CONFLICT (tracked_keyword_id, check_date)`), sonra gönderir. Aynı gün ikinci dispatch (ya da pazartesi aynı anda çalışan `daily-dispatch` ve `weekly-dispatch`) task açmaz. DataForSEO'ya hiç ulaşmamış (`provider_task_id` boş) `failed` satır, `rank-post` yeniden denemesinde 3 denemeye kadar tekrar ayrılır.
+  - Günlük dispatch, günlük keyword'lerin yanında son 7 günde başarısız olmayan task'ı olmayan haftalık keyword'leri de gönderir. Böylece yeni eklenen ya da takılıp `failed` olan haftalık keyword pazartesiyi beklemez.
+  - `rank-poll` sistem job'udur (`tasks_ready` hesap geneli, `orgId` taşımaz). Önce 24 saattir `posted`/`ready` kalan task'ları `failed` yapar, sonra hazır task'lar için `rank-fetch` ekler (jobId `rank-fetch:{projectId}:{dfsTaskId}`).
+  - Günün task'ları bitince (açık `posted`/`ready` kalmayınca) `rank.day_completed` event'i (`RankDayCompletedEvent`) yayılır; `summary` job'u (T1.10) bunu dinler.
+  - Anlık kontrol `rank-fetch` kuyruğunda `rank-live` adlı job'la çalışır (`attempts: 1`, ücretli çağrı), `job_runs` kaydının id'si `runId` olarak döner. Limit: kullanıcı başına dakikada 5 (`UserThrottlerGuard`).
 
 ## 10. Özetler
 

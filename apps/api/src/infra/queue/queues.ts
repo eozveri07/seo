@@ -72,19 +72,44 @@ export interface Ga4SyncJobData extends BaseJobData {
   date: string;
 }
 
+/**
+ * `rank-post` (ARCHITECTURE §9.3): `daily` dispatch günlük keyword'leri ve
+ * son 7 günde sonucu olmayan haftalık keyword'leri, `weekly` dispatch tüm
+ * haftalık keyword'leri gönderir.
+ */
+export type RankPostScope = 'daily' | 'weekly';
+
 export interface RankPostJobData extends BaseJobData {
   projectId: string;
-  keywordIds?: string[];
+  /** Kontrol günü (`rank_tasks.check_date`), YYYY-MM-DD (UTC). */
+  date: string;
+  scope: RankPostScope;
 }
 
-export interface RankPollJobData extends BaseJobData {
-  rankTaskId?: string;
-}
+/**
+ * Sistem job'u: DataForSEO `tasks_ready` hesap genelidir, tek bir tenant'ı
+ * yoktur. Bu yüzden `orgId` taşımaz ve `BaseProcessor`'dan türemez; eklediği
+ * her `rank-fetch` job'u kendi org'uyla kaydedilir.
+ */
+export type RankPollJobData = Record<string, never>;
 
-export interface RankFetchJobData extends BaseJobData {
+/** Standard queue task'ının sonucunu çeker (`rank-poll` ekler). */
+export interface RankFetchTaskJobData extends BaseJobData {
+  kind: 'task';
   projectId: string;
   rankTaskId: string;
 }
+
+/** Anlık kontrol (`check-now`): `live/advanced`, `source = dfs_live`. */
+export interface RankLiveJobData extends BaseJobData {
+  kind: 'live';
+  projectId: string;
+  trackedKeywordId: string;
+  /** Sonucun yazılacağı gün, YYYY-MM-DD (UTC). */
+  date: string;
+}
+
+export type RankFetchJobData = RankFetchTaskJobData | RankLiveJobData;
 
 export interface SummaryJobData extends BaseJobData {
   projectId: string;
@@ -128,8 +153,14 @@ export interface QueueJobDataMap {
   [QueueName.KeywordVolume]: KeywordVolumeJobData;
 }
 
-/** Tenant job'u taşıyan kuyruklar (`BaseProcessor`); `dispatch` sistem job'udur. */
-export type TenantQueueName = Exclude<QueueName, QueueName.Dispatch>;
+/**
+ * Tenant job'u taşıyan kuyruklar (`BaseProcessor`); `dispatch` ve `rank-poll`
+ * sistem job'larıdır.
+ */
+export type TenantQueueName = Exclude<
+  QueueName,
+  QueueName.Dispatch | QueueName.RankPoll
+>;
 
 /** ARCHITECTURE §7: tamamlanan job'lar 1 gün/1000 adet, başarısızlar 7 gün tutulur. */
 export const DEFAULT_REMOVE_ON_COMPLETE = { age: 86400, count: 1000 };

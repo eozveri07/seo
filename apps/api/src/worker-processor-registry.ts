@@ -7,6 +7,11 @@ import {
   GscSyncProcessorModule,
 } from './modules/gsc/gsc-processor.module';
 import { KeywordVolumeProcessorModule } from './modules/keywords/keywords-processor.module';
+import {
+  RankFetchProcessorModule,
+  RankPollProcessorModule,
+  RankPostProcessorModule,
+} from './modules/rankings/rankings-processor.module';
 
 export interface WorkerProcessorRegistryEntry {
   queueName: QueueName;
@@ -27,4 +32,7 @@ export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
     queueName: QueueName.KeywordVolume,
     module: KeywordVolumeProcessorModule,
   },
+  { queueName: QueueName.RankPost, module: RankPostProcessorModule },
+  { queueName: QueueName.RankPoll, module: RankPollProcessorModule },
+  { queueName: QueueName.RankFetch, module: RankFetchProcessorModule },
 ];

@@ -55,3 +55,29 @@ export function keywordVolumeManualJobId(
 ): string {
   return `keyword-volume-manual:${projectId}:${uniqueId}`;
 }
+
+/**
+ * `rank-post`: proje, gün ve kapsam başına tek job. Pazartesi `daily-dispatch`
+ * ve `weekly-dispatch` aynı gün çalıştığı için kapsam önekte ayrılır; ikisi
+ * aynı keyword'ü seçse bile `rank_tasks` unique kısıtı tek task açtırır.
+ */
+export function rankPostJobId(
+  projectId: string,
+  date: string,
+  scope: 'daily' | 'weekly',
+): string {
+  return `rank-post-${scope}:${projectId}:${date}`;
+}
+
+/** `rank-fetch`: DataForSEO task id'si başına tek job (ARCHITECTURE §9.3). */
+export function rankFetchJobId(
+  projectId: string,
+  providerTaskId: string,
+): string {
+  return `rank-fetch:${projectId}:${providerTaskId}`;
+}
+
+/** Anlık kontrol her istekte yeni bir çalıştırmadır (`gsc-sync-manual` gibi). */
+export function rankLiveJobId(projectId: string, runId: string): string {
+  return `rank-live:${projectId}:${runId}`;
+}

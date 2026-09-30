@@ -2,8 +2,13 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   DAILY_DISPATCH_SOURCES,
   DailyDispatchSource,
+  DispatchItem,
 } from './daily-dispatch-source';
 import { roundRobinByOrg } from './round-robin';
+import {
+  WEEKLY_DISPATCH_SOURCES,
+  WeeklyDispatchSource,
+} from './weekly-dispatch-source';
 
 export interface DispatchStats {
   date: string;
@@ -26,13 +31,31 @@ export class DispatchService {
   constructor(
     @Inject(DAILY_DISPATCH_SOURCES)
     private readonly sources: DailyDispatchSource[],
+    @Inject(WEEKLY_DISPATCH_SOURCES)
+    private readonly weeklySources: WeeklyDispatchSource[],
   ) {}
 
   async dispatchDaily(date: string): Promise<DispatchStats> {
     const collected = await Promise.all(
       this.sources.map((source) => source.collect(date)),
     );
-    const items = roundRobinByOrg(collected.flat());
+    return this.enqueueAll('daily-dispatch', date, collected.flat());
+  }
+
+  /** `weekly-dispatch` (pazartesi): haftalık kaynakların işleri, aynı kurallarla. */
+  async dispatchWeekly(date: string): Promise<DispatchStats> {
+    const collected = await Promise.all(
+      this.weeklySources.map((source) => source.collectWeekly(date)),
+    );
+    return this.enqueueAll('weekly-dispatch', date, collected.flat());
+  }
+
+  private async enqueueAll(
+    name: string,
+    date: string,
+    collected: DispatchItem[],
+  ): Promise<DispatchStats> {
+    const items = roundRobinByOrg(collected);
 
     const stats: DispatchStats = { date, enqueued: 0, failed: 0, byKind: {} };
     for (const item of items) {
@@ -50,11 +73,11 @@ export class DispatchService {
     }
 
     this.logger.log(
-      `daily-dispatch ${date}: ${stats.enqueued} job eklendi, ${stats.failed} hata`,
+      `${name} ${date}: ${stats.enqueued} job eklendi, ${stats.failed} hata`,
     );
     if (stats.failed > 0) {
       throw new Error(
-        `daily-dispatch ${date}: ${stats.failed} job kuyruğa eklenemedi`,
+        `${name} ${date}: ${stats.failed} job kuyruğa eklenemedi`,
       );
     }
     return stats;
