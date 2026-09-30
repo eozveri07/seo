@@ -200,6 +200,24 @@ const RESOURCES: TenantResource[] = [
     referencesOrgB: true,
   },
   {
+    name: 'GA4 manuel sync',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/sync/ga4`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GA4 overview',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/ga4/overview`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GA4 landing page tablosu',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/ga4/landing-pages`,
+    referencesOrgB: true,
+  },
+  {
     name: 'bağlantı silme',
     method: 'delete',
     path: (b) => `/connections/${b.connectionId}`,
@@ -270,6 +288,11 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
     await ctx.dataSource.query(
       `INSERT INTO gsc_site_daily (date, org_id, project_id, clicks, impressions, ctr, position)
        VALUES ('2026-09-01', $1, $2, 7, 70, 0.1, 3)`,
+      [orgId, projectId],
+    );
+    await ctx.dataSource.query(
+      `INSERT INTO ga4_daily (date, org_id, project_id, landing_page, landing_page_hash, channel_group, sessions, engaged_sessions, key_events, total_revenue)
+       VALUES ('2026-09-01', $1, $2, '/b', md5('/b'), 'Organic Search', 11, 9, 1, 4.5)`,
       [orgId, projectId],
     );
     return {
@@ -412,6 +435,11 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       `/projects/${orgB.projectId}/gsc/overview?from=2026-09-01&to=2026-09-01`,
     );
     expect(overview.body).toMatchObject({ totals: { clicks: 7 } });
+
+    const ga4Overview = await asBob(
+      `/projects/${orgB.projectId}/ga4/overview?from=2026-09-01&to=2026-09-01`,
+    );
+    expect(ga4Overview.body).toMatchObject({ totals: { sessions: 11 } });
 
     const runs = await ctx.dataSource.query<{ count: number }[]>(
       `SELECT COUNT(*)::int AS count FROM job_runs WHERE org_id = $1`,

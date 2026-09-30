@@ -1,10 +1,12 @@
-import { createHash } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { ClsService } from 'nestjs-cls';
 import { DataSource } from 'typeorm';
 import { AppClsStore } from '../../common/cls-store';
+import { md5 } from '../../common/hash/md5';
 import { requireOrgId } from '../../common/tenancy/require-org-id';
+
+export { md5 } from '../../common/hash/md5';
 
 /** ARCHITECTURE §9.1: upsert'ler 1000'lik batch'lerle yapılır. */
 export const GSC_UPSERT_BATCH_SIZE = 1000;
@@ -29,11 +31,6 @@ export interface GscPageRow extends Metrics {
 
 export interface GscQueryRow extends GscPageRow {
   query: string;
-}
-
-/** `md5(text)` ile aynı sonuç (UTF-8, küçük harf hex). */
-export function md5(text: string): string {
-  return createHash('md5').update(text, 'utf8').digest('hex');
 }
 
 interface UpsertSpec {

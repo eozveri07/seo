@@ -1,6 +1,7 @@
 export * from './auth/auth';
 export * from './clients/clients';
 export * from './connections/connections';
+export * from './ga4/ga4';
 export * from './gsc/gsc';
 export * from './health/health';
 export * from './invitations/invitations';

@@ -9,6 +9,7 @@ import { StorageModule } from './infra/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ConnectionsModule } from './modules/connections/connections.module';
+import { Ga4Module } from './modules/ga4/ga4.module';
 import { GscModule } from './modules/gsc/gsc.module';
 import { HealthModule } from './modules/health/health.module';
 import { LocationsModule } from './modules/locations/locations.module';
@@ -36,6 +37,7 @@ import { UsersModule } from './modules/users/users.module';
     ClientsModule,
     ConnectionsModule,
     GscModule,
+    Ga4Module,
     LocationsModule,
     HealthModule,
   ],

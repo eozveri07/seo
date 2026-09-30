@@ -21,3 +21,21 @@ export function gscBackfillJobId(projectId: string, date: string): string {
 export function gscSyncManualJobId(projectId: string, runId: string): string {
   return `gsc-sync-manual:${projectId}:${runId}`;
 }
+
+/**
+ * ARCHITECTURE §7: GA4'ün ayrı bir backfill kuyruğu yok, `ga4-sync`
+ * kuyruğunu paylaşır (§9.2 gün gün job'lardan bahsetmez, GSC'nin aksine).
+ * Backfill günleri `ga4-backfill:` önekiyle, günlük/manuel sync
+ * `ga4-sync:`/`ga4-sync-manual:` önekiyle ayrılır; aynı kuyrukta çakışmaz.
+ */
+export function ga4SyncJobId(projectId: string, date: string): string {
+  return `ga4-sync:${projectId}:${date}`;
+}
+
+export function ga4SyncManualJobId(projectId: string, runId: string): string {
+  return `ga4-sync-manual:${projectId}:${runId}`;
+}
+
+export function ga4BackfillJobId(projectId: string, date: string): string {
+  return `ga4-backfill:${projectId}:${date}`;
+}

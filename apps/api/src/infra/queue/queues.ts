@@ -64,7 +64,11 @@ export interface GscBackfillJobData extends BaseJobData {
 
 export interface Ga4SyncJobData extends BaseJobData {
   projectId: string;
-  date?: string;
+  /**
+   * Günlük/manuel sync: bitiş günü (son 3 gün buna göre hesaplanır).
+   * Backfill (job adı `ga4-backfill`): çekilecek tek gün.
+   */
+  date: string;
 }
 
 export interface RankPostJobData extends BaseJobData {

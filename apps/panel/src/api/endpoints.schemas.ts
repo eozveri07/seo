@@ -576,6 +576,60 @@ export interface GscPageListResponseDto {
   limit: number;
 }
 
+export interface Ga4SyncResponseDto {
+  /** `job_runs` kaydının id'si; durum bu kayıttan izlenir. */
+  runId: string;
+}
+
+export interface Ga4TotalsDto {
+  sessions: number;
+  engagedSessions: number;
+  keyEvents: number;
+  totalRevenue: number;
+}
+
+export interface Ga4ChannelTotalsDto {
+  sessions: number;
+  engagedSessions: number;
+  keyEvents: number;
+  totalRevenue: number;
+  channelGroup: string;
+}
+
+export interface Ga4OverviewResponseDto {
+  from: string;
+  to: string;
+  totals: Ga4TotalsDto;
+  channels: Ga4ChannelTotalsDto[];
+}
+
+export type Ga4SortField = typeof Ga4SortField[keyof typeof Ga4SortField];
+
+
+export const Ga4SortField = {
+  sessions: 'sessions',
+  engagedSessions: 'engagedSessions',
+  keyEvents: 'keyEvents',
+  totalRevenue: 'totalRevenue',
+} as const;
+
+export interface Ga4LandingPageRowDto {
+  sessions: number;
+  engagedSessions: number;
+  keyEvents: number;
+  totalRevenue: number;
+  /** `md5(landingPage)`. */
+  landingPageHash: string;
+  landingPage: string;
+}
+
+export interface Ga4LandingPageListResponseDto {
+  items: Ga4LandingPageRowDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -777,6 +831,38 @@ sort?: GscSortField;
 order?: SortOrder;
 /**
  * Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).
+ * @maxLength 200
+ */
+search?: string;
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type Ga4ControllerOverviewParams = {
+from?: string;
+to?: string;
+};
+
+export type Ga4ControllerLandingPagesParams = {
+from?: string;
+to?: string;
+/**
+ * `channel_group` filtresi, ör. `Organic Search`. Sorgu tarafında uygulanır (ARCHITECTURE §5.4).
+ * @maxLength 50
+ */
+channel?: string;
+sort?: Ga4SortField;
+order?: SortOrder;
+/**
+ * Landing page metninde arama (ILIKE).
  * @maxLength 200
  */
 search?: string;

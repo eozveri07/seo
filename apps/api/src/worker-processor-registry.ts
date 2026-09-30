@@ -1,6 +1,7 @@
 import { Type } from '@nestjs/common';
 import { QueueName } from './infra/queue/queues';
 import { DispatchProcessorModule } from './modules/dispatch/dispatch-processor.module';
+import { Ga4SyncProcessorModule } from './modules/ga4/ga4-processor.module';
 import {
   GscBackfillProcessorModule,
   GscSyncProcessorModule,
@@ -20,4 +21,5 @@ export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
   { queueName: QueueName.Dispatch, module: DispatchProcessorModule },
   { queueName: QueueName.GscSync, module: GscSyncProcessorModule },
   { queueName: QueueName.GscBackfill, module: GscBackfillProcessorModule },
+  { queueName: QueueName.Ga4Sync, module: Ga4SyncProcessorModule },
 ];

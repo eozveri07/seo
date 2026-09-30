@@ -245,6 +245,13 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Kabul:** Organik oturum toplamı GA4 arayüzüyle (aynı tarih aralığı, aynı kanal) tutuyor.
 
+**Lokal doğrulama bekliyor:** Runner'da Postgres, Redis ve gerçek `GOOGLE_SA_JSON_BASE64` yok; sayfalama döngüsü, tek istekle son 3 gün/backfill günü çekimi, batch upsert SQL'i, jobId determinizmi, backfill planı, `job_runs` kayıtları ve sorgu endpoint'leri (kanal kırılımı, `channel` filtresi) mock'lu unit/http testleriyle doğrulandı. Kabul maddesi runner'da doğrulanamadı:
+- Migration: `bun run db:up && bun run db:migrate` sonrası `\d+ ga4_daily` ile partition'ları (2024-01'den itibaren aylık + default) kontrol et, `bun run --filter api migration:revert` ile `partman.part_config`'ten kaydın ve `partman.template_public_ga4_daily`'nin silindiğini doğrula.
+- Idempotency: `E2E_DATABASE=true DATABASE_URL=... DATABASE_SKIP_INITIALIZATION=false bun run --filter api test:e2e` ile `test/ga4-sync.e2e-spec.ts` (aynı gün iki kez → satır sayısı aynı, metrikler güncel; hash Postgres `md5(text)` ile aynı) ve `tenant-isolation.e2e-spec.ts`'teki yeni GA4 satırları.
+- Backfill: gerçek service account ve property ile bağlantıyı `POST /connections/:id/verify` ile aktifleştir, `bun run dev:worker` çalışırken `ga4-sync` kuyruğunda ~427 backfill job'u (priority 10, job adı `ga4-backfill`) ve `connections.backfill_progress.done`'ın `total`'a ulaşıp `backfill_status = done` olduğunu gör.
+- Organik toplam: `GET /projects/:id/ga4/overview?from&to` içindeki `Organic Search` kanalının oturum toplamını GA4 arayüzündeki aynı tarih aralığı ve kanalla karşılaştır.
+- Zamanlama: `daily-dispatch`'in aktif GA4 bağlantıları için `ga4-sync` job'u eklediğini ve `POST /projects/:id/sync/ga4`'ün döndüğü `runId`'nin `job_runs`'ta `queued → running → succeeded` ilerlediğini doğrula.
+
 ### [ ] T1.7 DataForSEO client ve kullanım takibi
 - `connectors/dataforseo/DataForSeoClient`: basic auth, retry, response `status_code` kontrolü, `cost` okuma.
 - Metotlar: `serpTaskPost(tasks[])`, `serpTasksReady()`, `serpTaskGetAdvanced(id)`, `serpLiveAdvanced(task)`, `locations()`, `languages()`, `keywordSearchVolume(keywords, location, language)`.
