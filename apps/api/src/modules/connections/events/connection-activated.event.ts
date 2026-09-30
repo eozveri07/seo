@@ -1,3 +1,5 @@
+import { ConnectionType } from '../entities/connection.entity';
+
 /** `connection.activated` event adı; `EventEmitter2` üzerinden yayılır. */
 export const CONNECTION_ACTIVATED_EVENT = 'connection.activated';
 
@@ -7,6 +9,6 @@ export class ConnectionActivatedEvent {
     public readonly connectionId: string,
     public readonly orgId: string,
     public readonly projectId: string,
-    public readonly type: string,
+    public readonly type: ConnectionType,
   ) {}
 }

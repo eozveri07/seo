@@ -2,7 +2,11 @@ import { DynamicModule } from '@nestjs/common';
 import { WorkerModule, parseWorkerQueues } from './worker.module';
 import { QueueName } from './infra/queue/queues';
 import { HousekeepingModule } from './modules/housekeeping/housekeeping.module';
-import { PingProcessorModule } from './modules/ping/ping-processor.module';
+import { DispatchProcessorModule } from './modules/dispatch/dispatch-processor.module';
+import {
+  GscBackfillProcessorModule,
+  GscSyncProcessorModule,
+} from './modules/gsc/gsc-processor.module';
 
 function includesHousekeepingModule(
   imports: DynamicModule['imports'],
@@ -24,15 +28,15 @@ describe('parseWorkerQueues', () => {
   );
 
   it('virgülle ayrılmış kuyruk isimlerini trim ederek döner', () => {
-    expect(parseWorkerQueues(' gsc-sync, ga4-sync ,ping ')).toEqual([
+    expect(parseWorkerQueues(' gsc-sync, ga4-sync ,dispatch ')).toEqual([
       QueueName.GscSync,
       QueueName.Ga4Sync,
-      QueueName.Ping,
+      QueueName.Dispatch,
     ]);
   });
 
   it('tekil kuyruk ismini dizi olarak döner', () => {
-    expect(parseWorkerQueues('ping')).toEqual([QueueName.Ping]);
+    expect(parseWorkerQueues('dispatch')).toEqual([QueueName.Dispatch]);
   });
 });
 
@@ -47,28 +51,28 @@ describe('WorkerModule.register', () => {
     }
   });
 
-  it('WORKER_QUEUES boşsa ping processor modülü yüklenir', () => {
+  it('WORKER_QUEUES boşsa tüm processor modülleri yüklenir', () => {
     delete process.env.WORKER_QUEUES;
 
     const { imports } = WorkerModule.register();
 
-    expect(imports).toContain(PingProcessorModule);
+    expect(imports).toEqual(
+      expect.arrayContaining([
+        DispatchProcessorModule,
+        GscSyncProcessorModule,
+        GscBackfillProcessorModule,
+      ]),
+    );
   });
 
-  it('WORKER_QUEUES ping içermiyorsa ping processor modülü yüklenmez', () => {
+  it('WORKER_QUEUES yalnız listelenen kuyrukların processor modüllerini yükler', () => {
     process.env.WORKER_QUEUES = 'gsc-sync,ga4-sync';
 
     const { imports } = WorkerModule.register();
 
-    expect(imports).not.toContain(PingProcessorModule);
-  });
-
-  it('WORKER_QUEUES ping içeriyorsa ping processor modülü yüklenir', () => {
-    process.env.WORKER_QUEUES = 'ping';
-
-    const { imports } = WorkerModule.register();
-
-    expect(imports).toContain(PingProcessorModule);
+    expect(imports).toContain(GscSyncProcessorModule);
+    expect(imports).not.toContain(GscBackfillProcessorModule);
+    expect(imports).not.toContain(DispatchProcessorModule);
   });
 });
 

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Ga4Client } from '../../connectors/ga4/ga4.client';
 import { ConnectorError } from '../../connectors/errors';
 import { GscClient, GscSite } from '../../connectors/gsc/gsc.client';
@@ -8,6 +10,7 @@ import { TenantContext } from '../../common/tenancy/tenant-context';
 import { InjectTenantRepository } from '../../common/tenancy/tenant-repository.provider';
 import { TenantRepository } from '../../common/tenancy/tenant.repository';
 import { AuditAction, AuditService } from '../audit-logs/audit.service';
+import { ProjectStatus } from '../clients/entities/project.entity';
 import { ProjectsService } from '../clients/projects.service';
 import {
   ConnectionNotFoundError,
@@ -15,6 +18,8 @@ import {
 } from './connections.errors';
 import {
   Connection,
+  ConnectionBackfillProgress,
+  ConnectionBackfillStatus,
   ConnectionStatus,
   ConnectionType,
 } from './entities/connection.entity';
@@ -22,6 +27,13 @@ import {
   CONNECTION_ACTIVATED_EVENT,
   ConnectionActivatedEvent,
 } from './events/connection-activated.event';
+
+/** Dispatcher'ın kuyruğa ekleyeceği aktif bağlantı (org'lar arası sistem okuması). */
+export interface DispatchableConnection {
+  connectionId: string;
+  orgId: string;
+  projectId: string;
+}
 
 export interface CreateConnectionInput {
   projectId: string;
@@ -45,6 +57,8 @@ export class ConnectionsService {
     private readonly ga4Client: Ga4Client,
     private readonly audit: AuditService,
     private readonly events: EventEmitter2,
+    @InjectRepository(Connection)
+    private readonly systemConnections: Repository<Connection>,
   ) {}
 
   async listByProject(projectId: string): Promise<Connection[]> {
@@ -146,6 +160,99 @@ export class ConnectionsService {
     }
 
     return connection;
+  }
+
+  /** Projenin bağlantısı (tip başına en fazla bir tane); yoksa null. */
+  async findByProjectAndType(
+    projectId: string,
+    type: ConnectionType,
+  ): Promise<Connection | null> {
+    return this.connections.findOneBy({ projectId, type });
+  }
+
+  /** Sync başarıyla bitti. */
+  async markSynced(id: string): Promise<void> {
+    await this.connections.update({ id }, { lastSyncedAt: new Date() });
+  }
+
+  /**
+   * Sync sırasında yetki kaybı (403): bağlantı `error`'a çekilir, yeniden
+   * doğrulanana kadar sync'ler atlanır. `message` connector'ın anlaşılır
+   * mesajıdır, dış API gövdesi değil.
+   */
+  async markSyncFailed(id: string, message: string): Promise<void> {
+    await this.connections.update(
+      { id },
+      { status: ConnectionStatus.Error, lastError: message },
+    );
+  }
+
+  async startBackfill(
+    id: string,
+    progress: Required<ConnectionBackfillProgress>,
+  ): Promise<void> {
+    await this.connections.update(
+      { id },
+      {
+        backfillStatus: ConnectionBackfillStatus.Running,
+        backfillProgress: progress,
+      },
+    );
+  }
+
+  /**
+   * Backfill'in bir günü bitti: `done` atomik olarak artırılır, `total`'a
+   * ulaşınca durum `done` olur. Eşzamanlı job'lar birbirinin artışını ezmesin
+   * diye hesap SQL'de yapılır (UPDATE'teki her ifade satırın eski değerini
+   * görür). Backfill `running` değilse (ör. başarısız oldu) sayılmaz.
+   */
+  async recordBackfillDayDone(id: string): Promise<void> {
+    const done = `COALESCE((backfill_progress->>'done')::int, 0) + 1`;
+    const total = `COALESCE((backfill_progress->>'total')::int, 0)`;
+    await this.connections.update(
+      { id, backfillStatus: ConnectionBackfillStatus.Running },
+      {
+        backfillProgress: () =>
+          `jsonb_set(backfill_progress, '{done}', to_jsonb(LEAST(${done}, ${total})))`,
+        backfillStatus: () =>
+          `CASE WHEN ${done} >= ${total} THEN 'done'::connection_backfill_status ELSE 'running'::connection_backfill_status END`,
+      },
+    );
+  }
+
+  async markBackfillFailed(id: string): Promise<void> {
+    await this.connections.update(
+      { id },
+      { backfillStatus: ConnectionBackfillStatus.Failed },
+    );
+  }
+
+  /**
+   * Günlük dispatcher için tüm org'lardaki aktif projelerin aktif
+   * bağlantıları. Bilerek org kapsamı dışında bir sistem okumasıdır (tenant
+   * context'i yok); dönen her satır kendi `orgId`'siyle job'a yazılır ve
+   * job'un kendisi o org'un kapsamında çalışır. Sıra deterministiktir.
+   */
+  async listActiveForDispatch(
+    type: ConnectionType,
+  ): Promise<DispatchableConnection[]> {
+    const rows = await this.systemConnections
+      .createQueryBuilder('connection')
+      .innerJoin('connection.project', 'project')
+      .select('connection.id', 'connectionId')
+      .addSelect('connection.org_id', 'orgId')
+      .addSelect('connection.project_id', 'projectId')
+      .where('connection.type = :type', { type })
+      .andWhere('connection.status = :status', {
+        status: ConnectionStatus.Active,
+      })
+      .andWhere('project.status = :projectStatus', {
+        projectStatus: ProjectStatus.Active,
+      })
+      .orderBy('connection.org_id', 'ASC')
+      .addOrderBy('connection.project_id', 'ASC')
+      .getRawMany<DispatchableConnection>();
+    return rows;
   }
 
   getServiceAccountEmail(): string {

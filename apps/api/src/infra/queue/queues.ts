@@ -17,28 +17,49 @@ export enum QueueName {
   AlertEval = 'alert-eval',
   Notify = 'notify',
   Report = 'report',
-  /** T1.5'te dispatcher gelince silinecek örnek kuyruk. */
-  Ping = 'ping',
+}
+
+/** `job_runs.trigger` (ARCHITECTURE §5.6): job'u kim başlattı. */
+export enum JobTrigger {
+  Schedule = 'schedule',
+  Manual = 'manual',
+  System = 'system',
 }
 
 /** CLAUDE.md kural 4: job data'da tenant her zaman taşınır. */
 export interface BaseJobData {
   orgId: string;
   projectId?: string;
+  /**
+   * `job_runs` kaydının id'si. Manuel tetiklemede API önceden `queued` bir
+   * kayıt açıp buraya yazar; yoksa `BaseProcessor` ilk denemede açar ve
+   * yeniden denemeler aynı kaydı kullanır.
+   */
+  runId?: string;
+  /** Yoksa `schedule` varsayılır. */
+  trigger?: JobTrigger;
 }
 
-export interface DispatchJobData extends BaseJobData {
-  /** Dispatch edilecek gün, YYYY-MM-DD (UTC). */
-  date: string;
+/**
+ * Sistem job'u: tüm org'ları dolaşır, bu yüzden `orgId` taşımaz ve
+ * `BaseProcessor`'dan türemez. Job Scheduler şablonu sabit olduğu için gün
+ * işlendiği anda belirlenir; `date` yalnız elle tetiklemede verilir.
+ */
+export interface DispatchJobData {
+  /** YYYY-MM-DD (UTC). */
+  date?: string;
 }
 
 export interface GscSyncJobData extends BaseJobData {
   projectId: string;
-  date?: string;
+  /** Sync'in bitiş günü, YYYY-MM-DD (UTC); son 5 gün buna göre hesaplanır. */
+  date: string;
 }
 
 export interface GscBackfillJobData extends BaseJobData {
   projectId: string;
+  /** Çekilecek tek gün, YYYY-MM-DD. */
+  date: string;
 }
 
 export interface Ga4SyncJobData extends BaseJobData {
@@ -78,10 +99,6 @@ export interface ReportJobData extends BaseJobData {
   reportId: string;
 }
 
-export interface PingJobData extends BaseJobData {
-  message?: string;
-}
-
 export interface QueueJobDataMap {
   [QueueName.Dispatch]: DispatchJobData;
   [QueueName.GscSync]: GscSyncJobData;
@@ -94,8 +111,10 @@ export interface QueueJobDataMap {
   [QueueName.AlertEval]: AlertEvalJobData;
   [QueueName.Notify]: NotifyJobData;
   [QueueName.Report]: ReportJobData;
-  [QueueName.Ping]: PingJobData;
 }
+
+/** Tenant job'u taşıyan kuyruklar (`BaseProcessor`); `dispatch` sistem job'udur. */
+export type TenantQueueName = Exclude<QueueName, QueueName.Dispatch>;
 
 /** ARCHITECTURE §7: tamamlanan job'lar 1 gün/1000 adet, başarısızlar 7 gün tutulur. */
 export const DEFAULT_REMOVE_ON_COMPLETE = { age: 86400, count: 1000 };
@@ -190,11 +209,15 @@ export const QUEUE_DEFINITIONS: Record<QueueName, QueueDefinition> = {
     concurrency: 2,
     defaultJobOptions: jobOptions(2, 5000),
   },
-  [QueueName.Ping]: {
-    name: QueueName.Ping,
-    concurrency: 2,
-    defaultJobOptions: jobOptions(3, 5000),
-  },
 };
 
 export const ALL_QUEUE_NAMES: QueueName[] = Object.values(QueueName);
+
+/**
+ * ARCHITECTURE §7 tenant adaleti: günlük sync'ler yüksek, backfill düşük
+ * öncelikle eklenir (BullMQ'da küçük sayı önce işlenir).
+ */
+export const JOB_PRIORITY = {
+  daily: 1,
+  backfill: 10,
+} as const;

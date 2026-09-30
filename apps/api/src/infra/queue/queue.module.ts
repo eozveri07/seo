@@ -3,8 +3,6 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { QueueOptions } from 'bullmq';
 import { EnvironmentVariables } from '../../config/environment-variables';
-import { JOB_RUN_RECORDER } from './job-run-recorder';
-import { LoggingJobRunRecorder } from './logging-job-run-recorder';
 import { ALL_QUEUE_NAMES, QUEUE_DEFINITIONS } from './queues';
 
 function buildQueueOptions(
@@ -38,7 +36,6 @@ function buildQueueOptions(
       })),
     ),
   ],
-  providers: [{ provide: JOB_RUN_RECORDER, useClass: LoggingJobRunRecorder }],
-  exports: [BullModule, JOB_RUN_RECORDER],
+  exports: [BullModule],
 })
 export class QueueModule {}

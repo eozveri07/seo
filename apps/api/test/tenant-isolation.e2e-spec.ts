@@ -22,6 +22,9 @@ import {
 
 type Method = 'get' | 'post' | 'patch' | 'put' | 'delete';
 
+/** md5('abc'); GSC detay endpoint'leri için geçerli biçimde bir hash. */
+const GSC_HASH = '900150983cd24fb0d6963f7d28e17f72';
+
 /** org B'de önceden oluşturulan kaynakların id'leri. */
 interface OrgBFixtures {
   orgId: string;
@@ -161,6 +164,42 @@ const RESOURCES: TenantResource[] = [
     referencesOrgB: true,
   },
   {
+    name: 'GSC manuel sync',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/sync/gsc`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GSC overview',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/gsc/overview?compare=previous`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GSC sorgu tablosu',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/gsc/queries`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GSC sayfa tablosu',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/gsc/pages`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GSC sorgunun sayfaları',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/gsc/queries/${GSC_HASH}/pages`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'GSC sayfanın sorguları',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/gsc/pages/${GSC_HASH}/queries`,
+    referencesOrgB: true,
+  },
+  {
     name: 'bağlantı silme',
     method: 'delete',
     path: (b) => `/connections/${b.connectionId}`,
@@ -228,6 +267,11 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       .set('X-Org-Id', orgId)
       .send({ type: 'gsc', externalId: 'sc-domain:b-project.example.com' });
     expect(connection.status).toBe(201);
+    await ctx.dataSource.query(
+      `INSERT INTO gsc_site_daily (date, org_id, project_id, clicks, impressions, ctr, position)
+       VALUES ('2026-09-01', $1, $2, 7, 70, 0.1, 3)`,
+      [orgId, projectId],
+    );
     return {
       orgId,
       ownerUserId: bobId[0].id,
@@ -363,5 +407,16 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
         },
       ],
     });
+
+    const overview = await asBob(
+      `/projects/${orgB.projectId}/gsc/overview?from=2026-09-01&to=2026-09-01`,
+    );
+    expect(overview.body).toMatchObject({ totals: { clicks: 7 } });
+
+    const runs = await ctx.dataSource.query<{ count: number }[]>(
+      `SELECT COUNT(*)::int AS count FROM job_runs WHERE org_id = $1`,
+      [orgB.orgId],
+    );
+    expect(runs[0].count).toBe(0);
   });
 });

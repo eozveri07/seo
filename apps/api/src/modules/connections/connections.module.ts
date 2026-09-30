@@ -19,5 +19,6 @@ import { Connection } from './entities/connection.entity';
   ],
   controllers: [ConnectionsController, ConnectionController],
   providers: [provideTenantRepository(Connection), ConnectionsService],
+  exports: [ConnectionsService],
 })
 export class ConnectionsModule {}

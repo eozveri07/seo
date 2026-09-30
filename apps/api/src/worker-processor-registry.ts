@@ -1,6 +1,10 @@
 import { Type } from '@nestjs/common';
-import { PingProcessorModule } from './modules/ping/ping-processor.module';
 import { QueueName } from './infra/queue/queues';
+import { DispatchProcessorModule } from './modules/dispatch/dispatch-processor.module';
+import {
+  GscBackfillProcessorModule,
+  GscSyncProcessorModule,
+} from './modules/gsc/gsc-processor.module';
 
 export interface WorkerProcessorRegistryEntry {
   queueName: QueueName;
@@ -13,5 +17,7 @@ export interface WorkerProcessorRegistryEntry {
  * seçer. Yeni bir processor eklendiğinde buraya bir satır eklenir.
  */
 export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
-  { queueName: QueueName.Ping, module: PingProcessorModule },
+  { queueName: QueueName.Dispatch, module: DispatchProcessorModule },
+  { queueName: QueueName.GscSync, module: GscSyncProcessorModule },
+  { queueName: QueueName.GscBackfill, module: GscBackfillProcessorModule },
 ];

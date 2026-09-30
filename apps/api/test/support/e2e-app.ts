@@ -30,6 +30,11 @@ export const TEST_PASSWORD = 'cok-gizli-sifre-123';
 
 /** Her testten önce boşaltılan tablolar; yeni tenant tabloları buraya eklenir. */
 const TABLES = [
+  'gsc_daily',
+  'gsc_page_daily',
+  'gsc_site_daily',
+  'api_usage',
+  'job_runs',
   'audit_logs',
   'invitations',
   'connections',

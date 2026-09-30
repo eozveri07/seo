@@ -1,4 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Repository } from 'typeorm';
 import { Ga4Client } from '../../connectors/ga4/ga4.client';
 import { ConnectorPermanentError } from '../../connectors/errors';
 import { GscClient } from '../../connectors/gsc/gsc.client';
@@ -14,6 +15,7 @@ import {
 } from './connections.errors';
 import {
   Connection,
+  ConnectionBackfillStatus,
   ConnectionStatus,
   ConnectionType,
 } from './entities/connection.entity';
@@ -90,6 +92,25 @@ function buildService(overrides?: {
     record: jest.fn().mockResolvedValue(undefined),
   };
   const events = { emit: jest.fn() };
+  const dispatchRows = [
+    { connectionId: CONNECTION_ID, orgId: 'org-1', projectId: PROJECT_ID },
+  ];
+  const queryBuilder: Record<string, jest.Mock> = {};
+  for (const method of [
+    'innerJoin',
+    'select',
+    'addSelect',
+    'where',
+    'andWhere',
+    'orderBy',
+    'addOrderBy',
+  ]) {
+    queryBuilder[method] = jest.fn(() => queryBuilder);
+  }
+  queryBuilder.getRawMany = jest.fn().mockResolvedValue(dispatchRows);
+  const systemConnections = {
+    createQueryBuilder: jest.fn(() => queryBuilder),
+  };
 
   const service = new ConnectionsService(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,6 +120,7 @@ function buildService(overrides?: {
     ga4Client as Ga4Client,
     audit as AuditService,
     events as unknown as EventEmitter2,
+    systemConnections as unknown as Repository<Connection>,
   );
 
   return {
@@ -110,6 +132,8 @@ function buildService(overrides?: {
     audit,
     events,
     connection,
+    queryBuilder,
+    dispatchRows,
   };
 }
 
@@ -233,6 +257,86 @@ describe('ConnectionsService', () => {
       await expect(
         service.findOne(CONNECTION_ID, ownerActor),
       ).rejects.toBeInstanceOf(ConnectionNotFoundError);
+    });
+  });
+
+  describe('sync ve backfill durumu', () => {
+    it("markSyncFailed bağlantıyı error'a çeker ve mesajı yazar", async () => {
+      const { service, connections } = buildService();
+
+      await service.markSyncFailed(CONNECTION_ID, 'Yetki kaldırıldı');
+
+      expect(connections.update).toHaveBeenCalledWith(
+        { id: CONNECTION_ID },
+        { status: ConnectionStatus.Error, lastError: 'Yetki kaldırıldı' },
+      );
+    });
+
+    it('startBackfill durumu running yapar ve ilerlemeyi yazar', async () => {
+      const { service, connections } = buildService();
+      const progress = {
+        from: '2025-05-30',
+        to: '2026-09-29',
+        done: 0,
+        total: 488,
+      };
+
+      await service.startBackfill(CONNECTION_ID, progress);
+
+      expect(connections.update).toHaveBeenCalledWith(
+        { id: CONNECTION_ID },
+        {
+          backfillStatus: ConnectionBackfillStatus.Running,
+          backfillProgress: progress,
+        },
+      );
+    });
+
+    it('recordBackfillDayDone yalnız running backfill için done sayacını SQL içinde artırır', async () => {
+      const { service, connections } = buildService();
+
+      await service.recordBackfillDayDone(CONNECTION_ID);
+
+      const [criteria, partial] = connections.update.mock.calls[0] as [
+        unknown,
+        { backfillProgress: () => string; backfillStatus: () => string },
+      ];
+      expect(criteria).toEqual({
+        id: CONNECTION_ID,
+        backfillStatus: ConnectionBackfillStatus.Running,
+      });
+      expect(partial.backfillProgress()).toContain(
+        "jsonb_set(backfill_progress, '{done}'",
+      );
+      expect(partial.backfillStatus()).toContain(
+        "'done'::connection_backfill_status",
+      );
+    });
+  });
+
+  describe('listActiveForDispatch', () => {
+    it('aktif projelerin aktif bağlantılarını org ve proje sırasıyla döner', async () => {
+      const { service, queryBuilder, dispatchRows } = buildService();
+
+      const rows = await service.listActiveForDispatch(ConnectionType.Gsc);
+
+      expect(rows).toEqual(dispatchRows);
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'connection.type = :type',
+        { type: ConnectionType.Gsc },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'connection.status = :status',
+        { status: ConnectionStatus.Active },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'project.status = :projectStatus',
+        { projectStatus: 'active' },
+      );
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'connection.org_id',
+        'ASC',
+      );
     });
   });
 });
