@@ -472,6 +472,31 @@ export interface ServiceAccountResponseDto {
   email: string;
 }
 
+export type UsageGroupBy = typeof UsageGroupBy[keyof typeof UsageGroupBy];
+
+
+export const UsageGroupBy = {
+  project: 'project',
+  provider: 'provider',
+  day: 'day',
+} as const;
+
+export interface UsageReportRowDto {
+  /** `groupBy`'a göre: `project_id`, `provider` ya da `YYYY-MM-DD`. */
+  key: string;
+  cost: number;
+  units: number;
+}
+
+export interface UsageReportResponseDto {
+  from: string;
+  to: string;
+  groupBy: UsageGroupBy;
+  items: UsageReportRowDto[];
+  totalCost: number;
+  totalUnits: number;
+}
+
 export interface GscSyncResponseDto {
   /** `job_runs` kaydının id'si; durum bu kayıttan izlenir. */
   runId: string;
@@ -750,6 +775,12 @@ search?: string;
  * Yalnız bu client'ın projelerini döner.
  */
 clientId?: string;
+};
+
+export type UsageControllerReportParams = {
+from?: string;
+to?: string;
+groupBy?: UsageGroupBy;
 };
 
 export type GscControllerOverviewParams = {

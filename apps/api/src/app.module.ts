@@ -14,6 +14,7 @@ import { GscModule } from './modules/gsc/gsc.module';
 import { HealthModule } from './modules/health/health.module';
 import { LocationsModule } from './modules/locations/locations.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { UsageModule } from './modules/usage/usage.module';
 import { UsersModule } from './modules/users/users.module';
 
 /**
@@ -39,6 +40,7 @@ import { UsersModule } from './modules/users/users.module';
     GscModule,
     Ga4Module,
     LocationsModule,
+    UsageModule,
     HealthModule,
   ],
 })

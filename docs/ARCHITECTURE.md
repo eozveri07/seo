@@ -114,6 +114,7 @@ organization
 | Keyword, alert, rapor yönetimi | ✓ | ✓ | ✓ | |
 | Veri görüntüleme | ✓ | ✓ | ✓ | Sadece kendi client'ı |
 | Rapor görüntüleme | ✓ | ✓ | ✓ | Sadece kendi client'ı |
+| Maliyet raporu (`/usage`) | ✓ | ✓ | | |
 
 `client_viewer` üyeliğinde `client_id` zorunludur. Bu rol sadece o client'ın projelerini görür, yazma yetkisi yoktur.
 

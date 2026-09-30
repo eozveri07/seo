@@ -63,6 +63,7 @@ const ARCHITECTURE_4_2: Record<Permission, OrgRole[]> = {
     OrgRole.Analyst,
     OrgRole.ClientViewer,
   ],
+  usageView: [OrgRole.Owner, OrgRole.Admin],
 };
 
 interface Endpoint {

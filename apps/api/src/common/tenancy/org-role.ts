@@ -31,4 +31,6 @@ export const ROLE_MATRIX = {
   dataView: [...ALL_ORG_ROLES],
   /** Rapor görüntüleme. */
   reportView: [...ALL_ORG_ROLES],
+  /** Maliyet raporu (`/usage`). */
+  usageView: [OrgRole.Owner, OrgRole.Admin],
 } as const satisfies Record<string, readonly OrgRole[]>;

@@ -1503,6 +1503,66 @@
         ]
       }
     },
+    "/api/v1/usage": {
+      "get": {
+        "operationId": "UsageController_report",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UsageGroupBy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReportResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "usage"
+        ]
+      }
+    },
     "/api/v1/projects/{projectId}/sync/gsc": {
       "post": {
         "operationId": "GscController_triggerSync",
@@ -3537,6 +3597,74 @@
         },
         "required": [
           "email"
+        ]
+      },
+      "UsageGroupBy": {
+        "type": "string",
+        "enum": [
+          "project",
+          "provider",
+          "day"
+        ]
+      },
+      "UsageReportRowDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "`groupBy`'a göre: `project_id`, `provider` ya da `YYYY-MM-DD`."
+          },
+          "cost": {
+            "type": "number"
+          },
+          "units": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "cost",
+          "units"
+        ]
+      },
+      "UsageReportResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "groupBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageGroupBy"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportRowDto"
+            }
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "totalUnits": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "groupBy",
+          "items",
+          "totalCost",
+          "totalUnits"
         ]
       },
       "GscSyncResponseDto": {

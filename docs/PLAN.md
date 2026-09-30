@@ -252,7 +252,7 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Organik toplam: `GET /projects/:id/ga4/overview?from&to` içindeki `Organic Search` kanalının oturum toplamını GA4 arayüzündeki aynı tarih aralığı ve kanalla karşılaştır.
 - Zamanlama: `daily-dispatch`'in aktif GA4 bağlantıları için `ga4-sync` job'u eklediğini ve `POST /projects/:id/sync/ga4`'ün döndüğü `runId`'nin `job_runs`'ta `queued → running → succeeded` ilerlediğini doğrula.
 
-### [ ] T1.7 DataForSEO client ve kullanım takibi
+### [x] T1.7 DataForSEO client ve kullanım takibi
 - `connectors/dataforseo/DataForSeoClient`: basic auth, retry, response `status_code` kontrolü, `cost` okuma.
 - Metotlar: `serpTaskPost(tasks[])`, `serpTasksReady()`, `serpTaskGetAdvanced(id)`, `serpLiveAdvanced(task)`, `locations()`, `languages()`, `keywordSearchVolume(keywords, location, language)`.
 - `UsageService.record(...)`: her ücretli çağrı `api_usage`'a yazılır.
@@ -261,6 +261,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 **Kabul:**
 - Client unit testleri (mock HTTP).
 - Tek bir gerçek live çağrısının maliyeti `api_usage`'da görünüyor.
+
+**Lokal doğrulama bekliyor:** Runner'da `DFS_LOGIN`/`DFS_PASSWORD` (gerçek DataForSEO kimlik bilgisi) yok; "tek bir gerçek live çağrısının maliyeti `api_usage`'da görünüyor" kriteri mock HTTP testleriyle doğrulandı, gerçek API'ye karşı doğrulanmadı. Lokalde doğrulamak için: `.env`'e gerçek `DFS_LOGIN`/`DFS_PASSWORD` girin, `bun run db:up` ile Postgres'i açın, bir serviste (ör. bir Nest REPL/script) `DataForSeoClient.serpLiveAdvanced({ keyword: 'test', locationCode: 2792, languageCode: 'tr' }, { orgId, projectId })` çağırın ve `SELECT * FROM api_usage ORDER BY created_at DESC LIMIT 1;` ile maliyetin yazıldığını doğrulayın.
 
 ### [ ] T1.8 Keyword yönetimi
 - Tablolar: `keyword_groups`, `tracked_keywords`.
