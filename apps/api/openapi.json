@@ -3070,6 +3070,201 @@
         ]
       }
     },
+    "/api/v1/projects/{projectId}/keywords/{keywordId}/check-now": {
+      "post": {
+        "operationId": "RankingsController_checkNow",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankCheckNowResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND, TRACKED_KEYWORD_NOT_FOUND"
+          },
+          "429": {
+            "description": "Kullanıcı başına limit aşıldı"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Keyword'ü şimdi `live/advanced` ile kontrol eder; iş kuyrukta yapılır\n(CLAUDE.md kural 6), sonuç `source = dfs_live` olarak bugünün satırına\nyazılır.",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/rankings/history": {
+      "get": {
+        "operationId": "RankingsController_history",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordIds",
+            "required": true,
+            "in": "query",
+            "description": "Virgülle ayrılmış ya da tekrar eden; en fazla 50.",
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankHistoryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Keyword'lerin günlük pozisyon geçmişi (`rank_daily`).",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/rankings/serp/{keywordId}": {
+      "get": {
+        "operationId": "RankingsController_serp",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankSerpResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND, RANK_RESULT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "O günün SERP'i: pozisyon, URL, SERP özellikleri ve ilk 10 rakip.",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
     "/api/v1/locations": {
       "get": {
         "operationId": "LocationsController_list",
@@ -5198,6 +5393,181 @@
             "type": "boolean"
           }
         }
+      },
+      "RankCheckNowResponseDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "`job_runs` kaydının id'si; sonuç bu kayıttan ve `rankings/serp`'ten izlenir."
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "RankSource": {
+        "type": "string",
+        "enum": [
+          "dfs_standard",
+          "dfs_live"
+        ]
+      },
+      "RankHistoryPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "position": {
+            "type": "number",
+            "nullable": true,
+            "description": "Organik sıra; depth içinde bulunamadıysa null."
+          },
+          "rankAbsolute": {
+            "type": "number",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankSource"
+              }
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "position",
+          "rankAbsolute",
+          "url",
+          "source"
+        ]
+      },
+      "RankHistoryKeywordDto": {
+        "type": "object",
+        "properties": {
+          "trackedKeywordId": {
+            "type": "string"
+          },
+          "points": {
+            "description": "Eskiden yeniye; sonucu olmayan günler yer almaz.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankHistoryPointDto"
+            }
+          }
+        },
+        "required": [
+          "trackedKeywordId",
+          "points"
+        ]
+      },
+      "RankHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-30"
+          },
+          "keywords": {
+            "description": "İstekteki `keywordIds` sırasıyla.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankHistoryKeywordDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "keywords"
+        ]
+      },
+      "RankCompetitorDto": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "position": {
+            "type": "number",
+            "description": "Organik sıra (`rank_group`)."
+          }
+        },
+        "required": [
+          "domain",
+          "position"
+        ]
+      },
+      "RankSerpResponseDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-30"
+          },
+          "position": {
+            "type": "number",
+            "nullable": true
+          },
+          "rankAbsolute": {
+            "type": "number",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankSource"
+              }
+            ]
+          },
+          "trackedKeywordId": {
+            "type": "string"
+          },
+          "serpFeatures": {
+            "description": "Organik dışındaki SERP öğe tipleri, ör. `featured_snippet`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "competitorsTop": {
+            "description": "İlk 10 organik sonucun domain'i ve sırası.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankCompetitorDto"
+            }
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "position",
+          "rankAbsolute",
+          "url",
+          "source",
+          "trackedKeywordId",
+          "serpFeatures",
+          "competitorsTop",
+          "checkedAt"
+        ]
       },
       "LocationReferenceDto": {
         "type": "object",

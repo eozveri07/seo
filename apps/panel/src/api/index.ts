@@ -10,5 +10,6 @@ export * from './locations/locations';
 export * from './members/members';
 export * from './organizations/organizations';
 export * from './projects/projects';
+export * from './rankings/rankings';
 export * from './usage/usage';
 export * from './users/users';

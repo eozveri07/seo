@@ -844,6 +844,69 @@ export interface UpdateTrackedKeywordDto {
   isActive?: boolean;
 }
 
+export interface RankCheckNowResponseDto {
+  /** `job_runs` kaydının id'si; sonuç bu kayıttan ve `rankings/serp`'ten izlenir. */
+  runId: string;
+}
+
+export type RankSource = typeof RankSource[keyof typeof RankSource];
+
+
+export const RankSource = {
+  dfs_standard: 'dfs_standard',
+  dfs_live: 'dfs_live',
+} as const;
+
+export interface RankHistoryPointDto {
+  date: string;
+  /**
+     * Organik sıra; depth içinde bulunamadıysa null.
+     * @nullable
+     */
+  position: number | null;
+  /** @nullable */
+  rankAbsolute: number | null;
+  /** @nullable */
+  url: string | null;
+  source: RankSource;
+}
+
+export interface RankHistoryKeywordDto {
+  trackedKeywordId: string;
+  /** Eskiden yeniye; sonucu olmayan günler yer almaz. */
+  points: RankHistoryPointDto[];
+}
+
+export interface RankHistoryResponseDto {
+  from: string;
+  to: string;
+  /** İstekteki `keywordIds` sırasıyla. */
+  keywords: RankHistoryKeywordDto[];
+}
+
+export interface RankCompetitorDto {
+  domain: string;
+  /** Organik sıra (`rank_group`). */
+  position: number;
+}
+
+export interface RankSerpResponseDto {
+  date: string;
+  /** @nullable */
+  position: number | null;
+  /** @nullable */
+  rankAbsolute: number | null;
+  /** @nullable */
+  url: string | null;
+  source: RankSource;
+  trackedKeywordId: string;
+  /** Organik dışındaki SERP öğe tipleri, ör. `featured_snippet`. */
+  serpFeatures: string[];
+  /** İlk 10 organik sonucun domain'i ve sırası. */
+  competitorsTop: RankCompetitorDto[];
+  checkedAt: string;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -1156,5 +1219,19 @@ export type TrackedKeywordsControllerSuggestionsParams = {
  * @maximum 200
  */
 limit?: number;
+};
+
+export type RankingsControllerHistoryParams = {
+/**
+ * Virgülle ayrılmış ya da tekrar eden; en fazla 50.
+ * @minItems 1
+ */
+keywordIds: string[];
+from?: string;
+to?: string;
+};
+
+export type RankingsControllerSerpParams = {
+date?: string;
 };
 
