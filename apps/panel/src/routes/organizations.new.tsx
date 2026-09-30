@@ -62,6 +62,10 @@ function NewOrganizationPage() {
       setServerError('Bu slug zaten kullanılıyor, başka bir isim deneyin.')
       return
     }
+    if (response.status !== 201) {
+      setServerError('Organizasyon oluşturulamadı, tekrar deneyin.')
+      return
+    }
     await refetch()
     switchOrg(response.data.id)
     void navigate({ to: '/', search: { clientId: undefined } })

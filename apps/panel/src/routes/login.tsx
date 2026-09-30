@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth/auth-context'
+import { resolveLoginOutcome } from '@/lib/auth/login-result'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -38,19 +39,12 @@ function LoginPage() {
   async function onSubmit(values: LoginFormValues) {
     setServerError(null)
     const response = await authControllerLogin(values).catch(() => null)
-    if (!response) {
-      setServerError('Sunucuya ulaşılamadı. Tekrar deneyin.')
+    const outcome = resolveLoginOutcome(response)
+    if (outcome.type === 'error') {
+      setServerError(outcome.message)
       return
     }
-    if (response.status === 401) {
-      setServerError('E-posta veya şifre hatalı.')
-      return
-    }
-    if (response.status === 429) {
-      setServerError('Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.')
-      return
-    }
-    setSession(response.data.accessToken, response.data.user)
+    setSession(outcome.accessToken, outcome.user)
     void navigate({ to: '/', search: { clientId: undefined } })
   }
 
