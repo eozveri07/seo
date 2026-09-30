@@ -42,11 +42,200 @@ export interface AuthResponseDto {
   user: UserResponseDto;
 }
 
+export interface RegisterInvitedDto {
+  /**
+     * Davet bağlantısındaki token.
+     * @maxLength 256
+     */
+  token: string;
+  /** @maxLength 200 */
+  name: string;
+  /**
+     * En az 8, en fazla 256 karakter.
+     * @minLength 8
+     * @maxLength 256
+     */
+  password: string;
+}
+
 export interface LoginDto {
   /** @maxLength 254 */
   email: string;
   /** @maxLength 256 */
   password: string;
+}
+
+export interface ReportBrandingDto {
+  /** @maxLength 2048 */
+  logoUrl?: string;
+  /**
+     * `#1d4ed8` biçiminde.
+     * @pattern ^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$
+     */
+  primaryColor?: string;
+}
+
+export interface OrganizationSettingsDto {
+  /** IANA saat dilimi, ör. `Europe/Istanbul`. */
+  timezone?: string;
+  /**
+     * Varsayılan dil kodu, ör. `tr`.
+     * @minLength 2
+     * @maxLength 10
+     */
+  defaultLanguage?: string;
+  reportBranding?: ReportBrandingDto;
+}
+
+export interface CreateOrganizationDto {
+  /** @maxLength 200 */
+  name: string;
+  /**
+     * Küçük harf, rakam ve tire. Verilmezse addan üretilir.
+     * @maxLength 60
+     */
+  slug?: string;
+  settings?: OrganizationSettingsDto;
+}
+
+export type OrgRole = typeof OrgRole[keyof typeof OrgRole];
+
+
+export const OrgRole = {
+  owner: 'owner',
+  admin: 'admin',
+  analyst: 'analyst',
+  client_viewer: 'client_viewer',
+} as const;
+
+export interface UserOrganizationResponseDto {
+  role: OrgRole;
+  id: string;
+  name: string;
+  slug: string;
+  /**
+     * client_viewer ise görebildiği client.
+     * @nullable
+     */
+  clientId: string | null;
+}
+
+export interface UserOrganizationListResponseDto {
+  items: UserOrganizationResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface OrganizationResponseDto {
+  id: string;
+  name: string;
+  slug: string;
+  settings: OrganizationSettingsDto;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateOrganizationDto {
+  /** @maxLength 200 */
+  name?: string;
+  /** @maxLength 60 */
+  slug?: string;
+  /** Verilirse mevcut ayarların tamamının yerine geçer. */
+  settings?: OrganizationSettingsDto;
+}
+
+export interface MemberResponseDto {
+  role: OrgRole;
+  userId: string;
+  email: string;
+  name: string;
+  /** @nullable */
+  clientId: string | null;
+  /** Üyeliğin başladığı an. */
+  joinedAt: string;
+}
+
+export interface MemberListResponseDto {
+  items: MemberResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface UpdateMemberRoleDto {
+  role: OrgRole;
+  /** client_viewer için zorunlu, diğer rollerde verilmez. */
+  clientId?: string;
+}
+
+export interface MemberRoleResponseDto {
+  role: OrgRole;
+  userId: string;
+  /** @nullable */
+  clientId: string | null;
+}
+
+export interface CreateInvitationDto {
+  role: OrgRole;
+  /** @maxLength 254 */
+  email: string;
+  /** client_viewer için zorunlu, diğer rollerde verilmez. */
+  clientId?: string;
+}
+
+export interface CreatedInvitationResponseDto {
+  role: OrgRole;
+  /** Mail gönderilemediyse false; davet geçerlidir, tekrar oluşturularak yeniden gönderilebilir. */
+  emailSent: boolean;
+  id: string;
+  email: string;
+  /** @nullable */
+  clientId: string | null;
+  expiresAt: string;
+  /** @nullable */
+  invitedBy: string | null;
+  createdAt: string;
+}
+
+export interface InvitationResponseDto {
+  role: OrgRole;
+  id: string;
+  email: string;
+  /** @nullable */
+  clientId: string | null;
+  expiresAt: string;
+  /** @nullable */
+  invitedBy: string | null;
+  createdAt: string;
+}
+
+export interface InvitationListResponseDto {
+  items: InvitationResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface InvitationTokenDto {
+  /** @maxLength 256 */
+  token: string;
+}
+
+export interface InvitationPreviewResponseDto {
+  role: OrgRole;
+  organizationName: string;
+  email: string;
+  expiresAt: string;
+  /** true ise kullanıcı giriş yapıp kabul eder; false ise ad ve şifreyle kayıt olur. */
+  userExists: boolean;
+}
+
+export interface AcceptInvitationResponseDto {
+  role: OrgRole;
+  organizationId: string;
+  /** @nullable */
+  clientId: string | null;
 }
 
 export type HealthCheckResultDtoStatus = typeof HealthCheckResultDtoStatus[keyof typeof HealthCheckResultDtoStatus];
@@ -82,11 +271,49 @@ export interface HealthResponseDto {
 }
 
 export interface CreatePingJobDto {
-  orgId: string;
   message?: string;
 }
 
 export interface PingJobResponseDto {
   jobId: string;
 }
+
+export type OrganizationsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type MembersControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
+
+export type InvitationsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+};
 

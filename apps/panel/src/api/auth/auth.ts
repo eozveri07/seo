@@ -18,7 +18,8 @@ import type {
 import type {
   AuthResponseDto,
   LoginDto,
-  RegisterDto
+  RegisterDto,
+  RegisterInvitedDto
 } from '../endpoints.schemas';
 
 import { customFetch } from '../../lib/http/custom-fetch';
@@ -138,6 +139,127 @@ export const useAuthControllerRegister = <TError = void,
         TContext
       > => {
       return useMutation(getAuthControllerRegisterMutationOptions(options), queryClient);
+    }
+    export type authControllerRegisterInvitedResponse201 = {
+  data: AuthResponseDto
+  status: 201
+}
+
+export type authControllerRegisterInvitedResponse404 = {
+  data: void
+  status: 404
+}
+
+export type authControllerRegisterInvitedResponse409 = {
+  data: void
+  status: 409
+}
+
+export type authControllerRegisterInvitedResponse410 = {
+  data: void
+  status: 410
+}
+
+export type authControllerRegisterInvitedResponse429 = {
+  data: void
+  status: 429
+}
+
+export type authControllerRegisterInvitedResponseSuccess = (authControllerRegisterInvitedResponse201) & {
+  headers: Headers;
+};
+export type authControllerRegisterInvitedResponseError = (authControllerRegisterInvitedResponse404 | authControllerRegisterInvitedResponse409 | authControllerRegisterInvitedResponse410 | authControllerRegisterInvitedResponse429) & {
+  headers: Headers;
+};
+
+export type authControllerRegisterInvitedResponse = (authControllerRegisterInvitedResponseSuccess | authControllerRegisterInvitedResponseError)
+
+export const getAuthControllerRegisterInvitedUrl = () => {
+
+
+
+
+  return `/api/v1/auth/register-invited`
+}
+
+/**
+ * @summary Davet bağlantısıyla hesap açar, üyeliği ekler ve oturum açar.
+ */
+export const authControllerRegisterInvited = async (registerInvitedDto: RegisterInvitedDto, options?: Parameters<typeof customFetch>[1]): Promise<authControllerRegisterInvitedResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<authControllerRegisterInvitedResponse>(getAuthControllerRegisterInvitedUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(registerInvitedDto)
+  }
+);}
+
+
+
+
+
+export const getAuthControllerRegisterInvitedMutationKey = () => ['authControllerRegisterInvited'] as const;
+
+export const getAuthControllerRegisterInvitedMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerRegisterInvited>>, TError,AuthControllerRegisterInvitedMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof authControllerRegisterInvited>>, TError,AuthControllerRegisterInvitedMutationVariables, TContext> => {
+
+const mutationKey = getAuthControllerRegisterInvitedMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof authControllerRegisterInvited>>, AuthControllerRegisterInvitedMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  authControllerRegisterInvited(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AuthControllerRegisterInvitedMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerRegisterInvited>>>
+    export type AuthControllerRegisterInvitedMutationBody = RegisterInvitedDto
+    export type AuthControllerRegisterInvitedMutationError = void
+    export type AuthControllerRegisterInvitedMutationVariables = {data: RegisterInvitedDto}
+
+    /**
+ * @summary Davet bağlantısıyla hesap açar, üyeliği ekler ve oturum açar.
+ */
+export const useAuthControllerRegisterInvited = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerRegisterInvited>>, TError,AuthControllerRegisterInvitedMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof authControllerRegisterInvited>>,
+        TError,
+        AuthControllerRegisterInvitedMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAuthControllerRegisterInvitedMutationOptions(options), queryClient);
     }
     export type authControllerLoginResponse200 = {
   data: AuthResponseDto

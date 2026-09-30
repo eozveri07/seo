@@ -142,7 +142,7 @@ karşı: `bun run db:up`, `bun run dev:api`, ardından aynı IP'den dakikada 6 k
 `POST /api/v1/auth/login` → 6.'sı 429 dönmeli ve `redis-cli --scan --pattern '*:default}:hits'` sayaç anahtarını göstermeli.
 Docker Compose'daki Postgres 17 imajında `bun run db:migrate` ve e2e'nin de bir kez çalıştırılması önerilir.
 
-### [ ] T1.2 Organizasyonlar ve tenancy
+### [x] T1.2 Organizasyonlar ve tenancy
 - Tablolar: `organizations`, `memberships`, `invitations`, `audit_logs`.
 - `TenantGuard` (X-Org-Id, Redis membership cache), `RolesGuard`, `@Roles`, `@CurrentOrg`, `@SkipTenant`.
 - Endpoint'ler: org oluşturma, listeleme (kullanıcının üyelikleri), güncelleme; üye listeleme, rol değiştirme, çıkarma; davet oluşturma, kabul etme (mail ile link).
@@ -153,6 +153,25 @@ Docker Compose'daki Postgres 17 imajında `bun run db:migrate` ve e2e'nin de bir
 - İzolasyon testi geçiyor.
 - Rol matrisi (ARCHITECTURE §4.2) testlerle doğrulanıyor.
 - Membership değiştiğinde cache invalidation çalışıyor.
+
+**Not:** Endpoint'ler: `POST/GET /organizations` (`@SkipTenant`), `GET/PATCH/DELETE /organizations/current`,
+`GET /members`, `PATCH/DELETE /members/:userId`, `POST/GET /invitations`, `DELETE /invitations/:id`,
+`POST /invitations/preview` (public), `POST /invitations/accept` (oturumdaki mevcut kullanıcı) ve
+`POST /auth/register-invited` (davetle yeni hesap). Org kapsamlı endpoint'ler org'u yalnız `X-Org-Id`'den alır.
+Rol matrisi `ROLE_MATRIX` (`common/tenancy/org-role.ts`) olarak tek yerde; sonraki kartlar `@Roles(...ROLE_MATRIX.x)` kullanır.
+Davet token'ı 7 gün geçerli, DB'de SHA-256 hash'i durur, tek kullanımlıktır. `client_id` kolonları var,
+FK'leri T1.3'te `clients` ile eklenecek. `audit_logs` bilerek FK'siz (org silinince kayıt kalır).
+İzolasyon testi: `apps/api/test/tenant-isolation.e2e-spec.ts`'teki `RESOURCES` listesine her yeni kaynak bir satır
+olarak eklenir; yeni tenant tabloları `test/support/e2e-app.ts`'teki `TABLES`'a da eklenmeli.
+Runner'da geçici bir Postgres 17 ile migration uygulandı/geri alındı, entity'lerle şema farkı olmadığı doğrulandı;
+izolasyon ve organizasyon e2e'leri (`E2E_DATABASE=true`) bu DB'ye karşı geçti. Unit testler: TenantGuard, cache
+invalidation, rol matrisi (HTTP, gerçek guard zinciri), davet servisi ve global guard sırası.
+
+**Lokal doğrulama bekliyor:** Runner'da Redis yok; membership cache e2e'de bellek içi cache ile doğrulandı.
+Gerçek Redis'e karşı: `bun run db:up`, `bun run dev:api`; bir org kapsamlı istekten sonra
+`redis-cli --scan --pattern 'tenancy:membership:*'` anahtarı göstermeli (`TTL` ≤ 60), üyenin rolü değişince ya da
+üye çıkarılınca anahtar silinmeli. `bun run db:migrate` ve e2e'nin Docker Compose'daki Postgres imajında
+(pgvector/pg_partman'lı `InitExtensions` dahil) bir kez çalıştırılması önerilir.
 
 ### [ ] T1.3 Client'lar ve projeler
 - Tablolar: `clients`, `projects`.
