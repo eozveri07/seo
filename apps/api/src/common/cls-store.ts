@@ -6,4 +6,6 @@ import { ClsStore } from 'nestjs-cls';
 export interface AppClsStore extends ClsStore {
   /** Aktif organizasyon. HTTP'de TenantGuard, job'larda processor set eder. */
   orgId?: string;
+  /** Oturumdaki kullanıcı. HTTP'de JwtAuthGuard set eder. */
+  userId?: string;
 }

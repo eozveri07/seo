@@ -6,6 +6,8 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
     .setTitle('Seo Platform API')
     .setDescription('Çok kiracılı SEO takip ve otomasyon platformu API')
     .setVersion('0.1.0')
+    .addBearerAuth()
+    .addCookieAuth('refresh_token', undefined, 'refresh_token')
     .build();
 
   return SwaggerModule.createDocument(app, config);

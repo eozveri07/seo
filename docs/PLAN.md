@@ -118,7 +118,7 @@ kaydettiği ve worker kapanışının sorunsuz olduğu doğrulanamadı. Lokalde:
 
 Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiği, haftalık rapor ve uyarı üreten, kendi kullanımımıza hazır sistem.
 
-### [ ] T1.1 Kullanıcılar ve auth
+### [x] T1.1 Kullanıcılar ve auth
 - Tablolar: `users`, `refresh_tokens`.
 - Endpoint'ler: `POST /auth/register` (sadece ilk kullanıcı ya da davetle), `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /me`.
 - argon2id, JWT access (15 dk), refresh rotation ve reuse tespiti (ARCHITECTURE §4.4).
@@ -128,6 +128,19 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 **Kabul:**
 - e2e: login, refresh ile yeni token, eski refresh token'ı tekrar kullanınca tüm ailenin iptal edilmesi, logout.
 - Yanlış şifrede genel hata mesajı (kullanıcı var mı yok mu belli olmuyor).
+
+**Not:** `POST /auth/register` şimdilik yalnız hiç kullanıcı yokken çalışır; davetle kayıt T1.2'de gelir.
+e2e testi (`apps/api/test/auth.e2e-spec.ts`) migration'ları uygulanmış bir test DB'si ister ve
+`E2E_DATABASE=true` ile açılır (komut dosyanın başında). Runner'da geçici bir Postgres ile
+`CreateUsersAndRefreshTokens` migration'ı uygulandı/geri alındı, entity'lerle şema farkı olmadığı
+doğrulandı ve e2e geçti. Bu sırada `DATABASE_SKIP_INITIALIZATION=false`'un `true` okunması
+hatası (T0.4/T0.6'daki boolean env dönüşümü) düzeltildi.
+
+**Lokal doğrulama bekliyor:** Runner'da Redis yok. Throttler'ın Redis storage'ı unit testte
+(`buildThrottlerOptions`) ve limitler bellek içi storage ile HTTP testinde doğrulandı; gerçek Redis'e
+karşı: `bun run db:up`, `bun run dev:api`, ardından aynı IP'den dakikada 6 kez
+`POST /api/v1/auth/login` → 6.'sı 429 dönmeli ve `redis-cli --scan --pattern '*:default}:hits'` sayaç anahtarını göstermeli.
+Docker Compose'daki Postgres 17 imajında `bun run db:migrate` ve e2e'nin de bir kez çalıştırılması önerilir.
 
 ### [ ] T1.2 Organizasyonlar ve tenancy
 - Tablolar: `organizations`, `memberships`, `invitations`, `audit_logs`.

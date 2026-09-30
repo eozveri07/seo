@@ -26,3 +26,16 @@ openssl rand -base64 32
 ```
 
 Çıktıyı `.env`'de `ENCRYPTION_KEY=` değerine yapıştırın.
+
+### `JWT_ACCESS_SECRET` ve `JWT_ACCESS_TTL`
+
+Access JWT'leri `JWT_ACCESS_SECRET` ile imzalanır (HS256, en az 32 karakter) ve
+`JWT_ACCESS_TTL` saniye geçerlidir (varsayılan önerisi 900, yani 15 dakika). İkisi de zorunlu;
+uygulama bunlar olmadan açılmaz:
+
+```bash
+openssl rand -base64 32
+```
+
+İlk kullanıcı, veritabanında hiç kullanıcı yokken `POST /api/v1/auth/register` ile oluşturulur;
+sonraki kullanıcılar davetle gelir (T1.2).

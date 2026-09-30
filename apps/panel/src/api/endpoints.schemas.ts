@@ -5,6 +5,50 @@
  * Çok kiracılı SEO takip ve otomasyon platformu API
  * OpenAPI spec version: 0.1.0
  */
+export interface UserResponseDto {
+  id: string;
+  email: string;
+  name: string;
+  /** @nullable */
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+export interface RegisterDto {
+  /** @maxLength 254 */
+  email: string;
+  /** @maxLength 200 */
+  name: string;
+  /**
+     * En az 8, en fazla 256 karakter.
+     * @minLength 8
+     * @maxLength 256
+     */
+  password: string;
+}
+
+export type AuthResponseDtoTokenType = typeof AuthResponseDtoTokenType[keyof typeof AuthResponseDtoTokenType];
+
+
+export const AuthResponseDtoTokenType = {
+  Bearer: 'Bearer',
+} as const;
+
+export interface AuthResponseDto {
+  tokenType: AuthResponseDtoTokenType;
+  accessToken: string;
+  /** Access token ömrü, saniye. */
+  expiresIn: number;
+  user: UserResponseDto;
+}
+
+export interface LoginDto {
+  /** @maxLength 254 */
+  email: string;
+  /** @maxLength 256 */
+  password: string;
+}
+
 export type HealthCheckResultDtoStatus = typeof HealthCheckResultDtoStatus[keyof typeof HealthCheckResultDtoStatus];
 
 
