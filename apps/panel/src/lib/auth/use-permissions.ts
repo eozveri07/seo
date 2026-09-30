@@ -21,5 +21,7 @@ export function usePermissions() {
     canManageConnections: isOwnerOrAdmin,
     canViewUsage: isOwnerOrAdmin,
     canManageNotificationChannels: isOwnerOrAdmin,
+    /** `contentManage` rol matrisi: owner/admin/analyst; client_viewer yalnız okur. */
+    canManageKeywords: isOwnerOrAdmin || role === OrgRole.analyst,
   }
 }

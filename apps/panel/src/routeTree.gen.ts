@@ -26,6 +26,7 @@ import { Route as AppProjectsNewRouteImport } from './routes/_app/projects/new'
 import { Route as AppProjectsProjectIdConnectionsRouteImport } from './routes/_app/projects/$projectId_.connections'
 import { Route as AppProjectsProjectIdDashboardRouteImport } from './routes/_app/projects/$projectId_.dashboard'
 import { Route as AppProjectsProjectIdExplorerRouteImport } from './routes/_app/projects/$projectId_.explorer'
+import { Route as AppProjectsProjectIdKeywordsRouteImport } from './routes/_app/projects/$projectId_.keywords'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -114,6 +115,12 @@ const AppProjectsProjectIdExplorerRoute =
     path: '/projects/$projectId/explorer',
     getParentRoute: () => AppRoute,
   } as any)
+const AppProjectsProjectIdKeywordsRoute =
+  AppProjectsProjectIdKeywordsRouteImport.update({
+    id: '/projects/$projectId_/keywords',
+    path: '/projects/$projectId/keywords',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
   '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
+  '/projects/$projectId/keywords': typeof AppProjectsProjectIdKeywordsRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
@@ -150,6 +158,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
   '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
+  '/projects/$projectId/keywords': typeof AppProjectsProjectIdKeywordsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +179,7 @@ export interface FileRoutesById {
   '/_app/projects/$projectId_/connections': typeof AppProjectsProjectIdConnectionsRoute
   '/_app/projects/$projectId_/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/_app/projects/$projectId_/explorer': typeof AppProjectsProjectIdExplorerRoute
+  '/_app/projects/$projectId_/keywords': typeof AppProjectsProjectIdKeywordsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/connections'
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/explorer'
+    | '/projects/$projectId/keywords'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/connections'
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/explorer'
+    | '/projects/$projectId/keywords'
   id:
     | '__root__'
     | '/_app'
@@ -227,6 +239,7 @@ export interface FileRouteTypes {
     | '/_app/projects/$projectId_/connections'
     | '/_app/projects/$projectId_/dashboard'
     | '/_app/projects/$projectId_/explorer'
+    | '/_app/projects/$projectId_/keywords'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsProjectIdExplorerRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/projects/$projectId_/keywords': {
+      id: '/_app/projects/$projectId_/keywords'
+      path: '/projects/$projectId/keywords'
+      fullPath: '/projects/$projectId/keywords'
+      preLoaderRoute: typeof AppProjectsProjectIdKeywordsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -374,6 +394,7 @@ interface AppRouteChildren {
   AppProjectsProjectIdConnectionsRoute: typeof AppProjectsProjectIdConnectionsRoute
   AppProjectsProjectIdDashboardRoute: typeof AppProjectsProjectIdDashboardRoute
   AppProjectsProjectIdExplorerRoute: typeof AppProjectsProjectIdExplorerRoute
+  AppProjectsProjectIdKeywordsRoute: typeof AppProjectsProjectIdKeywordsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -390,6 +411,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProjectsProjectIdConnectionsRoute: AppProjectsProjectIdConnectionsRoute,
   AppProjectsProjectIdDashboardRoute: AppProjectsProjectIdDashboardRoute,
   AppProjectsProjectIdExplorerRoute: AppProjectsProjectIdExplorerRoute,
+  AppProjectsProjectIdKeywordsRoute: AppProjectsProjectIdKeywordsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
