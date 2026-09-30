@@ -32,6 +32,8 @@ export const TEST_PASSWORD = 'cok-gizli-sifre-123';
 const TABLES = [
   'audit_logs',
   'invitations',
+  'projects',
+  'clients',
   'memberships',
   'organizations',
   'refresh_tokens',

@@ -238,6 +238,160 @@ export interface AcceptInvitationResponseDto {
   clientId: string | null;
 }
 
+export type ClientResponseDtoBranding = { [key: string]: unknown };
+
+export interface ClientResponseDto {
+  id: string;
+  name: string;
+  contactEmails: string[];
+  /** @nullable */
+  notes: string | null;
+  branding: ClientResponseDtoBranding;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientListResponseDto {
+  items: ClientResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type CreateClientDtoBranding = { [key: string]: unknown };
+
+export interface CreateClientDto {
+  /** @maxLength 200 */
+  name: string;
+  /** @maxItems 20 */
+  contactEmails?: string[];
+  /** @maxLength 5000 */
+  notes?: string;
+  branding?: CreateClientDtoBranding;
+  isActive?: boolean;
+}
+
+export type UpdateClientDtoBranding = { [key: string]: unknown };
+
+export interface UpdateClientDto {
+  /** @maxLength 200 */
+  name?: string;
+  /** @maxItems 20 */
+  contactEmails?: string[];
+  /** @maxLength 5000 */
+  notes?: string;
+  branding?: UpdateClientDtoBranding;
+  isActive?: boolean;
+}
+
+export type ProjectStatus = typeof ProjectStatus[keyof typeof ProjectStatus];
+
+
+export const ProjectStatus = {
+  active: 'active',
+  paused: 'paused',
+  archived: 'archived',
+} as const;
+
+export interface ProjectResponseDto {
+  status: ProjectStatus;
+  id: string;
+  clientId: string;
+  name: string;
+  domain: string;
+  /** @nullable */
+  countryCode: string | null;
+  /** @nullable */
+  languageCode: string | null;
+  /** @nullable */
+  dfsLocationCode: number | null;
+  /** @nullable */
+  dfsLanguageCode: string | null;
+  /** @nullable */
+  timezone: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectListResponseDto {
+  items: ProjectResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type CreateProjectDtoStatus = typeof CreateProjectDtoStatus[keyof typeof CreateProjectDtoStatus];
+
+
+export const CreateProjectDtoStatus = {
+  active: 'active',
+  paused: 'paused',
+  archived: 'archived',
+} as const;
+
+export interface CreateProjectDto {
+  clientId: string;
+  /** @maxLength 200 */
+  name: string;
+  /**
+     * Normalize edilir (protokol, www, path ve sondaki slash atılır).
+     * @maxLength 255
+     */
+  domain: string;
+  /** @maxLength 2 */
+  countryCode?: string;
+  /** @maxLength 10 */
+  languageCode?: string;
+  dfsLocationCode?: number;
+  /** @maxLength 10 */
+  dfsLanguageCode?: string;
+  /** @maxLength 100 */
+  timezone?: string;
+  status?: CreateProjectDtoStatus;
+}
+
+export type UpdateProjectDtoStatus = typeof UpdateProjectDtoStatus[keyof typeof UpdateProjectDtoStatus];
+
+
+export const UpdateProjectDtoStatus = {
+  active: 'active',
+  paused: 'paused',
+  archived: 'archived',
+} as const;
+
+export interface UpdateProjectDto {
+  clientId?: string;
+  /** @maxLength 200 */
+  name?: string;
+  /**
+     * Normalize edilir (protokol, www, path ve sondaki slash atılır).
+     * @maxLength 255
+     */
+  domain?: string;
+  /** @maxLength 2 */
+  countryCode?: string;
+  /** @maxLength 10 */
+  languageCode?: string;
+  dfsLocationCode?: number;
+  /** @maxLength 10 */
+  dfsLanguageCode?: string;
+  /** @maxLength 100 */
+  timezone?: string;
+  status?: UpdateProjectDtoStatus;
+}
+
+export interface LocationReferenceDto {
+  locationCode: number;
+  locationName: string;
+  languageCode: string;
+  languageName: string;
+}
+
+export interface LocationReferenceListResponseDto {
+  items: LocationReferenceDto[];
+}
+
 export type HealthCheckResultDtoStatus = typeof HealthCheckResultDtoStatus[keyof typeof HealthCheckResultDtoStatus];
 
 
@@ -315,5 +469,45 @@ page?: number;
  * @maximum 200
  */
 limit?: number;
+};
+
+export type ClientsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+/**
+ * Client adında arama (ILIKE).
+ * @maxLength 200
+ */
+search?: string;
+};
+
+export type ProjectsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+/**
+ * Proje adı ya da domaininde arama (ILIKE).
+ * @maxLength 200
+ */
+search?: string;
+/**
+ * Yalnız bu client'ın projelerini döner.
+ */
+clientId?: string;
 };
 

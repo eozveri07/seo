@@ -27,6 +27,8 @@ interface OrgBFixtures {
   orgId: string;
   ownerUserId: string;
   invitationId: string;
+  clientId: string;
+  projectId: string;
 }
 
 interface TenantResource {
@@ -74,6 +76,58 @@ const RESOURCES: TenantResource[] = [
     path: (b) => `/invitations/${b.invitationId}`,
     referencesOrgB: true,
   },
+  { name: 'client listesi', method: 'get', path: () => '/clients' },
+  {
+    name: 'client oluşturma',
+    method: 'post',
+    path: () => '/clients',
+    body: { name: 'Ele geçirilen client' },
+  },
+  {
+    name: 'client detayı',
+    method: 'get',
+    path: (b) => `/clients/${b.clientId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'client güncelleme',
+    method: 'patch',
+    path: (b) => `/clients/${b.clientId}`,
+    body: { name: 'Ele geçirildi' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'client silme',
+    method: 'delete',
+    path: (b) => `/clients/${b.clientId}`,
+    referencesOrgB: true,
+  },
+  { name: 'proje listesi', method: 'get', path: () => '/projects' },
+  {
+    name: 'proje oluşturma',
+    method: 'post',
+    path: () => '/projects',
+    body: { name: 'Ele geçirilen proje', domain: 'saldirgan.example.com' },
+  },
+  {
+    name: 'proje detayı',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'proje güncelleme',
+    method: 'patch',
+    path: (b) => `/projects/${b.projectId}`,
+    body: { name: 'Ele geçirildi' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'proje silme',
+    method: 'delete',
+    path: (b) => `/projects/${b.projectId}`,
+    referencesOrgB: true,
+  },
 ];
 
 interface ErrorBody {
@@ -109,10 +163,31 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
     const bobId = await ctx.dataSource.query<{ id: string }[]>(
       `SELECT id FROM users WHERE email = 'bob@example.com'`,
     );
+    const client = await ctx
+      .http()
+      .post('/api/v1/clients')
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({ name: "B'nin client'ı" });
+    expect(client.status).toBe(201);
+    const clientId = (client.body as { id: string }).id;
+    const project = await ctx
+      .http()
+      .post('/api/v1/projects')
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({
+        clientId,
+        name: "B'nin projesi",
+        domain: 'b-project.example.com',
+      });
+    expect(project.status).toBe(201);
     return {
       orgId,
       ownerUserId: bobId[0].id,
       invitationId: (invitation.body as { id: string }).id,
+      clientId,
+      projectId: (project.body as { id: string }).id,
     };
   }
 
@@ -218,6 +293,18 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
     expect(invitations.body).toMatchObject({
       total: 1,
       items: [{ id: orgB.invitationId, email: 'b-davetli@example.com' }],
+    });
+
+    const clients = await asBob('/clients');
+    expect(clients.body).toMatchObject({
+      total: 1,
+      items: [{ id: orgB.clientId, name: "B'nin client'ı" }],
+    });
+
+    const projects = await asBob('/projects');
+    expect(projects.body).toMatchObject({
+      total: 1,
+      items: [{ id: orgB.projectId, domain: 'b-project.example.com' }],
     });
   });
 });

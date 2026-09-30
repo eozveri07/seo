@@ -16,6 +16,10 @@ export enum AuditAction {
   MemberRemoved = 'member.removed',
   InvitationCreated = 'invitation.created',
   InvitationRevoked = 'invitation.revoked',
+  ClientCreated = 'client.created',
+  ClientDeleted = 'client.deleted',
+  ProjectCreated = 'project.created',
+  ProjectDeleted = 'project.deleted',
 }
 
 export interface AuditEntry {

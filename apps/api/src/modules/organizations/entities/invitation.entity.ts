@@ -1,6 +1,7 @@
 import { Check, Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { OrgRole } from '../../../common/tenancy/org-role';
 import { TenantScopedEntity } from '../../../database/entities/tenant-scoped.entity';
+import { Client } from '../../clients/entities/client.entity';
 import { User } from '../../users/user.entity';
 import { CLIENT_SCOPE_CHECK } from './membership.entity';
 import { Organization } from './organization.entity';
@@ -26,6 +27,10 @@ export class Invitation extends TenantScopedEntity {
 
   @Column('uuid', { nullable: true })
   clientId!: string | null;
+
+  @ManyToOne(() => Client, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'client_id' })
+  client?: Client | null;
 
   /** Token'ın SHA-256 hash'i (hex). Loglanmaz, response'a konmaz. */
   @Index('UQ_invitations_token_hash', { unique: true })

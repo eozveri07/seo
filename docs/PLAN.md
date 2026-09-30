@@ -173,7 +173,7 @@ Gerçek Redis'e karşı: `bun run db:up`, `bun run dev:api`; bir org kapsamlı i
 üye çıkarılınca anahtar silinmeli. `bun run db:migrate` ve e2e'nin Docker Compose'daki Postgres imajında
 (pgvector/pg_partman'lı `InitExtensions` dahil) bir kez çalıştırılması önerilir.
 
-### [ ] T1.3 Client'lar ve projeler
+### [x] T1.3 Client'lar ve projeler
 - Tablolar: `clients`, `projects`.
 - CRUD endpoint'leri, sayfalı listeler, arama.
 - `ProjectAccessGuard`: `:projectId` route'larında org ve client_viewer kontrolü.
@@ -183,6 +183,19 @@ Gerçek Redis'e karşı: `bun run db:up`, `bun run dev:api`; bir org kapsamlı i
 **Kabul:**
 - client_viewer sadece kendi client'ının projelerini görüyor.
 - İzolasyon testine client ve project eklendi.
+
+Guard zinciri artık JwtAuthGuard → TenantGuard → RolesGuard → `ProjectAccessGuard` (ARCHITECTURE §4.3); sıra
+`app.module.spec.ts`'te doğrulanır. `memberships.client_id` ve `invitations.client_id`'nin FK'leri de bu migration'da
+eklendi (T1.2'de `clients` tablosu henüz yoktu). Migration'daki PK/FK/index adları TypeORM'un `SnakeNamingStrategy`'si
+kullanılarak entity metadata'sından programatik olarak üretildi (gerçek bir DB'ye bağlanmadan). Unit ve mock'lu HTTP
+testler: domain normalizasyonu, `ClientsService`/`ProjectsService`, `ProjectAccessGuard`, rol matrisi (HTTP, gerçek
+guard zinciri).
+
+**Lokal doğrulama bekliyor:** Runner'da Docker/Postgres yok; migration'ın gerçek DB'de temiz uygulanıp geri
+alınabildiği ve `migration:generate`'in entity'lerle fark bulmadığı doğrulanmadı. `bun run db:up`, `bun run db:migrate`,
+ardından `E2E_DATABASE=true DATABASE_URL=postgres://seo:seo@localhost:5432/seo_test bun run --filter api test:e2e`
+ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-projects` uçları gerçek DB'ye karşı
+çalıştırılmalı.
 
 ### [ ] T1.4 Bağlantılar (GSC ve GA4)
 - Tablo: `connections`.
