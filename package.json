@@ -16,7 +16,8 @@
     "dev": "concurrently -n api,panel -c blue,magenta \"bun run dev:api\" \"bun run dev:panel\"",
     "lint": "bun run --filter api lint && bun run --filter panel lint",
     "typecheck": "bun run --filter api typecheck && bun run --filter panel typecheck",
-    "test": "bun run --filter api test"
+    "test": "bun run --filter api test",
+    "openapi:export": "bun run --filter api openapi:export"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"
