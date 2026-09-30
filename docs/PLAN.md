@@ -346,7 +346,7 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Lokal doğrulama bekliyor:** Explorer'ın backend `gsc/queries` ve `gsc/pages` endpoint'leri (sayfalama, arama, sıralama) gerçek DB ve büyük bir veri setiyle (binlerce satır) performans açısından test edilmedi; runner'da DB olmadığı için sahte bir HTTP sunucusuyla (137 satır, 7 sayfa) uçtan uca doğrulandı. Dönem karşılaştırması (değişim kolonları) backend'de satır bazlı desteklenmediği için client tarafında önceki dönemin ilk 200 satırını çekip anahtara göre eşleştirerek hesaplanıyor; gerçek veride bu yaklaşımın kabul edilebilir olup olmadığı ürün sahibiyle teyit edilmeli.
 
-### [ ] T1.13 Panel: keyword ekranı
+### [x] T1.13 Panel: keyword ekranı
 - Keyword tablosu: keyword, grup, cihaz, pozisyon, 1/7/30 günlük değişim (renkli), en iyi pozisyon, URL, hacim, sparkline, son kontrol.
 - Filtreler: grup, etiket, pozisyon aralığı (top 3/10/20/dışarıda), yükselen/düşen.
 - Toplu ekleme dialog'u (metin/CSV yapıştırma, önizleme, sonuç raporu).
@@ -355,6 +355,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Grup yönetimi.
 
 **Kabul:** 40 keyword'lük bir projede tüm akış (ekle, kontrol et, geçmişi gör) panelden yapılabiliyor.
+
+**Lokal doğrulama bekliyor:** Backend `keyword_rank_latest`'i doğrudan liste olarak döndüren bir endpoint sunmuyor; tablo kolonları (pozisyon, 1/7/30g değişim, en iyi pozisyon, sparkline, son kontrol) `rankings/history`'den (T1.9) istemci tarafında hesaplanıyor (`rank-calc.ts`, backend'deki `calculateRankLatest`'in testli bir benzeri). "En iyi pozisyon" bu yüzden tüm zamanların değil yalnız görüntülenen 30 günlük pencerenin en iyisi; pozisyon aralığı/yükselen-düşen filtreleri de bu hesaba göre client tarafında uygulanıyor. Runner'da DB/Redis olmadığı için uçtan uca akış (ekle, GSC önerisini takibe al, filtrele, "şimdi kontrol et" + rate limit + grup yönetimi, client_viewer kısıtı, açık/koyu tema, mobil) OpenAPI sözleşmesiyle birebir eşleşen sahte bir HTTP sunucusuyla tarayıcıda doğrulandı; gerçek API/DB ve 40+ keyword'lük bir projede (özellikle `rankings/history`'nin `MAX_HISTORY_KEYWORDS=50` sınırı) lokalde tekrar doğrulanmalı.
 
 ### [ ] T1.14 Alertler
 - Tablolar: `alert_rules`, `alert_events`, `notification_channels`.
