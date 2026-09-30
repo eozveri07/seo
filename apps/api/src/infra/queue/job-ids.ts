@@ -81,3 +81,12 @@ export function rankFetchJobId(
 export function rankLiveJobId(projectId: string, runId: string): string {
   return `rank-live:${projectId}:${runId}`;
 }
+
+/**
+ * `summary` (T1.10): proje ve tarih başına tek job. `sync.completed` ve
+ * `rank.day_completed` aynı gün birden fazla yayılabilir; deterministik
+ * jobId bu tetiklemelerin tek job'a düşmesini sağlar (son çalışan kazanır).
+ */
+export function summaryJobId(projectId: string, date: string): string {
+  return `summary:${projectId}:${date}`;
+}

@@ -3,6 +3,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UnrecoverableError } from 'bullmq';
 import { addDays, dateRange } from '../../common/dates/utc-date';
 import {
+  SYNC_COMPLETED_EVENT,
+  SyncCompletedEvent,
+} from '../../common/events/sync-completed.event';
+import {
   SYNC_FAILED_EVENT,
   SyncFailedEvent,
 } from '../../common/events/sync-failed.event';
@@ -102,6 +106,10 @@ export class GscSyncService {
       }
     });
     await this.connectionsService.markSynced(connection.id);
+    this.events.emit(
+      SYNC_COMPLETED_EVENT,
+      new SyncCompletedEvent(connection.orgId, connection.projectId, to, 'gsc'),
+    );
     return stats;
   }
 

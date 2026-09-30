@@ -314,6 +314,15 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Kabul:** 20 projelik org'da proje listesi özeti tek sorguyla, 200 ms altında dönüyor.
 
+**Durum:** Migration, `summary` processor'ı (`SummaryService`), `keyword_rank_latest` güncellemesi (`RankSummaryService`, saf hesap `rank-summary-calc.ts`), visibility skoru (`visibility.constants.ts`) ve her iki endpoint eklendi. Tetikleme `sync.completed` (gsc/ga4, yeni event) ve `rank.day_completed` ile: `SummaryTriggerListener` deterministik jobId (`summary:{projectId}:{date}`) ile `summary` kuyruğuna ekler, bitince `alert-eval` job'u eklenir. Unit testlerle doğrulandı: `rank-summary-calc.spec.ts` (değişim/best/sparkline), `visibility.constants.spec.ts` (0-100 aralığı), `rank-summary.service.spec.ts` ve `summary.service.spec.ts` (idempotency). `GET /projects/summary` tek sorguyla (`SummaryStore.cards`, CTE'ler) döner; `client_viewer` kapsaması `clients-projects.http.spec.ts`'te test edildi. Başlık, 200 ms ölçümü gerçek DB'de yapılamadığı için işaretsiz.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres ve Redis yok. Migration'ın gerçek DB'ye uygulanması ve 200 ms hedefinin 20 projelik seed'le ölçülmesi lokalde yapılmalı:
+1. `bun run db:up`, `bun run --filter api migration:run`, `bun run dev:api` ve `SCHEDULER_ENABLED=true bun run dev:worker`.
+2. 20 proje, her birine birkaç gün `gsc_site_daily`/`ga4_daily`/`rank_daily` satırı (seed script ya da gerçek sync) oluşturun.
+3. `GET /api/v1/projects/summary` isteğini ölçün (`curl -w '%{time_total}'` ya da panelden); 200 ms altında dönmeli, sorgu planını `EXPLAIN ANALYZE` ile N+1 olmadığını doğrulayın.
+4. Bir proje için GSC ya da GA4 sync'i (`POST /projects/:id/sync/gsc`) tetikleyin; worker logunda `summary job eklendi` ve `project_daily_summary güncellendi` görünmeli, `SELECT * FROM project_daily_summary` ilgili günün satırını göstermeli.
+5. Aynı günü iki kez tetikleyin (`SELECT count(*)` hâlâ 1 satır); `keyword_rank_latest`'i rank verisi olan bir proje için kontrol edin.
+
 ### [ ] T1.11 Panel: auth ve yönetim ekranları
 - Login, davet kabul, şifre belirleme.
 - Org seçici (üst bar), aktif org localStorage'da (try/catch ile), X-Org-Id header'ı mutator'dan.

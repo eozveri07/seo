@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConnectionActivatedListener } from './connection-activated.listener';
-import { Ga4QueryService } from './ga4-query.service';
 import { Ga4SharedModule } from './ga4-shared.module';
 import { Ga4Controller } from './ga4.controller';
 
@@ -8,6 +7,6 @@ import { Ga4Controller } from './ga4.controller';
 @Module({
   imports: [Ga4SharedModule],
   controllers: [Ga4Controller],
-  providers: [Ga4QueryService, ConnectionActivatedListener],
+  providers: [ConnectionActivatedListener],
 })
 export class Ga4Module {}

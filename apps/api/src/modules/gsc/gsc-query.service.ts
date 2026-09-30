@@ -82,6 +82,12 @@ export class GscQueryService {
     private readonly cls: ClsService<AppClsStore>,
   ) {}
 
+  /** Tek bir günün site toplamı (T1.10 `summary` job'u). */
+  async dayTotals(projectId: string, date: string): Promise<GscTotalsDto> {
+    const period = await this.sitePeriod(projectId, { from: date, to: date });
+    return period.totals;
+  }
+
   async overview(
     projectId: string,
     query: GscDateRangeQueryDto & { compare?: GscCompareMode },

@@ -16,6 +16,7 @@ import { KeywordsModule } from './modules/keywords/keywords.module';
 import { LocationsModule } from './modules/locations/locations.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { RankingsModule } from './modules/rankings/rankings.module';
+import { SummaryModule } from './modules/summary/summary.module';
 import { UsageModule } from './modules/usage/usage.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -43,6 +44,7 @@ import { UsersModule } from './modules/users/users.module';
     Ga4Module,
     KeywordsModule,
     RankingsModule,
+    SummaryModule,
     LocationsModule,
     UsageModule,
     HealthModule,

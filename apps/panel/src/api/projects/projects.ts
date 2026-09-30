@@ -28,6 +28,8 @@ import type {
   CreateProjectDto,
   ProjectListResponseDto,
   ProjectResponseDto,
+  ProjectSummaryCardsResponseDto,
+  ProjectsControllerCardsParams,
   ProjectsControllerListParams,
   UpdateProjectDto
 } from '../endpoints.schemas';
@@ -285,7 +287,137 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getProjectsControllerCreateMutationOptions(options), queryClient);
     }
-    export type projectsControllerFindOneResponse200 = {
+    export type projectsControllerCardsResponse200 = {
+  data: ProjectSummaryCardsResponseDto
+  status: 200
+}
+
+export type projectsControllerCardsResponse403 = {
+  data: void
+  status: 403
+}
+
+export type projectsControllerCardsResponseSuccess = (projectsControllerCardsResponse200) & {
+  headers: Headers;
+};
+export type projectsControllerCardsResponseError = (projectsControllerCardsResponse403) & {
+  headers: Headers;
+};
+
+export type projectsControllerCardsResponse = (projectsControllerCardsResponseSuccess | projectsControllerCardsResponseError)
+
+export const getProjectsControllerCardsUrl = (params?: ProjectsControllerCardsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/projects/summary?${stringifiedParams}` : `/api/v1/projects/summary`
+}
+
+/**
+ * @summary Org genelindeki proje kartları (ARCHITECTURE §10, T1.12): son değerler,
+7/28 günlük değişim, mini seri. Tek sorguyla (`SummaryStore.cards`),
+`client_viewer` yalnız kendi client'ını görür.
+ */
+export const projectsControllerCards = async (params?: ProjectsControllerCardsParams, options?: Parameters<typeof customFetch>[1]): Promise<projectsControllerCardsResponse> => {
+
+  return customFetch<projectsControllerCardsResponse>(getProjectsControllerCardsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getProjectsControllerCardsQueryKey = (params?: ProjectsControllerCardsParams,) => {
+    return [
+    `/api/v1/projects/summary`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getProjectsControllerCardsQueryOptions = <TData = Awaited<ReturnType<typeof projectsControllerCards>>, TError = void>(params?: ProjectsControllerCardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectsControllerCards>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getProjectsControllerCardsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof projectsControllerCards>>> = ({ signal }) => projectsControllerCards(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof projectsControllerCards>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ProjectsControllerCardsQueryResult = NonNullable<Awaited<ReturnType<typeof projectsControllerCards>>>
+export type ProjectsControllerCardsQueryError = void
+
+
+export function useProjectsControllerCards<TData = Awaited<ReturnType<typeof projectsControllerCards>>, TError = void>(
+ params: undefined |  ProjectsControllerCardsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectsControllerCards>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof projectsControllerCards>>,
+          TError,
+          Awaited<ReturnType<typeof projectsControllerCards>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useProjectsControllerCards<TData = Awaited<ReturnType<typeof projectsControllerCards>>, TError = void>(
+ params?: ProjectsControllerCardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectsControllerCards>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof projectsControllerCards>>,
+          TError,
+          Awaited<ReturnType<typeof projectsControllerCards>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useProjectsControllerCards<TData = Awaited<ReturnType<typeof projectsControllerCards>>, TError = void>(
+ params?: ProjectsControllerCardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectsControllerCards>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Org genelindeki proje kartları (ARCHITECTURE §10, T1.12): son değerler,
+7/28 günlük değişim, mini seri. Tek sorguyla (`SummaryStore.cards`),
+`client_viewer` yalnız kendi client'ını görür.
+ */
+
+export function useProjectsControllerCards<TData = Awaited<ReturnType<typeof projectsControllerCards>>, TError = void>(
+ params?: ProjectsControllerCardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectsControllerCards>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getProjectsControllerCardsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type projectsControllerFindOneResponse200 = {
   data: ProjectResponseDto
   status: 200
 }

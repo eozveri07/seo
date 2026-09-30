@@ -321,6 +321,36 @@ export interface ProjectListResponseDto {
   limit: number;
 }
 
+export interface ProjectSummaryMetricDto {
+  /** @nullable */
+  value: number | null;
+  /** @nullable */
+  change7d: number | null;
+  /** @nullable */
+  change28d: number | null;
+}
+
+export interface ProjectSummaryCardDto {
+  projectId: string;
+  projectName: string;
+  clientId: string;
+  /**
+     * Son özetin ait olduğu gün; hiç özet yoksa `null`.
+     * @nullable
+     */
+  date: string | null;
+  clicks: ProjectSummaryMetricDto;
+  organicSessions: ProjectSummaryMetricDto;
+  avgPosition: ProjectSummaryMetricDto;
+  visibilityScore: ProjectSummaryMetricDto;
+  /** Son 28 günün visibility skoru serisi (mini grafik), eskiden yeniye. */
+  visibilitySeries: number[];
+}
+
+export interface ProjectSummaryCardsResponseDto {
+  items: ProjectSummaryCardDto[];
+}
+
 export type CreateProjectDtoStatus = typeof CreateProjectDtoStatus[keyof typeof CreateProjectDtoStatus];
 
 
@@ -907,6 +937,30 @@ export interface RankSerpResponseDto {
   checkedAt: string;
 }
 
+export interface ProjectDailySummaryPointDto {
+  date: string;
+  gscClicks: number;
+  gscImpressions: number;
+  gscCtr: number;
+  gscPosition: number;
+  organicSessions: number;
+  organicKeyEvents: number;
+  kwTracked: number;
+  kwTop3: number;
+  kwTop10: number;
+  kwTop20: number;
+  kwTop100: number;
+  /** @nullable */
+  kwAvgPosition: number | null;
+  visibilityScore: number;
+}
+
+export interface ProjectSummaryResponseDto {
+  from: string;
+  to: string;
+  points: ProjectDailySummaryPointDto[];
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -1026,6 +1080,10 @@ search?: string;
 /**
  * Yalnız bu client'ın projelerini döner.
  */
+clientId?: string;
+};
+
+export type ProjectsControllerCardsParams = {
 clientId?: string;
 };
 
@@ -1233,5 +1291,10 @@ to?: string;
 
 export type RankingsControllerSerpParams = {
 date?: string;
+};
+
+export type SummaryControllerForProjectParams = {
+from?: string;
+to?: string;
 };
 

@@ -12,6 +12,7 @@ import {
   RankPollProcessorModule,
   RankPostProcessorModule,
 } from './modules/rankings/rankings-processor.module';
+import { SummaryProcessorModule } from './modules/summary/summary-processor.module';
 
 export interface WorkerProcessorRegistryEntry {
   queueName: QueueName;
@@ -35,4 +36,5 @@ export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
   { queueName: QueueName.RankPost, module: RankPostProcessorModule },
   { queueName: QueueName.RankPoll, module: RankPollProcessorModule },
   { queueName: QueueName.RankFetch, module: RankFetchProcessorModule },
+  { queueName: QueueName.Summary, module: SummaryProcessorModule },
 ];

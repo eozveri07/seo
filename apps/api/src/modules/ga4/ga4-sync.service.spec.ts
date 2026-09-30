@@ -1,5 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UnrecoverableError } from 'bullmq';
+import { SYNC_COMPLETED_EVENT } from '../../common/events/sync-completed.event';
 import { SYNC_FAILED_EVENT } from '../../common/events/sync-failed.event';
 import {
   ConnectorAuthError,
@@ -209,6 +210,22 @@ describe('Ga4SyncService', () => {
         { startDate: '2026-09-27', endDate: '2026-09-29', offset: 0 },
       ]);
       expect(connectionsService.markSynced).toHaveBeenCalledWith(CONNECTION_ID);
+    });
+
+    it("başarıda sync.completed'ı senkronize edilen son günle (to) yayar (T1.10 summary tetikleyicisi)", async () => {
+      const { service, events } = buildService();
+
+      await service.syncRecent(PROJECT_ID, '2026-09-30');
+
+      expect(events.emit).toHaveBeenCalledWith(
+        SYNC_COMPLETED_EVENT,
+        expect.objectContaining({
+          orgId: 'org-1',
+          projectId: PROJECT_ID,
+          date: '2026-09-29',
+          source: 'ga4',
+        }),
+      );
     });
 
     it.each([

@@ -25,6 +25,9 @@ import { CurrentOrg } from '../../common/tenancy/current-org.decorator';
 import { ROLE_MATRIX } from '../../common/tenancy/org-role';
 import { Roles } from '../../common/tenancy/roles.decorator';
 import type { TenantContext } from '../../common/tenancy/tenant-context';
+import { ProjectSummaryCardsQueryDto } from '../summary/dto/summary-query.dto';
+import { ProjectSummaryCardsResponseDto } from '../summary/dto/summary-response.dto';
+import { SummaryQueryService } from '../summary/summary-query.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ListProjectQueryDto } from './dto/list-project-query.dto';
 import {
@@ -37,13 +40,22 @@ import { ProjectsService } from './projects.service';
 /**
  * Aktif organizasyonun (X-Org-Id) projeleri. `:projectId` içeren endpoint'ler
  * `ProjectAccessGuard`'dan geçer (org ve client_viewer scope kontrolü).
+ *
+ * `GET /projects/summary` (T1.10, org genelindeki proje kartları) bu
+ * controller'da, `findOne(':projectId')`'dan ÖNCE tanımlıdır: aksi halde
+ * Express router `/projects/summary`'yi `projectId = 'summary'` olarak
+ * `:projectId` route'una eşler (`ParseUUIDPipe` 400 döndürür, asla bu
+ * handler'a ulaşmaz). İş mantığı `summary` modülünün `SummaryQueryService`'inde.
  */
 @ApiTags('projects')
 @ApiOrgScoped()
 @ApiForbiddenResponse({ description: 'ORG_ACCESS_DENIED, INSUFFICIENT_ROLE' })
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly summaryQuery: SummaryQueryService,
+  ) {}
 
   /** `client_viewer` yalnız kendi client'ının projelerini görür. */
   @Get()
@@ -58,6 +70,21 @@ export class ProjectsController {
       ...page,
       items: page.items.map((item) => ProjectResponseDto.fromEntity(item)),
     };
+  }
+
+  /**
+   * Org genelindeki proje kartları (ARCHITECTURE §10, T1.12): son değerler,
+   * 7/28 günlük değişim, mini seri. Tek sorguyla (`SummaryStore.cards`),
+   * `client_viewer` yalnız kendi client'ını görür.
+   */
+  @Get('summary')
+  @Roles(...ROLE_MATRIX.dataView)
+  @ApiOkResponse({ type: ProjectSummaryCardsResponseDto })
+  cards(
+    @Query() query: ProjectSummaryCardsQueryDto,
+    @CurrentOrg() org: TenantContext,
+  ): Promise<ProjectSummaryCardsResponseDto> {
+    return this.summaryQuery.cards(query, org);
   }
 
   @Get(':projectId')

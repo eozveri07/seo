@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConnectionActivatedListener } from './connection-activated.listener';
-import { GscQueryService } from './gsc-query.service';
 import { GscSharedModule } from './gsc-shared.module';
 import { GscController } from './gsc.controller';
 
@@ -8,6 +7,6 @@ import { GscController } from './gsc.controller';
 @Module({
   imports: [GscSharedModule],
   controllers: [GscController],
-  providers: [GscQueryService, ConnectionActivatedListener],
+  providers: [ConnectionActivatedListener],
 })
 export class GscModule {}

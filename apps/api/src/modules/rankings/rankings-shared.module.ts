@@ -14,6 +14,8 @@ import { RankJobsService } from './rank-jobs.service';
 import { RankPollService } from './rank-poll.service';
 import { RankPostService } from './rank-post.service';
 import { RankStore } from './rank-store';
+import { RankSummaryStore } from './rank-summary-store';
+import { RankSummaryService } from './rank-summary.service';
 import { RankingsQueryService } from './rankings-query.service';
 
 /**
@@ -38,6 +40,8 @@ import { RankingsQueryService } from './rankings-query.service';
     RankPollService,
     RankJobsService,
     RankingsQueryService,
+    RankSummaryStore,
+    RankSummaryService,
   ],
   exports: [
     RankPostService,
@@ -45,6 +49,7 @@ import { RankingsQueryService } from './rankings-query.service';
     RankPollService,
     RankJobsService,
     RankingsQueryService,
+    RankSummaryService,
   ],
 })
 export class RankingsSharedModule {}

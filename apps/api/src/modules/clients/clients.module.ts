@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { provideTenantRepository } from '../../common/tenancy/tenant-repository.provider';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { SummarySharedModule } from '../summary/summary-shared.module';
 import { ClientsController } from './clients.controller';
 import { ClientsService } from './clients.service';
 import { Client } from './entities/client.entity';
@@ -17,7 +18,11 @@ import { ProjectsService } from './projects.service';
  * RolesGuard) sonra import edilir, sıra `app.module.spec.ts`'te doğrulanır.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Client, Project]), AuditLogsModule],
+  imports: [
+    TypeOrmModule.forFeature([Client, Project]),
+    AuditLogsModule,
+    SummarySharedModule,
+  ],
   controllers: [ClientsController, ProjectsController],
   providers: [
     provideTenantRepository(Client),

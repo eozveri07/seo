@@ -34,6 +34,9 @@ const AGGREGATES = `
   SUM("key_events")::float8 AS "keyEvents",
   SUM("total_revenue")::float8 AS "totalRevenue"`;
 
+/** `channel_group`'un organik değeri (ARCHITECTURE §5.4); T1.10 `summary` job'u bu kanalı okur. */
+export const GA4_ORGANIC_CHANNEL = 'Organic Search';
+
 const SORT_COLUMNS: Record<Ga4SortField, string> = {
   [Ga4SortField.Sessions]: '"sessions"',
   [Ga4SortField.EngagedSessions]: '"engagedSessions"',
@@ -63,6 +66,25 @@ export class Ga4QueryService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly cls: ClsService<AppClsStore>,
   ) {}
+
+  /** Tek bir günün organik oturum ve key event toplamı (T1.10 `summary` job'u). */
+  async organicDayTotals(
+    projectId: string,
+    date: string,
+  ): Promise<{ sessions: number; keyEvents: number }> {
+    const orgId = requireOrgId(this.cls);
+    const rows = await this.dataSource.query<
+      { sessions: number; keyEvents: number }[]
+    >(
+      `SELECT COALESCE(SUM("sessions"), 0)::float8 AS "sessions",
+              COALESCE(SUM("key_events"), 0)::float8 AS "keyEvents"
+         FROM "ga4_daily"
+        WHERE "org_id" = $1 AND "project_id" = $2 AND "date" = $3
+          AND "channel_group" = $4`,
+      [orgId, projectId, date, GA4_ORGANIC_CHANNEL],
+    );
+    return rows[0] ?? { sessions: 0, keyEvents: 0 };
+  }
 
   async overview(
     projectId: string,

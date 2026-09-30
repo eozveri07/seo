@@ -1089,6 +1089,47 @@
         ]
       }
     },
+    "/api/v1/projects/summary": {
+      "get": {
+        "operationId": "ProjectsController_cards",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSummaryCardsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Org genelindeki proje kartları (ARCHITECTURE §10, T1.12): son değerler,\n7/28 günlük değişim, mini seri. Tek sorguyla (`SummaryStore.cards`),\n`client_viewer` yalnız kendi client'ını görür.",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
     "/api/v1/projects/{projectId}": {
       "get": {
         "operationId": "ProjectsController_findOne",
@@ -3265,6 +3306,70 @@
         ]
       }
     },
+    "/api/v1/projects/{projectId}/summary": {
+      "get": {
+        "operationId": "SummaryController_forProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Günlük seri (`project_daily_summary`).",
+        "tags": [
+          "summary"
+        ]
+      }
+    },
     "/api/v1/locations": {
       "get": {
         "operationId": "LocationsController_list",
@@ -4200,6 +4305,91 @@
           "total",
           "page",
           "limit"
+        ]
+      },
+      "ProjectSummaryMetricDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "nullable": true
+          },
+          "change7d": {
+            "type": "number",
+            "nullable": true
+          },
+          "change28d": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "value",
+          "change7d",
+          "change28d"
+        ]
+      },
+      "ProjectSummaryCardDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true,
+            "description": "Son özetin ait olduğu gün; hiç özet yoksa `null`."
+          },
+          "clicks": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "organicSessions": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "avgPosition": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "visibilityScore": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "visibilitySeries": {
+            "description": "Son 28 günün visibility skoru serisi (mini grafik), eskiden yeniye.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "projectId",
+          "projectName",
+          "clientId",
+          "date",
+          "clicks",
+          "organicSessions",
+          "avgPosition",
+          "visibilityScore",
+          "visibilitySeries"
+        ]
+      },
+      "ProjectSummaryCardsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectSummaryCardDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "CreateProjectDto": {
@@ -5567,6 +5757,95 @@
           "serpFeatures",
           "competitorsTop",
           "checkedAt"
+        ]
+      },
+      "ProjectDailySummaryPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "gscClicks": {
+            "type": "number"
+          },
+          "gscImpressions": {
+            "type": "number"
+          },
+          "gscCtr": {
+            "type": "number"
+          },
+          "gscPosition": {
+            "type": "number"
+          },
+          "organicSessions": {
+            "type": "number"
+          },
+          "organicKeyEvents": {
+            "type": "number"
+          },
+          "kwTracked": {
+            "type": "number"
+          },
+          "kwTop3": {
+            "type": "number"
+          },
+          "kwTop10": {
+            "type": "number"
+          },
+          "kwTop20": {
+            "type": "number"
+          },
+          "kwTop100": {
+            "type": "number"
+          },
+          "kwAvgPosition": {
+            "type": "number",
+            "nullable": true
+          },
+          "visibilityScore": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "gscClicks",
+          "gscImpressions",
+          "gscCtr",
+          "gscPosition",
+          "organicSessions",
+          "organicKeyEvents",
+          "kwTracked",
+          "kwTop3",
+          "kwTop10",
+          "kwTop20",
+          "kwTop100",
+          "kwAvgPosition",
+          "visibilityScore"
+        ]
+      },
+      "ProjectSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectDailySummaryPointDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "points"
         ]
       },
       "LocationReferenceDto": {

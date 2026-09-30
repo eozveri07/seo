@@ -27,6 +27,7 @@ import { Project } from './entities/project.entity';
 import { ProjectAccessGuard } from './guards/project-access.guard';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
+import { SummaryQueryService } from '../summary/summary-query.service';
 
 /**
  * ARCHITECTURE §4.3 zinciri gerçek (JwtAuthGuard → TenantGuard → RolesGuard →
@@ -93,6 +94,9 @@ async function createApp() {
       .mockResolvedValue({ id: PROJECT_IN_A, clientId: CLIENT_A }),
     delete: jest.fn().mockResolvedValue(undefined),
   };
+  const summaryQuery = {
+    cards: jest.fn().mockResolvedValue({ items: [] }),
+  };
   const projectRows = [
     { id: PROJECT_IN_A, orgId: ORG_ID, clientId: CLIENT_A },
     { id: PROJECT_IN_B, orgId: ORG_ID, clientId: CLIENT_B },
@@ -132,6 +136,7 @@ async function createApp() {
       { provide: MembershipsService, useValue: membershipsService },
       { provide: ClientsService, useValue: clientsService },
       { provide: ProjectsService, useValue: projectsService },
+      { provide: SummaryQueryService, useValue: summaryQuery },
       {
         provide: getTenantRepositoryToken(Project),
         useValue: projectsRepository,
@@ -159,6 +164,7 @@ async function createApp() {
     token: (userId: string) => jwt.sign({ sub: userId }),
     clientsService,
     projectsService,
+    summaryQuery,
   };
 }
 
@@ -321,6 +327,40 @@ describe('Client/proje rol matrisi ve ProjectAccessGuard (ARCHITECTURE §4.2, §
       );
 
       expect(response.status).toBe(200);
+    });
+  });
+
+  describe('GET /projects/summary', () => {
+    it("'summary' :projectId olarak yakalanmaz (ParseUUIDPipe 400 dönmez)", async () => {
+      const response = await call(
+        'get',
+        '/projects/summary',
+        USER_BY_ROLE[OrgRole.Admin],
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ items: [] });
+      expect(ctx.summaryQuery.cards).toHaveBeenCalledWith(
+        {},
+        expect.objectContaining({ orgId: ORG_ID }),
+      );
+    });
+
+    it("client_viewer kendi clientId'siyle sorgular, query'deki clientId'yi yok sayar", async () => {
+      const response = await call(
+        'get',
+        `/projects/summary?clientId=${CLIENT_B}`,
+        USER_BY_ROLE[OrgRole.ClientViewer],
+      );
+
+      expect(response.status).toBe(200);
+      expect(ctx.summaryQuery.cards).toHaveBeenCalledWith(
+        { clientId: CLIENT_B },
+        expect.objectContaining({
+          clientId: CLIENT_A,
+          role: OrgRole.ClientViewer,
+        }),
+      );
     });
   });
 });
