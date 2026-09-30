@@ -122,6 +122,8 @@ export interface AlertEvalJobData extends BaseJobData {
 
 export interface NotifyJobData extends BaseJobData {
   channelId: string;
+  /** T1.14: `alert-eval`'in yazdığı `alert_events.id`; `notify` job'u bunu okur. */
+  alertEventId?: string;
 }
 
 export interface ReportJobData extends BaseJobData {

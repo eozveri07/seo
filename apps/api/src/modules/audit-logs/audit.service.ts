@@ -28,6 +28,12 @@ export enum AuditAction {
   KeywordCreated = 'keyword.created',
   KeywordDeleted = 'keyword.deleted',
   KeywordsBulkAdded = 'keywords.bulk_added',
+  AlertRuleCreated = 'alert_rule.created',
+  AlertRuleUpdated = 'alert_rule.updated',
+  AlertRuleDeleted = 'alert_rule.deleted',
+  NotificationChannelCreated = 'notification_channel.created',
+  NotificationChannelUpdated = 'notification_channel.updated',
+  NotificationChannelDeleted = 'notification_channel.deleted',
 }
 
 export interface AuditEntry {

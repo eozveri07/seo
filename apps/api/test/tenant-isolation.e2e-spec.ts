@@ -35,6 +35,8 @@ interface OrgBFixtures {
   connectionId: string;
   keywordGroupId: string;
   keywordId: string;
+  notificationChannelId: string;
+  alertRuleId: string;
 }
 
 interface TenantResource {
@@ -322,6 +324,89 @@ const RESOURCES: TenantResource[] = [
       `/projects/${b.projectId}/rankings/serp/${b.keywordId}?date=2026-09-01`,
     referencesOrgB: true,
   },
+  {
+    name: 'bildirim kanalı listesi',
+    method: 'get',
+    path: () => '/notification-channels',
+  },
+  {
+    name: 'bildirim kanalı oluşturma',
+    method: 'post',
+    path: () => '/notification-channels',
+    body: {
+      type: 'slack',
+      name: 'Ele geçirilen kanal',
+      config: { webhookUrl: 'https://hooks.slack.com/services/ele-gecirildi' },
+    },
+  },
+  {
+    name: 'bildirim kanalı detayı',
+    method: 'get',
+    path: (b) => `/notification-channels/${b.notificationChannelId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'bildirim kanalı güncelleme',
+    method: 'patch',
+    path: (b) => `/notification-channels/${b.notificationChannelId}`,
+    body: { name: 'Ele geçirildi' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'bildirim kanalı test',
+    method: 'post',
+    path: (b) => `/notification-channels/${b.notificationChannelId}/test`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'bildirim kanalı silme',
+    method: 'delete',
+    path: (b) => `/notification-channels/${b.notificationChannelId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'alert kuralı listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/alert-rules`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'alert kuralı oluşturma',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/alert-rules`,
+    body: {
+      name: 'Ele geçirilen kural',
+      type: 'sync_failure',
+      config: {},
+      channels: [],
+    },
+    referencesOrgB: true,
+  },
+  {
+    name: 'alert kuralı detayı',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/alert-rules/${b.alertRuleId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'alert kuralı güncelleme',
+    method: 'patch',
+    path: (b) => `/projects/${b.projectId}/alert-rules/${b.alertRuleId}`,
+    body: { name: 'Ele geçirildi' },
+    referencesOrgB: true,
+  },
+  {
+    name: 'alert kuralı silme',
+    method: 'delete',
+    path: (b) => `/projects/${b.projectId}/alert-rules/${b.alertRuleId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'alert geçmişi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/alert-events`,
+    referencesOrgB: true,
+  },
 ];
 
 interface ErrorBody {
@@ -414,6 +499,31 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
        VALUES ('2026-09-01', $1, $2, $3, 4, 5, 'https://b-project.example.com/', '{featured_snippet}', '[{"domain":"b-project.example.com","position":4}]', now(), 'dfs_standard')`,
       [orgId, projectId, keywordId],
     );
+    const notificationChannel = await ctx
+      .http()
+      .post('/api/v1/notification-channels')
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({
+        type: 'slack',
+        name: "B'nin kanalı",
+        config: { webhookUrl: 'https://hooks.slack.com/services/b-webhook' },
+      });
+    expect(notificationChannel.status).toBe(201);
+    const notificationChannelId = (notificationChannel.body as { id: string })
+      .id;
+    const alertRule = await ctx
+      .http()
+      .post(`/api/v1/projects/${projectId}/alert-rules`)
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({
+        name: "B'nin kuralı",
+        type: 'sync_failure',
+        config: {},
+        channels: [notificationChannelId],
+      });
+    expect(alertRule.status).toBe(201);
     return {
       orgId,
       ownerUserId: bobId[0].id,
@@ -423,6 +533,8 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       connectionId: (connection.body as { id: string }).id,
       keywordGroupId: (keywordGroup.body as { id: string }).id,
       keywordId,
+      notificationChannelId,
+      alertRuleId: (alertRule.body as { id: string }).id,
     };
   }
 
@@ -586,6 +698,16 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       keywords: [
         { trackedKeywordId: orgB.keywordId, points: [{ position: 4 }] },
       ],
+    });
+
+    const channels = await asBob('/notification-channels');
+    expect(channels.body).toMatchObject({
+      items: [{ id: orgB.notificationChannelId, name: "B'nin kanalı" }],
+    });
+
+    const alertRules = await asBob(`/projects/${orgB.projectId}/alert-rules`);
+    expect(alertRules.body).toMatchObject({
+      items: [{ id: orgB.alertRuleId, name: "B'nin kuralı" }],
     });
 
     const runs = await ctx.dataSource.query<{ count: number }[]>(

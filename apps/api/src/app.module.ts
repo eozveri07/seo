@@ -6,6 +6,7 @@ import { CryptoModule } from './infra/crypto/crypto.module';
 import { MailModule } from './infra/mail/mail.module';
 import { QueueModule } from './infra/queue/queue.module';
 import { StorageModule } from './infra/storage/storage.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ConnectionsModule } from './modules/connections/connections.module';
@@ -45,6 +46,7 @@ import { UsersModule } from './modules/users/users.module';
     KeywordsModule,
     RankingsModule,
     SummaryModule,
+    AlertsModule,
     LocationsModule,
     UsageModule,
     HealthModule,

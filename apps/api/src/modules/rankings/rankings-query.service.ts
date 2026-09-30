@@ -31,6 +31,14 @@ interface HistoryRow extends RankHistoryPointDto {
   trackedKeywordId: string;
 }
 
+export interface KeywordRankLatestRow {
+  trackedKeywordId: string;
+  position: number | null;
+  previousPosition: number | null;
+  change1d: number | null;
+  sparkline: (number | null)[];
+}
+
 interface SerpRow {
   trackedKeywordId: string;
   date: string;
@@ -126,6 +134,27 @@ export class RankingsQueryService {
       throw new RankResultNotFoundError();
     }
     return row;
+  }
+
+  /** `keyword_rank_latest` satırları (T1.14 `alert-eval`: rank_drop/rank_exit). */
+  async latestForKeywords(
+    projectId: string,
+    keywordIds: string[],
+  ): Promise<KeywordRankLatestRow[]> {
+    if (keywordIds.length === 0) {
+      return [];
+    }
+    const orgId = requireOrgId(this.cls);
+    return this.dataSource.query<KeywordRankLatestRow[]>(
+      `
+      SELECT "tracked_keyword_id" AS "trackedKeywordId", "position",
+        "previous_position" AS "previousPosition", "change_1d" AS "change1d",
+        "sparkline"
+      FROM "keyword_rank_latest"
+      WHERE "org_id" = $1 AND "project_id" = $2 AND "tracked_keyword_id" = ANY($3::uuid[])
+      `,
+      [orgId, projectId, keywordIds],
+    );
   }
 }
 

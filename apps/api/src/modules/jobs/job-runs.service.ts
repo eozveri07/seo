@@ -51,6 +51,25 @@ export class JobRunsService implements JobRunRecorder {
     return this.runs.findOneBy({ id: runId });
   }
 
+  /**
+   * Bir proje ve job tipi için son iki çalışmanın ikisi de başarısız mı
+   * (T1.14 `sync_failure` alert'i, ARCHITECTURE §11). İkiden az kayıt varsa
+   * `false` döner.
+   */
+  async lastTwoFailed(projectId: string, type: string): Promise<boolean> {
+    const runs = await this.runs
+      .createQueryBuilder('run')
+      .andWhere('run.project_id = :projectId', { projectId })
+      .andWhere('run.type = :type', { type })
+      .orderBy('run.created_at', 'DESC')
+      .take(2)
+      .getMany();
+    return (
+      runs.length === 2 &&
+      runs.every((run) => run.status === JobRunStatus.Failed)
+    );
+  }
+
   async start(context: JobRunContext): Promise<string> {
     const startedAt = new Date();
     if (context.runId) {

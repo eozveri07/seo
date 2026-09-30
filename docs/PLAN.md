@@ -358,7 +358,7 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Lokal doğrulama bekliyor:** Backend `keyword_rank_latest`'i doğrudan liste olarak döndüren bir endpoint sunmuyor; tablo kolonları (pozisyon, 1/7/30g değişim, en iyi pozisyon, sparkline, son kontrol) `rankings/history`'den (T1.9) istemci tarafında hesaplanıyor (`rank-calc.ts`, backend'deki `calculateRankLatest`'in testli bir benzeri). "En iyi pozisyon" bu yüzden tüm zamanların değil yalnız görüntülenen 30 günlük pencerenin en iyisi; pozisyon aralığı/yükselen-düşen filtreleri de bu hesaba göre client tarafında uygulanıyor. Runner'da DB/Redis olmadığı için uçtan uca akış (ekle, GSC önerisini takibe al, filtrele, "şimdi kontrol et" + rate limit + grup yönetimi, client_viewer kısıtı, açık/koyu tema, mobil) OpenAPI sözleşmesiyle birebir eşleşen sahte bir HTTP sunucusuyla tarayıcıda doğrulandı; gerçek API/DB ve 40+ keyword'lük bir projede (özellikle `rankings/history`'nin `MAX_HISTORY_KEYWORDS=50` sınırı) lokalde tekrar doğrulanmalı.
 
-### [ ] T1.14 Alertler
+### [x] T1.14 Alertler
 - Tablolar: `alert_rules`, `alert_events`, `notification_channels`.
 - `alert-eval` processor'ı (ARCHITECTURE §11): dört kural tipi, dedupe, cooldown.
 - `notify` processor'ı: e-posta, Discord, Slack gönderimi; kanal hatası `notify_error`'a yazılır.
@@ -368,6 +368,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 **Kabul:**
 - Sahte veriyle rank düşüşü üretildiğinde Discord'a tek bildirim düşüyor.
 - Cooldown içinde tekrar üretilince bildirim gitmiyor.
+
+**Lokal doğrulama bekliyor:** Runner'da DB/Redis ve gerçek Discord/Slack webhook'u olmadığı için: migration'ların gerçek Postgres'e uygulanması, `alert-eval`/`notify` job'larının worker'da uçtan uca (kuyruk → job_runs → alert_events → gerçek Discord/Slack'e bildirim) çalıştığı, `notification_channels.config_encrypted`'in DB'de gerçekten şifreli göründüğü ve tenant izolasyon e2e testinin (`tenant-isolation.e2e-spec.ts`, yeni eklenen alert-rules/alert-events/notification-channels satırları) `E2E_DATABASE=true` ile geçtiği lokalde doğrulanmalı. Birim testler (`alert-rule-config`, `alert-eval.service`, `notify.service`, `channel-sender.service`, `notification-channels.service`, webhook client) mock'lu, DB/Redis'siz çalıştırıldı ve geçti.
 
 ### [ ] T1.15 Raporlar
 - Tablolar: `reports`, `report_schedules`.

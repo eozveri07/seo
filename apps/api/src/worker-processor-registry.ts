@@ -1,5 +1,9 @@
 import { Type } from '@nestjs/common';
 import { QueueName } from './infra/queue/queues';
+import {
+  AlertEvalProcessorModule,
+  NotifyProcessorModule,
+} from './modules/alerts/alerts-processor.module';
 import { DispatchProcessorModule } from './modules/dispatch/dispatch-processor.module';
 import { Ga4SyncProcessorModule } from './modules/ga4/ga4-processor.module';
 import {
@@ -37,4 +41,6 @@ export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
   { queueName: QueueName.RankPoll, module: RankPollProcessorModule },
   { queueName: QueueName.RankFetch, module: RankFetchProcessorModule },
   { queueName: QueueName.Summary, module: SummaryProcessorModule },
+  { queueName: QueueName.AlertEval, module: AlertEvalProcessorModule },
+  { queueName: QueueName.Notify, module: NotifyProcessorModule },
 ];

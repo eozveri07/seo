@@ -1,3 +1,4 @@
+export * from './alerts/alerts';
 export * from './auth/auth';
 export * from './clients/clients';
 export * from './connections/connections';

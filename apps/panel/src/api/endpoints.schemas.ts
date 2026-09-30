@@ -961,6 +961,174 @@ export interface ProjectSummaryResponseDto {
   points: ProjectDailySummaryPointDto[];
 }
 
+export type AlertRuleType = typeof AlertRuleType[keyof typeof AlertRuleType];
+
+
+export const AlertRuleType = {
+  rank_drop: 'rank_drop',
+  rank_exit: 'rank_exit',
+  traffic_drop: 'traffic_drop',
+  sync_failure: 'sync_failure',
+} as const;
+
+export type AlertRuleResponseDtoConfig = { [key: string]: unknown };
+
+export interface AlertRuleResponseDto {
+  type: AlertRuleType;
+  id: string;
+  projectId: string;
+  name: string;
+  config: AlertRuleResponseDtoConfig;
+  channels: string[];
+  isActive: boolean;
+  cooldownHours: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AlertRuleListResponseDto {
+  items: AlertRuleResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type CreateAlertRuleDtoType = typeof CreateAlertRuleDtoType[keyof typeof CreateAlertRuleDtoType];
+
+
+export const CreateAlertRuleDtoType = {
+  rank_drop: 'rank_drop',
+  rank_exit: 'rank_exit',
+  traffic_drop: 'traffic_drop',
+  sync_failure: 'sync_failure',
+} as const;
+
+/**
+ * Kural tipine göre şekli değişir; `alert-rule-config.ts` doğrular.
+ */
+export type CreateAlertRuleDtoConfig = { [key: string]: unknown };
+
+export interface CreateAlertRuleDto {
+  /** @maxLength 200 */
+  name: string;
+  type: CreateAlertRuleDtoType;
+  /** Kural tipine göre şekli değişir; `alert-rule-config.ts` doğrular. */
+  config: CreateAlertRuleDtoConfig;
+  /** @maxItems 20 */
+  channels: string[];
+  isActive?: boolean;
+  /**
+     * @minimum 1
+     * @maximum 168
+     */
+  cooldownHours?: number;
+}
+
+export type UpdateAlertRuleDtoConfig = { [key: string]: unknown };
+
+export interface UpdateAlertRuleDto {
+  /** @maxLength 200 */
+  name?: string;
+  config?: UpdateAlertRuleDtoConfig;
+  /** @maxItems 20 */
+  channels?: string[];
+  isActive?: boolean;
+  /**
+     * @minimum 1
+     * @maximum 168
+     */
+  cooldownHours?: number;
+}
+
+export type AlertEventResponseDtoPayload = { [key: string]: unknown };
+
+export interface AlertEventResponseDto {
+  id: string;
+  projectId: string;
+  ruleId: string;
+  /** @nullable */
+  ruleName: string | null;
+  dedupeKey: string;
+  payload: AlertEventResponseDtoPayload;
+  severity: string;
+  triggeredAt: string;
+  /** @nullable */
+  notifiedAt: string | null;
+  /** @nullable */
+  notifyError: string | null;
+}
+
+export interface AlertEventListResponseDto {
+  items: AlertEventResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type NotificationChannelType = typeof NotificationChannelType[keyof typeof NotificationChannelType];
+
+
+export const NotificationChannelType = {
+  email: 'email',
+  discord: 'discord',
+  slack: 'slack',
+} as const;
+
+export type NotificationChannelResponseDtoConfig = { [key: string]: unknown };
+
+export interface NotificationChannelResponseDto {
+  type: NotificationChannelType;
+  id: string;
+  name: string;
+  config: NotificationChannelResponseDtoConfig;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationChannelListResponseDto {
+  items: NotificationChannelResponseDto[];
+}
+
+export type CreateNotificationChannelDtoType = typeof CreateNotificationChannelDtoType[keyof typeof CreateNotificationChannelDtoType];
+
+
+export const CreateNotificationChannelDtoType = {
+  email: 'email',
+  discord: 'discord',
+  slack: 'slack',
+} as const;
+
+/**
+ * Tipine göre şekli değişir: `email` -> `{ to: string[] }`,
+ * `discord`/`slack` -> `{ webhookUrl: string }`. `notification-channel-config.ts`
+ * doğrular; servis şifreleyip saklar, düz metin hiçbir zaman response'a yazılmaz.
+ */
+export type CreateNotificationChannelDtoConfig = { [key: string]: unknown };
+
+export interface CreateNotificationChannelDto {
+  type: CreateNotificationChannelDtoType;
+  /** @maxLength 200 */
+  name: string;
+  /**
+     * Tipine göre şekli değişir: `email` -> `{ to: string[] }`,
+     * `discord`/`slack` -> `{ webhookUrl: string }`. `notification-channel-config.ts`
+     * doğrular; servis şifreleyip saklar, düz metin hiçbir zaman response'a yazılmaz.
+     */
+  config: CreateNotificationChannelDtoConfig;
+}
+
+/**
+ * Verilirse config tamamen değiştirilir (tip aynı kalır).
+ */
+export type UpdateNotificationChannelDtoConfig = { [key: string]: unknown };
+
+export interface UpdateNotificationChannelDto {
+  /** @maxLength 200 */
+  name?: string;
+  /** Verilirse config tamamen değiştirilir (tip aynı kalır). */
+  config?: UpdateNotificationChannelDtoConfig;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -1296,5 +1464,43 @@ date?: string;
 export type SummaryControllerForProjectParams = {
 from?: string;
 to?: string;
+};
+
+export type AlertRulesControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+type?: AlertRulesControllerListType;
+};
+
+export type AlertRulesControllerListType = typeof AlertRulesControllerListType[keyof typeof AlertRulesControllerListType];
+
+
+export const AlertRulesControllerListType = {
+  rank_drop: 'rank_drop',
+  rank_exit: 'rank_exit',
+  traffic_drop: 'traffic_drop',
+  sync_failure: 'sync_failure',
+} as const;
+
+export type AlertEventsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+ruleId?: string;
 };
 

@@ -113,6 +113,38 @@ describe('RankingsQueryService', () => {
   });
 });
 
+describe('RankingsQueryService.latestForKeywords', () => {
+  it('boş keywordIds için sorgu yapmadan boş dizi döner', async () => {
+    const { service, query } = setup();
+
+    const result = await service.latestForKeywords(PROJECT, []);
+
+    expect(result).toEqual([]);
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it("org ve proje ile kapsamlı, verilen keyword id'leriyle filtrelenmiş satırları döner", async () => {
+    const rows = [
+      {
+        trackedKeywordId: KW1,
+        position: 4,
+        previousPosition: 1,
+        change1d: 3,
+        sparkline: [1, 4],
+      },
+    ];
+    const { service, query } = setup(rows);
+
+    const result = await service.latestForKeywords(PROJECT, [KW1, KW2]);
+
+    expect(result).toEqual(rows);
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining('keyword_rank_latest'),
+      [ORG, PROJECT, [KW1, KW2]],
+    );
+  });
+});
+
 describe('resolveHistoryRange', () => {
   it('varsayılan olarak bugün dahil 30 gün', () => {
     expect(resolveHistoryRange({}, '2026-09-30')).toEqual({

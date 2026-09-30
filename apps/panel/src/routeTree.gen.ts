@@ -23,6 +23,7 @@ import { Route as AppNotificationsIndexRouteImport } from './routes/_app/notific
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppProjectsProjectIdRouteImport } from './routes/_app/projects/$projectId'
 import { Route as AppProjectsNewRouteImport } from './routes/_app/projects/new'
+import { Route as AppProjectsProjectIdAlertsRouteImport } from './routes/_app/projects/$projectId_.alerts'
 import { Route as AppProjectsProjectIdConnectionsRouteImport } from './routes/_app/projects/$projectId_.connections'
 import { Route as AppProjectsProjectIdDashboardRouteImport } from './routes/_app/projects/$projectId_.dashboard'
 import { Route as AppProjectsProjectIdExplorerRouteImport } from './routes/_app/projects/$projectId_.explorer'
@@ -97,6 +98,12 @@ const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
   path: '/projects/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProjectsProjectIdAlertsRoute =
+  AppProjectsProjectIdAlertsRouteImport.update({
+    id: '/projects/$projectId_/alerts',
+    path: '/projects/$projectId/alerts',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppProjectsProjectIdConnectionsRoute =
   AppProjectsProjectIdConnectionsRouteImport.update({
     id: '/projects/$projectId_/connections',
@@ -136,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/members/': typeof AppMembersIndexRoute
   '/notifications/': typeof AppNotificationsIndexRoute
   '/projects/': typeof AppProjectsIndexRoute
+  '/projects/$projectId/alerts': typeof AppProjectsProjectIdAlertsRoute
   '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
   '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
@@ -155,6 +163,7 @@ export interface FileRoutesByTo {
   '/members': typeof AppMembersIndexRoute
   '/notifications': typeof AppNotificationsIndexRoute
   '/projects': typeof AppProjectsIndexRoute
+  '/projects/$projectId/alerts': typeof AppProjectsProjectIdAlertsRoute
   '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
   '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
@@ -176,6 +185,7 @@ export interface FileRoutesById {
   '/_app/members/': typeof AppMembersIndexRoute
   '/_app/notifications/': typeof AppNotificationsIndexRoute
   '/_app/projects/': typeof AppProjectsIndexRoute
+  '/_app/projects/$projectId_/alerts': typeof AppProjectsProjectIdAlertsRoute
   '/_app/projects/$projectId_/connections': typeof AppProjectsProjectIdConnectionsRoute
   '/_app/projects/$projectId_/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/_app/projects/$projectId_/explorer': typeof AppProjectsProjectIdExplorerRoute
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/members/'
     | '/notifications/'
     | '/projects/'
+    | '/projects/$projectId/alerts'
     | '/projects/$projectId/connections'
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/explorer'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/members'
     | '/notifications'
     | '/projects'
+    | '/projects/$projectId/alerts'
     | '/projects/$projectId/connections'
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/explorer'
@@ -236,6 +248,7 @@ export interface FileRouteTypes {
     | '/_app/members/'
     | '/_app/notifications/'
     | '/_app/projects/'
+    | '/_app/projects/$projectId_/alerts'
     | '/_app/projects/$projectId_/connections'
     | '/_app/projects/$projectId_/dashboard'
     | '/_app/projects/$projectId_/explorer'
@@ -349,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/projects/$projectId_/alerts': {
+      id: '/_app/projects/$projectId_/alerts'
+      path: '/projects/$projectId/alerts'
+      fullPath: '/projects/$projectId/alerts'
+      preLoaderRoute: typeof AppProjectsProjectIdAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/projects/$projectId_/connections': {
       id: '/_app/projects/$projectId_/connections'
       path: '/projects/$projectId/connections'
@@ -391,6 +411,7 @@ interface AppRouteChildren {
   AppMembersIndexRoute: typeof AppMembersIndexRoute
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
+  AppProjectsProjectIdAlertsRoute: typeof AppProjectsProjectIdAlertsRoute
   AppProjectsProjectIdConnectionsRoute: typeof AppProjectsProjectIdConnectionsRoute
   AppProjectsProjectIdDashboardRoute: typeof AppProjectsProjectIdDashboardRoute
   AppProjectsProjectIdExplorerRoute: typeof AppProjectsProjectIdExplorerRoute
@@ -408,6 +429,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersIndexRoute: AppMembersIndexRoute,
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppProjectsIndexRoute: AppProjectsIndexRoute,
+  AppProjectsProjectIdAlertsRoute: AppProjectsProjectIdAlertsRoute,
   AppProjectsProjectIdConnectionsRoute: AppProjectsProjectIdConnectionsRoute,
   AppProjectsProjectIdDashboardRoute: AppProjectsProjectIdDashboardRoute,
   AppProjectsProjectIdExplorerRoute: AppProjectsProjectIdExplorerRoute,

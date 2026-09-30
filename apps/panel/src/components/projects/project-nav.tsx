@@ -7,6 +7,7 @@ const tabs = [
   { to: '/projects/$projectId/connections', label: 'Bağlantılar' },
   { to: '/projects/$projectId/explorer', label: 'GSC Explorer' },
   { to: '/projects/$projectId/keywords', label: "Keyword'ler" },
+  { to: '/projects/$projectId/alerts', label: 'Alertler' },
 ] as const
 
 export function ProjectNav({ projectId }: { projectId: string }) {

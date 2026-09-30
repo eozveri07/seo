@@ -114,4 +114,47 @@ describe('JobRunsService', () => {
       expect.objectContaining({ status: JobRunStatus.Failed, error: '403' }),
     );
   });
+
+  describe('lastTwoFailed', () => {
+    function buildServiceWithRuns(runs: Partial<JobRun>[]) {
+      const qb = {
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(runs),
+      };
+      const repo = { createQueryBuilder: jest.fn().mockReturnValue(qb) };
+      return new JobRunsService(repo as unknown as TenantRepository<JobRun>);
+    }
+
+    it('son iki kayıt da failed ise true döner', async () => {
+      const service = buildServiceWithRuns([
+        { status: JobRunStatus.Failed },
+        { status: JobRunStatus.Failed },
+      ]);
+
+      await expect(
+        service.lastTwoFailed(PROJECT_ID, QueueName.GscSync),
+      ).resolves.toBe(true);
+    });
+
+    it('son iki kayıttan biri başarılıysa false döner', async () => {
+      const service = buildServiceWithRuns([
+        { status: JobRunStatus.Failed },
+        { status: JobRunStatus.Succeeded },
+      ]);
+
+      await expect(
+        service.lastTwoFailed(PROJECT_ID, QueueName.GscSync),
+      ).resolves.toBe(false);
+    });
+
+    it('ikiden az kayıt varsa false döner', async () => {
+      const service = buildServiceWithRuns([{ status: JobRunStatus.Failed }]);
+
+      await expect(
+        service.lastTwoFailed(PROJECT_ID, QueueName.GscSync),
+      ).resolves.toBe(false);
+    });
+  });
 });
