@@ -5,6 +5,7 @@ const VALID_ENV = {
   PANEL_ORIGIN: 'http://localhost:5173',
   DATABASE_URL: 'postgres://seo:seo@localhost:5432/seo',
   REDIS_URL: 'redis://localhost:6379',
+  ENCRYPTION_KEY: 'uwdVDa7iNK3qgjIKPO4eBy3UcXmr8/t5zLh8MTJI82g=',
 };
 
 function withoutKey(key: keyof typeof VALID_ENV): Record<string, string> {
@@ -38,5 +39,20 @@ describe('validate', () => {
 
   it('PANEL_ORIGIN eksikse değişken adını içeren bir hata fırlatır', () => {
     expect(() => validate(withoutKey('PANEL_ORIGIN'))).toThrow(/PANEL_ORIGIN/);
+  });
+
+  it('ENCRYPTION_KEY eksikse değişken adını içeren bir hata fırlatır', () => {
+    expect(() => validate(withoutKey('ENCRYPTION_KEY'))).toThrow(
+      /ENCRYPTION_KEY/,
+    );
+  });
+
+  it('ENCRYPTION_KEY 32 byte uzunluğunda değilse hata fırlatır', () => {
+    expect(() =>
+      validate({
+        ...VALID_ENV,
+        ENCRYPTION_KEY: Buffer.from('kisa').toString('base64'),
+      }),
+    ).toThrow(/ENCRYPTION_KEY/);
   });
 });

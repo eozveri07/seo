@@ -9,8 +9,40 @@ import {
   IsString,
   Max,
   Min,
+  ValidateBy,
+  ValidationOptions,
   validateSync,
 } from 'class-validator';
+
+const ENCRYPTION_KEY_BYTE_LENGTH = 32;
+
+/** `ENCRYPTION_KEY`'in base64 ile kodlanmış tam 32 byte olduğunu doğrular. */
+function IsBase64EncryptionKey(
+  validationOptions?: ValidationOptions,
+): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'isBase64EncryptionKey',
+      validator: {
+        validate: (value: unknown): boolean => {
+          if (typeof value !== 'string') {
+            return false;
+          }
+          try {
+            return (
+              Buffer.from(value, 'base64').length === ENCRYPTION_KEY_BYTE_LENGTH
+            );
+          } catch {
+            return false;
+          }
+        },
+        defaultMessage: () =>
+          `ENCRYPTION_KEY base64 ile kodlanmış ${ENCRYPTION_KEY_BYTE_LENGTH} byte olmalı`,
+      },
+    },
+    validationOptions,
+  );
+}
 
 export enum Environment {
   Development = 'development',
@@ -74,9 +106,10 @@ export class EnvironmentVariables {
   @IsString()
   REPORT_TOKEN_SECRET?: string;
 
-  @IsOptional()
   @IsString()
-  ENCRYPTION_KEY?: string;
+  @IsNotEmpty()
+  @IsBase64EncryptionKey()
+  ENCRYPTION_KEY!: string;
 
   @IsOptional()
   @IsString()

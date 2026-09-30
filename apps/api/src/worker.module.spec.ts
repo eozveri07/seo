@@ -1,6 +1,19 @@
+import { DynamicModule } from '@nestjs/common';
 import { WorkerModule, parseWorkerQueues } from './worker.module';
 import { QueueName } from './infra/queue/queues';
+import { HousekeepingModule } from './modules/housekeeping/housekeeping.module';
 import { PingProcessorModule } from './modules/ping/ping-processor.module';
+
+function includesHousekeepingModule(
+  imports: DynamicModule['imports'],
+): boolean {
+  return (imports ?? []).some(
+    (imported) =>
+      typeof imported === 'object' &&
+      'module' in imported &&
+      imported.module === HousekeepingModule,
+  );
+}
 
 describe('parseWorkerQueues', () => {
   it.each([undefined, '', '   '])(
@@ -56,5 +69,41 @@ describe('WorkerModule.register', () => {
     const { imports } = WorkerModule.register();
 
     expect(imports).toContain(PingProcessorModule);
+  });
+});
+
+describe('WorkerModule.register - HousekeepingModule', () => {
+  const originalSchedulerEnabled = process.env.SCHEDULER_ENABLED;
+
+  afterEach(() => {
+    if (originalSchedulerEnabled === undefined) {
+      delete process.env.SCHEDULER_ENABLED;
+    } else {
+      process.env.SCHEDULER_ENABLED = originalSchedulerEnabled;
+    }
+  });
+
+  it('SCHEDULER_ENABLED=true iken HousekeepingModule yüklenir', () => {
+    process.env.SCHEDULER_ENABLED = 'true';
+
+    const { imports } = WorkerModule.register();
+
+    expect(includesHousekeepingModule(imports)).toBe(true);
+  });
+
+  it('SCHEDULER_ENABLED tanımsızken HousekeepingModule yüklenmez', () => {
+    delete process.env.SCHEDULER_ENABLED;
+
+    const { imports } = WorkerModule.register();
+
+    expect(includesHousekeepingModule(imports)).toBe(false);
+  });
+
+  it('SCHEDULER_ENABLED=false iken HousekeepingModule yüklenmez', () => {
+    process.env.SCHEDULER_ENABLED = 'false';
+
+    const { imports } = WorkerModule.register();
+
+    expect(includesHousekeepingModule(imports)).toBe(false);
   });
 });

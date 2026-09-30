@@ -79,7 +79,7 @@ worker'da işlenmesi ve bull-board'da görünmesi doğrulanamadı. Lokalde:
 4. Worker log'unda `pong` mesajını, `http://localhost:3000/admin/queues`'ta
    `ping` kuyruğunda tamamlanan job'u kontrol et.
 
-### [ ] T0.6 Ortak altyapı servisleri
+### [x] T0.6 Ortak altyapı servisleri
 - `CryptoService`: AES-256-GCM, `v1:` önekli format, encrypt/decrypt, unit test.
 - `MailService`: nodemailer, dev'de console transport seçeneği.
 - `StorageService`: local disk (`STORAGE_DIR`), interface S3'e geçişe uygun (`put`, `get`, `delete`, `getStream`).
@@ -87,6 +87,15 @@ worker'da işlenmesi ve bull-board'da görünmesi doğrulanamadı. Lokalde:
 - `@nestjs/schedule` kurulumu, sadece `SCHEDULER_ENABLED=true` iken `HousekeepingModule`'ü yükleyecek koşullu modül yapısı.
 
 **Kabul:** Crypto testleri geçiyor (şifrele, çöz, farklı IV, bozuk veri hatası).
+
+**Lokal doğrulama bekliyor:** Runner'da Redis yok. `SCHEDULER_ENABLED=true` ile
+`dev:worker` çalıştırılıp `HousekeepingModule`, `CryptoModule`, `MailModule` ve
+`StorageModule`'ün hatasız yüklendiği manuel doğrulandı ("Worker başladı" log'u
+görüldü), ama gerçek Redis bağlantısıyla `ScheduleModule`'ün cron'ları
+kaydettiği ve worker kapanışının sorunsuz olduğu doğrulanamadı. Lokalde:
+1. `bun run db:up` (Redis ayağa kalksın).
+2. `.env`'de `SCHEDULER_ENABLED=true` ile `bun run dev:worker` çalıştır, hata
+   olmadan açıldığını doğrula.
 
 ### [ ] T0.7 Panel iskeleti
 - Tailwind + shadcn/ui kurulumu (temel bileşenler: button, input, form, dialog, dropdown-menu, table, card, badge, tabs, toast, sheet, skeleton, select, popover, calendar).
