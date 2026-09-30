@@ -1,0 +1,20 @@
+{
+  "name": "seo-platform",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "trustedDependencies": [
+    "argon2",
+    "sharp",
+    "@nestjs/core"
+  ],
+  "scripts": {
+    "db:up": "docker compose up -d postgres redis",
+    "dev:api": "bun run --filter api dev",
+    "dev:panel": "bun run --filter panel dev",
+    "lint": "bun run --filter api lint && bun run --filter panel lint",
+    "typecheck": "bun run --filter api typecheck && bun run --filter panel typecheck",
+    "test": "bun run --filter api test"
+  }
+}
