@@ -45,7 +45,7 @@ function NewOrganizationPage() {
     return <Navigate to="/login" />
   }
   if (orgs.length > 0) {
-    return <Navigate to="/" />
+    return <Navigate to="/" search={{ clientId: undefined }} />
   }
 
   async function onSubmit(values: FormValues) {
@@ -64,7 +64,7 @@ function NewOrganizationPage() {
     }
     await refetch()
     switchOrg(response.data.id)
-    void navigate({ to: '/' })
+    void navigate({ to: '/', search: { clientId: undefined } })
   }
 
   return (

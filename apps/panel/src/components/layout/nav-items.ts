@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { ActivityIcon, BellIcon, BriefcaseIcon, FolderKanbanIcon, UsersIcon } from 'lucide-react'
+import { ActivityIcon, BellIcon, BriefcaseIcon, FolderKanbanIcon, LayoutDashboardIcon, UsersIcon } from 'lucide-react'
 import type { usePermissions } from '@/lib/auth/use-permissions'
 
 export type NavItem = {
@@ -11,9 +11,10 @@ export type NavItem = {
 }
 
 export const navItems: NavItem[] = [
-  { title: 'Sistem durumu', to: '/', icon: ActivityIcon },
+  { title: 'Ana sayfa', to: '/', icon: LayoutDashboardIcon },
   { title: 'Müşteriler', to: '/clients', icon: BriefcaseIcon },
   { title: 'Projeler', to: '/projects', icon: FolderKanbanIcon },
+  { title: 'Sistem durumu', to: '/system', icon: ActivityIcon },
   { title: 'Üyeler', to: '/members', icon: UsersIcon, visible: (p) => p.canManageMembers },
   {
     title: 'Bildirim kanalları',

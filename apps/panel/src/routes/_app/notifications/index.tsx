@@ -10,7 +10,7 @@ export const Route = createFileRoute('/_app/notifications/')({
 function NotificationChannelsPage() {
   const permissions = usePermissions()
 
-  if (!permissions.canManageNotificationChannels) return <Navigate to="/" />
+  if (!permissions.canManageNotificationChannels) return <Navigate to="/" search={{ clientId: undefined }} />
 
   return (
     <div className="flex flex-col gap-4">

@@ -1,11 +1,10 @@
-import { createFileRoute, Link, Navigate } from '@tanstack/react-router'
+import { createFileRoute, Navigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { CableIcon } from 'lucide-react'
 import { useProjectsControllerFindOne, useProjectsControllerUpdate } from '@/api/projects/projects'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProjectForm, type ProjectFormValues } from '@/components/projects/project-form'
 import { ErrorState, LoadingState } from '@/components/common/state-views'
+import { ProjectNav } from '@/components/projects/project-nav'
 import { usePermissions } from '@/lib/auth/use-permissions'
 
 export const Route = createFileRoute('/_app/projects/$projectId')({
@@ -46,14 +45,9 @@ function EditProjectPage() {
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div>
         <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/projects/$projectId/connections" params={{ projectId }}>
-            <CableIcon className="size-4" />
-            Bağlantılar
-          </Link>
-        </Button>
+        <ProjectNav projectId={projectId} />
       </div>
       <Card>
         <CardHeader>

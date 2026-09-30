@@ -79,7 +79,7 @@ function AcceptInvitePage() {
     }
     switchOrg(response.data.organizationId)
     refetchOrgs()
-    void navigate({ to: '/' })
+    void navigate({ to: '/', search: { clientId: undefined } })
   }
 
   if (loadingPreview) {
@@ -132,7 +132,7 @@ function AcceptInvitePage() {
               token={token}
               onRegistered={(accessToken, user) => {
                 setSession(accessToken, user)
-                void navigate({ to: '/' })
+                void navigate({ to: '/', search: { clientId: undefined } })
               }}
             />
           )}

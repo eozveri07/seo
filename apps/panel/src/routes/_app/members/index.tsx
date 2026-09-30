@@ -52,7 +52,7 @@ function MembersPage() {
   } = useInvitationsControllerList({ page: 1, limit: 200 })
   const { mutateAsync: revokeInvitation } = useInvitationsControllerRevoke()
 
-  if (!permissions.canManageMembers) return <Navigate to="/" />
+  if (!permissions.canManageMembers) return <Navigate to="/" search={{ clientId: undefined }} />
 
   const members = data?.status === 200 ? data.data.items : []
   const invitations = invitationsData?.status === 200 ? invitationsData.data.items : []

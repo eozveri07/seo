@@ -6,6 +6,7 @@ import { Ga4ConnectionCard } from '@/components/connections/ga4-connection-card'
 import { GscConnectionCard } from '@/components/connections/gsc-connection-card'
 import { ServiceAccountCard } from '@/components/connections/service-account-card'
 import { ErrorState, LoadingState } from '@/components/common/state-views'
+import { ProjectNav } from '@/components/projects/project-nav'
 import { usePermissions } from '@/lib/auth/use-permissions'
 
 export const Route = createFileRoute('/_app/projects/$projectId_/connections')({
@@ -43,9 +44,10 @@ function ProjectConnectionsPage() {
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Bağlantılar{projectName ? ` — ${projectName}` : ''}
-      </h1>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">{projectName ?? 'Bağlantılar'}</h1>
+        <ProjectNav projectId={projectId} />
+      </div>
       <ServiceAccountCard />
       <GscConnectionCard projectId={projectId} connection={gscConnection} onCreated={() => void refetch()} />
       <Ga4ConnectionCard projectId={projectId} connection={ga4Connection} onCreated={() => void refetch()} />

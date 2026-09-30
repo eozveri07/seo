@@ -336,13 +336,15 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 
 **Lokal doğrulama bekliyor:** Runner'da DB/Redis ve gerçek API çalışmadığı için uçtan uca akış, orval tiplerine uyan ve OpenAPI sözleşmesiyle birebir eşleşen sahte bir HTTP sunucusuyla tarayıcıda doğrulandı (login → org seçici → client/proje CRUD → bağlantılar ekranı, SA e-postası kopyalama, GSC/GA4 bağlama, doğrulama, backfill ilerleme çubuğu → üyeler/davetler; açık/koyu tema ve mobil genişlik). Gerçek API ve DB ile uçtan uca (özellikle davet e-postası gönderimi, gerçek Google SA/GA4 doğrulaması ve backfill polling'i) lokalde tekrar doğrulanmalı.
 
-### [ ] T1.12 Panel: proje dashboard'u ve GSC explorer
+### [x] T1.12 Panel: proje dashboard'u ve GSC explorer
 - **Org ana sayfası:** proje kartları (tıklama, oturum, ortalama pozisyon, visibility; 7/28 günlük değişim, mini grafik).
 - **Proje özeti:** tarih aralığı seçici + önceki dönem karşılaştırması. KPI satırı, GSC trend grafiği (tıklama/gösterim), organik oturum grafiği, pozisyon dağılımı (top 3/10/20/100), son sync durumu.
 - **GSC explorer:** Queries ve Pages sekmeleri, arama, sıralama, sayfalama, dönem karşılaştırması (değişim kolonları). Satır tıklanınca sorgunun sayfalarını ya da sayfanın sorgularını gösteren detay paneli (sheet).
 - Tablo filtreleri ve tarih aralığı URL search param'larında tutulur (link paylaşılabilir).
 
 **Kabul:** Explorer, büyük bir projede sayfalama ve arama ile akıcı çalışıyor.
+
+**Lokal doğrulama bekliyor:** Explorer'ın backend `gsc/queries` ve `gsc/pages` endpoint'leri (sayfalama, arama, sıralama) gerçek DB ve büyük bir veri setiyle (binlerce satır) performans açısından test edilmedi; runner'da DB olmadığı için sahte bir HTTP sunucusuyla (137 satır, 7 sayfa) uçtan uca doğrulandı. Dönem karşılaştırması (değişim kolonları) backend'de satır bazlı desteklenmediği için client tarafında önceki dönemin ilk 200 satırını çekip anahtara göre eşleştirerek hesaplanıyor; gerçek veride bu yaklaşımın kabul edilebilir olup olmadığı ürün sahibiyle teyit edilmeli.
 
 ### [ ] T1.13 Panel: keyword ekranı
 - Keyword tablosu: keyword, grup, cihaz, pozisyon, 1/7/30 günlük değişim (renkli), en iyi pozisyon, URL, hacim, sparkline, son kontrol.

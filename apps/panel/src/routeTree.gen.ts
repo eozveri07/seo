@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppSystemRouteImport } from './routes/_app/system'
 import { Route as OrganizationsNewRouteImport } from './routes/organizations.new'
 import { Route as AppClientsIndexRouteImport } from './routes/_app/clients/index'
 import { Route as AppClientsClientIdRouteImport } from './routes/_app/clients/$clientId'
@@ -23,6 +24,8 @@ import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/ind
 import { Route as AppProjectsProjectIdRouteImport } from './routes/_app/projects/$projectId'
 import { Route as AppProjectsNewRouteImport } from './routes/_app/projects/new'
 import { Route as AppProjectsProjectIdConnectionsRouteImport } from './routes/_app/projects/$projectId_.connections'
+import { Route as AppProjectsProjectIdDashboardRouteImport } from './routes/_app/projects/$projectId_.dashboard'
+import { Route as AppProjectsProjectIdExplorerRouteImport } from './routes/_app/projects/$projectId_.explorer'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -41,6 +44,11 @@ const LoginRoute = LoginRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemRoute = AppSystemRouteImport.update({
+  id: '/system',
+  path: '/system',
   getParentRoute: () => AppRoute,
 } as any)
 const OrganizationsNewRoute = OrganizationsNewRouteImport.update({
@@ -94,11 +102,24 @@ const AppProjectsProjectIdConnectionsRoute =
     path: '/projects/$projectId/connections',
     getParentRoute: () => AppRoute,
   } as any)
+const AppProjectsProjectIdDashboardRoute =
+  AppProjectsProjectIdDashboardRouteImport.update({
+    id: '/projects/$projectId_/dashboard',
+    path: '/projects/$projectId/dashboard',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppProjectsProjectIdExplorerRoute =
+  AppProjectsProjectIdExplorerRouteImport.update({
+    id: '/projects/$projectId_/explorer',
+    path: '/projects/$projectId/explorer',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/system': typeof AppSystemRoute
   '/organizations/new': typeof OrganizationsNewRoute
   '/clients/$clientId': typeof AppClientsClientIdRoute
   '/clients/new': typeof AppClientsNewRoute
@@ -109,10 +130,13 @@ export interface FileRoutesByFullPath {
   '/notifications/': typeof AppNotificationsIndexRoute
   '/projects/': typeof AppProjectsIndexRoute
   '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
+  '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
+  '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/system': typeof AppSystemRoute
   '/organizations/new': typeof OrganizationsNewRoute
   '/': typeof AppIndexRoute
   '/clients/$clientId': typeof AppClientsClientIdRoute
@@ -124,12 +148,15 @@ export interface FileRoutesByTo {
   '/notifications': typeof AppNotificationsIndexRoute
   '/projects': typeof AppProjectsIndexRoute
   '/projects/$projectId/connections': typeof AppProjectsProjectIdConnectionsRoute
+  '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
+  '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/_app/system': typeof AppSystemRoute
   '/organizations/new': typeof OrganizationsNewRoute
   '/_app/': typeof AppIndexRoute
   '/_app/clients/$clientId': typeof AppClientsClientIdRoute
@@ -141,6 +168,8 @@ export interface FileRoutesById {
   '/_app/notifications/': typeof AppNotificationsIndexRoute
   '/_app/projects/': typeof AppProjectsIndexRoute
   '/_app/projects/$projectId_/connections': typeof AppProjectsProjectIdConnectionsRoute
+  '/_app/projects/$projectId_/dashboard': typeof AppProjectsProjectIdDashboardRoute
+  '/_app/projects/$projectId_/explorer': typeof AppProjectsProjectIdExplorerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accept-invite'
     | '/login'
+    | '/system'
     | '/organizations/new'
     | '/clients/$clientId'
     | '/clients/new'
@@ -158,10 +188,13 @@ export interface FileRouteTypes {
     | '/notifications/'
     | '/projects/'
     | '/projects/$projectId/connections'
+    | '/projects/$projectId/dashboard'
+    | '/projects/$projectId/explorer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
     | '/login'
+    | '/system'
     | '/organizations/new'
     | '/'
     | '/clients/$clientId'
@@ -173,11 +206,14 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/projects'
     | '/projects/$projectId/connections'
+    | '/projects/$projectId/dashboard'
+    | '/projects/$projectId/explorer'
   id:
     | '__root__'
     | '/_app'
     | '/accept-invite'
     | '/login'
+    | '/_app/system'
     | '/organizations/new'
     | '/_app/'
     | '/_app/clients/$clientId'
@@ -189,6 +225,8 @@ export interface FileRouteTypes {
     | '/_app/notifications/'
     | '/_app/projects/'
     | '/_app/projects/$projectId_/connections'
+    | '/_app/projects/$projectId_/dashboard'
+    | '/_app/projects/$projectId_/explorer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -226,6 +264,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system': {
+      id: '/_app/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof AppSystemRouteImport
       parentRoute: typeof AppRoute
     }
     '/organizations/new': {
@@ -298,10 +343,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsProjectIdConnectionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/projects/$projectId_/dashboard': {
+      id: '/_app/projects/$projectId_/dashboard'
+      path: '/projects/$projectId/dashboard'
+      fullPath: '/projects/$projectId/dashboard'
+      preLoaderRoute: typeof AppProjectsProjectIdDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/projects/$projectId_/explorer': {
+      id: '/_app/projects/$projectId_/explorer'
+      path: '/projects/$projectId/explorer'
+      fullPath: '/projects/$projectId/explorer'
+      preLoaderRoute: typeof AppProjectsProjectIdExplorerRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppSystemRoute: typeof AppSystemRoute
   AppIndexRoute: typeof AppIndexRoute
   AppClientsClientIdRoute: typeof AppClientsClientIdRoute
   AppClientsNewRoute: typeof AppClientsNewRoute
@@ -312,9 +372,12 @@ interface AppRouteChildren {
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppProjectsIndexRoute: typeof AppProjectsIndexRoute
   AppProjectsProjectIdConnectionsRoute: typeof AppProjectsProjectIdConnectionsRoute
+  AppProjectsProjectIdDashboardRoute: typeof AppProjectsProjectIdDashboardRoute
+  AppProjectsProjectIdExplorerRoute: typeof AppProjectsProjectIdExplorerRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppSystemRoute: AppSystemRoute,
   AppIndexRoute: AppIndexRoute,
   AppClientsClientIdRoute: AppClientsClientIdRoute,
   AppClientsNewRoute: AppClientsNewRoute,
@@ -325,6 +388,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppProjectsIndexRoute: AppProjectsIndexRoute,
   AppProjectsProjectIdConnectionsRoute: AppProjectsProjectIdConnectionsRoute,
+  AppProjectsProjectIdDashboardRoute: AppProjectsProjectIdDashboardRoute,
+  AppProjectsProjectIdExplorerRoute: AppProjectsProjectIdExplorerRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

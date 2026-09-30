@@ -32,7 +32,7 @@ function LoginPage() {
   })
 
   if (status === 'authenticated') {
-    return <Navigate to="/" />
+    return <Navigate to="/" search={{ clientId: undefined }} />
   }
 
   async function onSubmit(values: LoginFormValues) {
@@ -51,7 +51,7 @@ function LoginPage() {
       return
     }
     setSession(response.data.accessToken, response.data.user)
-    void navigate({ to: '/' })
+    void navigate({ to: '/', search: { clientId: undefined } })
   }
 
   return (
