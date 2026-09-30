@@ -13,6 +13,7 @@ const PLACEHOLDER_ENV: Record<string, string> = {
   API_PREFIX: '/api/v1',
   PANEL_ORIGIN: 'http://localhost:5173',
   DATABASE_URL: 'postgres://placeholder:placeholder@localhost:5432/placeholder',
+  DATABASE_SKIP_INITIALIZATION: 'true',
   REDIS_URL: 'redis://localhost:6379',
 };
 

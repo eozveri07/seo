@@ -4,6 +4,7 @@ const TEST_ENV: Record<string, string> = {
   API_PREFIX: '/api/v1',
   PANEL_ORIGIN: 'http://localhost:5173',
   DATABASE_URL: 'postgres://seo:seo@localhost:5432/seo_test',
+  DATABASE_SKIP_INITIALIZATION: 'true',
   REDIS_URL: 'redis://localhost:6379',
 };
 

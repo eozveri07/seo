@@ -44,6 +44,14 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   DATABASE_URL!: string;
 
+  /** true iken TypeORM açılışta bağlanmaz; e2e testleri ve openapi:export DB'siz çalışır. */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value === 'true' : value,
+  )
+  @IsBoolean()
+  DATABASE_SKIP_INITIALIZATION?: boolean;
+
   @IsString()
   @IsNotEmpty()
   REDIS_URL!: string;
