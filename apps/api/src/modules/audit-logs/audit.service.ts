@@ -34,6 +34,9 @@ export enum AuditAction {
   NotificationChannelCreated = 'notification_channel.created',
   NotificationChannelUpdated = 'notification_channel.updated',
   NotificationChannelDeleted = 'notification_channel.deleted',
+  ReportScheduleCreated = 'report_schedule.created',
+  ReportScheduleUpdated = 'report_schedule.updated',
+  ReportScheduleDeleted = 'report_schedule.deleted',
 }
 
 export interface AuditEntry {

@@ -17,6 +17,7 @@ import { KeywordsModule } from './modules/keywords/keywords.module';
 import { LocationsModule } from './modules/locations/locations.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { RankingsModule } from './modules/rankings/rankings.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { SummaryModule } from './modules/summary/summary.module';
 import { UsageModule } from './modules/usage/usage.module';
 import { UsersModule } from './modules/users/users.module';
@@ -47,6 +48,7 @@ import { UsersModule } from './modules/users/users.module';
     RankingsModule,
     SummaryModule,
     AlertsModule,
+    ReportsModule,
     LocationsModule,
     UsageModule,
     HealthModule,

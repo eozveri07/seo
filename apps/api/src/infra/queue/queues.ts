@@ -17,6 +17,7 @@ export enum QueueName {
   AlertEval = 'alert-eval',
   Notify = 'notify',
   Report = 'report',
+  ReportDispatch = 'report-dispatch',
   KeywordVolume = 'keyword-volume',
 }
 
@@ -121,15 +122,28 @@ export interface AlertEvalJobData extends BaseJobData {
 }
 
 export interface NotifyJobData extends BaseJobData {
-  channelId: string;
+  /** Alert bildirimlerinde zorunlu; rapor bildirimlerinde (`reportId`) kullanılmaz. */
+  channelId?: string;
   /** T1.14: `alert-eval`'in yazdığı `alert_events.id`; `notify` job'u bunu okur. */
   alertEventId?: string;
+  /**
+   * T1.15: `report` processor'ının PDF'i hazırladığı rapor; verilmişse
+   * `reports.sent_to` alıcılarına PDF ekli mail gönderilir.
+   */
+  reportId?: string;
 }
 
 export interface ReportJobData extends BaseJobData {
   projectId: string;
   reportId: string;
 }
+
+/**
+ * `report-dispatch` (T1.15, ARCHITECTURE §12): saatlik sistem job'u, tüm
+ * org'lardaki `report_schedules`'ı tarar. `dispatch` gibi tek bir tenant'ı
+ * yoktur, `BaseProcessor`'dan türemez.
+ */
+export type ReportDispatchJobData = Record<string, never>;
 
 /**
  * `keyword-volume` (PLAN T1.8): keyword eklendiğinde ve ayda bir (işlendiği
@@ -152,16 +166,17 @@ export interface QueueJobDataMap {
   [QueueName.AlertEval]: AlertEvalJobData;
   [QueueName.Notify]: NotifyJobData;
   [QueueName.Report]: ReportJobData;
+  [QueueName.ReportDispatch]: ReportDispatchJobData;
   [QueueName.KeywordVolume]: KeywordVolumeJobData;
 }
 
 /**
- * Tenant job'u taşıyan kuyruklar (`BaseProcessor`); `dispatch` ve `rank-poll`
- * sistem job'larıdır.
+ * Tenant job'u taşıyan kuyruklar (`BaseProcessor`); `dispatch`, `rank-poll`
+ * ve `report-dispatch` sistem job'larıdır.
  */
 export type TenantQueueName = Exclude<
   QueueName,
-  QueueName.Dispatch | QueueName.RankPoll
+  QueueName.Dispatch | QueueName.RankPoll | QueueName.ReportDispatch
 >;
 
 /** ARCHITECTURE §7: tamamlanan job'lar 1 gün/1000 adet, başarısızlar 7 gün tutulur. */
@@ -256,6 +271,11 @@ export const QUEUE_DEFINITIONS: Record<QueueName, QueueDefinition> = {
     name: QueueName.Report,
     concurrency: 2,
     defaultJobOptions: jobOptions(2, 5000),
+  },
+  [QueueName.ReportDispatch]: {
+    name: QueueName.ReportDispatch,
+    concurrency: 1,
+    defaultJobOptions: jobOptions(3, 5000),
   },
   [QueueName.KeywordVolume]: {
     name: QueueName.KeywordVolume,

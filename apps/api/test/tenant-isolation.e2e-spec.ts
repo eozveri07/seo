@@ -37,6 +37,8 @@ interface OrgBFixtures {
   keywordId: string;
   notificationChannelId: string;
   alertRuleId: string;
+  reportId: string;
+  reportScheduleId: string;
 }
 
 interface TenantResource {
@@ -407,6 +409,75 @@ const RESOURCES: TenantResource[] = [
     path: (b) => `/projects/${b.projectId}/alert-events`,
     referencesOrgB: true,
   },
+  {
+    name: 'rapor listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/reports`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor oluşturma',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/reports`,
+    body: {
+      type: 'custom',
+      periodStart: '2026-09-01',
+      periodEnd: '2026-09-07',
+    },
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor detayı',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/reports/${b.reportId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor indirme',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/reports/${b.reportId}/download`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor schedule listesi',
+    method: 'get',
+    path: (b) => `/projects/${b.projectId}/report-schedules`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor schedule oluşturma',
+    method: 'post',
+    path: (b) => `/projects/${b.projectId}/report-schedules`,
+    body: {
+      type: 'weekly',
+      cron: '0 9 * * 1',
+      timezone: 'Europe/Istanbul',
+      recipients: ['ele-gecirildi@example.com'],
+    },
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor schedule detayı',
+    method: 'get',
+    path: (b) =>
+      `/projects/${b.projectId}/report-schedules/${b.reportScheduleId}`,
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor schedule güncelleme',
+    method: 'patch',
+    path: (b) =>
+      `/projects/${b.projectId}/report-schedules/${b.reportScheduleId}`,
+    body: { isActive: false },
+    referencesOrgB: true,
+  },
+  {
+    name: 'rapor schedule silme',
+    method: 'delete',
+    path: (b) =>
+      `/projects/${b.projectId}/report-schedules/${b.reportScheduleId}`,
+    referencesOrgB: true,
+  },
 ];
 
 interface ErrorBody {
@@ -524,6 +595,33 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
         channels: [notificationChannelId],
       });
     expect(alertRule.status).toBe(201);
+    const report = await ctx
+      .http()
+      .post(`/api/v1/projects/${projectId}/reports`)
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({
+        type: 'custom',
+        periodStart: '2026-09-01',
+        periodEnd: '2026-09-07',
+      });
+    expect(report.status).toBe(201);
+    const reportRun = await ctx.dataSource.query<{ id: string }[]>(
+      `SELECT id FROM reports WHERE org_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [orgId],
+    );
+    const reportSchedule = await ctx
+      .http()
+      .post(`/api/v1/projects/${projectId}/report-schedules`)
+      .set('Authorization', `Bearer ${bobToken}`)
+      .set('X-Org-Id', orgId)
+      .send({
+        type: 'weekly',
+        cron: '0 9 * * 1',
+        timezone: 'Europe/Istanbul',
+        recipients: ['b@example.com'],
+      });
+    expect(reportSchedule.status).toBe(201);
     return {
       orgId,
       ownerUserId: bobId[0].id,
@@ -535,6 +633,8 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
       keywordId,
       notificationChannelId,
       alertRuleId: (alertRule.body as { id: string }).id,
+      reportId: reportRun[0].id,
+      reportScheduleId: (reportSchedule.body as { id: string }).id,
     };
   }
 
@@ -708,6 +808,18 @@ describeWithDatabase('Tenant izolasyonu (e2e, test DB)', () => {
     const alertRules = await asBob(`/projects/${orgB.projectId}/alert-rules`);
     expect(alertRules.body).toMatchObject({
       items: [{ id: orgB.alertRuleId, name: "B'nin kuralı" }],
+    });
+
+    const reports = await asBob(`/projects/${orgB.projectId}/reports`);
+    expect(reports.body).toMatchObject({
+      items: [{ id: orgB.reportId, periodStart: '2026-09-01' }],
+    });
+
+    const reportSchedules = await asBob(
+      `/projects/${orgB.projectId}/report-schedules`,
+    );
+    expect(reportSchedules.body).toMatchObject({
+      items: [{ id: orgB.reportScheduleId, cron: '0 9 * * 1' }],
     });
 
     const runs = await ctx.dataSource.query<{ count: number }[]>(

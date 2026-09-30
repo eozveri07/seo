@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AlertEvalComputeModule } from './alert-eval-compute.module';
 import { AlertEvalProcessor } from './alert-eval.processor';
+import { ReportsSharedModule } from '../reports/reports-shared.module';
 import { AlertsSharedModule } from './alerts-shared.module';
 import { NotifyProcessor } from './notify.processor';
 import { NotifyService } from './notify.service';
@@ -18,9 +19,13 @@ import { SyncFailureAlertTriggerListener } from './sync-failure-alert-trigger.li
 })
 export class AlertEvalProcessorModule {}
 
-/** Worker: `notify` processor'ı (e-posta/Discord/Slack gönderimi). */
+/**
+ * Worker: `notify` processor'ı (e-posta/Discord/Slack gönderimi ve rapor
+ * PDF maili, T1.15). `ReportsSharedModule` yalnız `REPORT_NOTIFIER`'ı
+ * enjekte etmek için import edilir.
+ */
 @Module({
-  imports: [AlertsSharedModule],
+  imports: [AlertsSharedModule, ReportsSharedModule],
   providers: [NotifyProcessor, NotifyService],
 })
 export class NotifyProcessorModule {}

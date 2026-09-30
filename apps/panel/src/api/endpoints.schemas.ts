@@ -1129,6 +1129,193 @@ export interface UpdateNotificationChannelDto {
   config?: UpdateNotificationChannelDtoConfig;
 }
 
+export type ReportType = typeof ReportType[keyof typeof ReportType];
+
+
+export const ReportType = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  custom: 'custom',
+} as const;
+
+export type ReportStatus = typeof ReportStatus[keyof typeof ReportStatus];
+
+
+export const ReportStatus = {
+  queued: 'queued',
+  rendering: 'rendering',
+  ready: 'ready',
+  failed: 'failed',
+} as const;
+
+export interface ReportResponseDto {
+  type: ReportType;
+  status: ReportStatus;
+  id: string;
+  projectId: string;
+  periodStart: string;
+  periodEnd: string;
+  /** @nullable */
+  fileSize: number | null;
+  /** @nullable */
+  generatedAt: string | null;
+  /** @nullable */
+  sentAt: string | null;
+  sentTo: string[];
+  /** @nullable */
+  error: string | null;
+  /** @nullable */
+  analystNote: string | null;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportListResponseDto {
+  items: ReportResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type CreateReportDtoType = typeof CreateReportDtoType[keyof typeof CreateReportDtoType];
+
+
+export const CreateReportDtoType = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  custom: 'custom',
+} as const;
+
+export interface CreateReportDto {
+  type: CreateReportDtoType;
+  periodStart: string;
+  periodEnd: string;
+  /** @maxLength 4000 */
+  analystNote?: string;
+}
+
+export interface CreateReportResponseDto {
+  runId: string;
+}
+
+export interface ReportScheduleResponseDto {
+  type: ReportType;
+  id: string;
+  projectId: string;
+  cron: string;
+  timezone: string;
+  recipients: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportScheduleListResponseDto {
+  items: ReportScheduleResponseDto[];
+}
+
+export type CreateReportScheduleDtoType = typeof CreateReportScheduleDtoType[keyof typeof CreateReportScheduleDtoType];
+
+
+export const CreateReportScheduleDtoType = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+} as const;
+
+export interface CreateReportScheduleDto {
+  type: CreateReportScheduleDtoType;
+  cron: string;
+  timezone: string;
+  recipients: string[];
+  isActive?: boolean;
+}
+
+export type UpdateReportScheduleDtoType = typeof UpdateReportScheduleDtoType[keyof typeof UpdateReportScheduleDtoType];
+
+
+export const UpdateReportScheduleDtoType = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+} as const;
+
+export interface UpdateReportScheduleDto {
+  type?: UpdateReportScheduleDtoType;
+  cron?: string;
+  timezone?: string;
+  recipients?: string[];
+  isActive?: boolean;
+}
+
+export interface ReportPeriodMetricsDto {
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  organicSessions: number;
+  organicKeyEvents: number;
+}
+
+export interface ReportGscTrendPointDto {
+  date: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+}
+
+export interface ReportKeywordDistributionDto {
+  top3: number;
+  top10: number;
+  top20: number;
+  top100: number;
+  beyond: number;
+  total: number;
+}
+
+export interface ReportKeywordMoverDto {
+  trackedKeywordId: string;
+  keyword: string;
+  /** @nullable */
+  position: number | null;
+  /** @nullable */
+  change30d: number | null;
+}
+
+export interface ReportTopPageDto {
+  page: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+}
+
+export type ReportDataResponseDtoBranding = { [key: string]: unknown };
+
+export interface ReportDataResponseDto {
+  reportId: string;
+  projectId: string;
+  projectName: string;
+  clientName: string;
+  branding: ReportDataResponseDtoBranding;
+  type: ReportType;
+  periodStart: string;
+  periodEnd: string;
+  previousPeriodStart: string;
+  previousPeriodEnd: string;
+  period: ReportPeriodMetricsDto;
+  previousPeriod: ReportPeriodMetricsDto;
+  gscTrend: ReportGscTrendPointDto[];
+  keywordDistribution: ReportKeywordDistributionDto;
+  topGainers: ReportKeywordMoverDto[];
+  topLosers: ReportKeywordMoverDto[];
+  topPages: ReportTopPageDto[];
+  /** @nullable */
+  analystNote: string | null;
+  generatedAt: string;
+}
+
 export interface LocationReferenceDto {
   locationCode: number;
   locationName: string;
@@ -1503,4 +1690,38 @@ page?: number;
 limit?: number;
 ruleId?: string;
 };
+
+export type ReportsControllerListParams = {
+/**
+ * 1'den başlar.
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
+type?: ReportsControllerListType;
+status?: ReportsControllerListStatus;
+};
+
+export type ReportsControllerListType = typeof ReportsControllerListType[keyof typeof ReportsControllerListType];
+
+
+export const ReportsControllerListType = {
+  weekly: 'weekly',
+  monthly: 'monthly',
+  custom: 'custom',
+} as const;
+
+export type ReportsControllerListStatus = typeof ReportsControllerListStatus[keyof typeof ReportsControllerListStatus];
+
+
+export const ReportsControllerListStatus = {
+  queued: 'queued',
+  rendering: 'rendering',
+  ready: 'ready',
+  failed: 'failed',
+} as const;
 

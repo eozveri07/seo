@@ -37,12 +37,12 @@ export class NotificationChannelNotFoundError extends DomainException {
   }
 }
 
-/** `notify` job'u `alertEventId` olmadan eklenmişse (T1.15 rapor bildirimleri henüz yok). */
+/** `notify` job'u `reportId` yok ve `alertEventId`/`channelId` çiftiyle de eklenmemiş. */
 export class MissingAlertEventIdError extends DomainException {
   constructor() {
     super(
       'MISSING_ALERT_EVENT_ID',
-      "notify job'u alertEventId olmadan eklendi.",
+      "notify job'u alertEventId/channelId ya da reportId olmadan eklendi.",
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }

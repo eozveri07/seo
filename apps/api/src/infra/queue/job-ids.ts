@@ -90,3 +90,27 @@ export function rankLiveJobId(projectId: string, runId: string): string {
 export function summaryJobId(projectId: string, date: string): string {
   return `summary:${projectId}:${date}`;
 }
+
+/**
+ * `report` (T1.15): bir `reports` satırı başına tek PDF üretim job'u;
+ * manuel oluşturma ve `report-dispatch` aynı fonksiyonu kullanır.
+ */
+export function reportJobId(reportId: string): string {
+  return `report:${reportId}:pdf`;
+}
+
+/**
+ * `report-dispatch`'in bir schedule'ı belirli bir dönem için tetiklemesi:
+ * aynı schedule ve dönem için BullMQ ikinci job'u yok sayar (§8.1 idempotency).
+ */
+export function reportScheduleJobId(
+  scheduleId: string,
+  periodStart: string,
+): string {
+  return `report-sched:${scheduleId}:${periodStart}`;
+}
+
+/** Bir rapor hazır olduğunda alıcılara PDF ekli mail için `notify` job'u. */
+export function reportNotifyJobId(reportId: string): string {
+  return `report-notify:${reportId}:mail`;
+}

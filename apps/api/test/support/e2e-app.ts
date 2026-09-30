@@ -35,6 +35,8 @@ const TABLES = [
   'gsc_site_daily',
   'api_usage',
   'job_runs',
+  'reports',
+  'report_schedules',
   'alert_events',
   'alert_rules',
   'notification_channels',

@@ -23,11 +23,13 @@ import { Route as AppNotificationsIndexRouteImport } from './routes/_app/notific
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppProjectsProjectIdRouteImport } from './routes/_app/projects/$projectId'
 import { Route as AppProjectsNewRouteImport } from './routes/_app/projects/new'
+import { Route as PrintReportsReportIdRouteImport } from './routes/print.reports.$reportId'
 import { Route as AppProjectsProjectIdAlertsRouteImport } from './routes/_app/projects/$projectId_.alerts'
 import { Route as AppProjectsProjectIdConnectionsRouteImport } from './routes/_app/projects/$projectId_.connections'
 import { Route as AppProjectsProjectIdDashboardRouteImport } from './routes/_app/projects/$projectId_.dashboard'
 import { Route as AppProjectsProjectIdExplorerRouteImport } from './routes/_app/projects/$projectId_.explorer'
 import { Route as AppProjectsProjectIdKeywordsRouteImport } from './routes/_app/projects/$projectId_.keywords'
+import { Route as AppProjectsProjectIdReportsRouteImport } from './routes/_app/projects/$projectId_.reports'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -98,6 +100,11 @@ const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
   path: '/projects/new',
   getParentRoute: () => AppRoute,
 } as any)
+const PrintReportsReportIdRoute = PrintReportsReportIdRouteImport.update({
+  id: '/print/reports/$reportId',
+  path: '/print/reports/$reportId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppProjectsProjectIdAlertsRoute =
   AppProjectsProjectIdAlertsRouteImport.update({
     id: '/projects/$projectId_/alerts',
@@ -128,6 +135,12 @@ const AppProjectsProjectIdKeywordsRoute =
     path: '/projects/$projectId/keywords',
     getParentRoute: () => AppRoute,
   } as any)
+const AppProjectsProjectIdReportsRoute =
+  AppProjectsProjectIdReportsRouteImport.update({
+    id: '/projects/$projectId_/reports',
+    path: '/projects/$projectId/reports',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -139,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/clients/new': typeof AppClientsNewRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/new': typeof AppProjectsNewRoute
+  '/print/reports/$reportId': typeof PrintReportsReportIdRoute
   '/clients/': typeof AppClientsIndexRoute
   '/members/': typeof AppMembersIndexRoute
   '/notifications/': typeof AppNotificationsIndexRoute
@@ -148,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
   '/projects/$projectId/keywords': typeof AppProjectsProjectIdKeywordsRoute
+  '/projects/$projectId/reports': typeof AppProjectsProjectIdReportsRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
@@ -159,6 +174,7 @@ export interface FileRoutesByTo {
   '/clients/new': typeof AppClientsNewRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/new': typeof AppProjectsNewRoute
+  '/print/reports/$reportId': typeof PrintReportsReportIdRoute
   '/clients': typeof AppClientsIndexRoute
   '/members': typeof AppMembersIndexRoute
   '/notifications': typeof AppNotificationsIndexRoute
@@ -168,6 +184,7 @@ export interface FileRoutesByTo {
   '/projects/$projectId/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/projects/$projectId/explorer': typeof AppProjectsProjectIdExplorerRoute
   '/projects/$projectId/keywords': typeof AppProjectsProjectIdKeywordsRoute
+  '/projects/$projectId/reports': typeof AppProjectsProjectIdReportsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -181,6 +198,7 @@ export interface FileRoutesById {
   '/_app/clients/new': typeof AppClientsNewRoute
   '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/_app/projects/new': typeof AppProjectsNewRoute
+  '/print/reports/$reportId': typeof PrintReportsReportIdRoute
   '/_app/clients/': typeof AppClientsIndexRoute
   '/_app/members/': typeof AppMembersIndexRoute
   '/_app/notifications/': typeof AppNotificationsIndexRoute
@@ -190,6 +208,7 @@ export interface FileRoutesById {
   '/_app/projects/$projectId_/dashboard': typeof AppProjectsProjectIdDashboardRoute
   '/_app/projects/$projectId_/explorer': typeof AppProjectsProjectIdExplorerRoute
   '/_app/projects/$projectId_/keywords': typeof AppProjectsProjectIdKeywordsRoute
+  '/_app/projects/$projectId_/reports': typeof AppProjectsProjectIdReportsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -203,6 +222,7 @@ export interface FileRouteTypes {
     | '/clients/new'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/print/reports/$reportId'
     | '/clients/'
     | '/members/'
     | '/notifications/'
@@ -212,6 +232,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/explorer'
     | '/projects/$projectId/keywords'
+    | '/projects/$projectId/reports'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
@@ -223,6 +244,7 @@ export interface FileRouteTypes {
     | '/clients/new'
     | '/projects/$projectId'
     | '/projects/new'
+    | '/print/reports/$reportId'
     | '/clients'
     | '/members'
     | '/notifications'
@@ -232,6 +254,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/explorer'
     | '/projects/$projectId/keywords'
+    | '/projects/$projectId/reports'
   id:
     | '__root__'
     | '/_app'
@@ -244,6 +267,7 @@ export interface FileRouteTypes {
     | '/_app/clients/new'
     | '/_app/projects/$projectId'
     | '/_app/projects/new'
+    | '/print/reports/$reportId'
     | '/_app/clients/'
     | '/_app/members/'
     | '/_app/notifications/'
@@ -253,6 +277,7 @@ export interface FileRouteTypes {
     | '/_app/projects/$projectId_/dashboard'
     | '/_app/projects/$projectId_/explorer'
     | '/_app/projects/$projectId_/keywords'
+    | '/_app/projects/$projectId_/reports'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -260,6 +285,7 @@ export interface RootRouteChildren {
   AcceptInviteRoute: typeof AcceptInviteRoute
   LoginRoute: typeof LoginRoute
   OrganizationsNewRoute: typeof OrganizationsNewRoute
+  PrintReportsReportIdRoute: typeof PrintReportsReportIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -362,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/print/reports/$reportId': {
+      id: '/print/reports/$reportId'
+      path: '/print/reports/$reportId'
+      fullPath: '/print/reports/$reportId'
+      preLoaderRoute: typeof PrintReportsReportIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/projects/$projectId_/alerts': {
       id: '/_app/projects/$projectId_/alerts'
       path: '/projects/$projectId/alerts'
@@ -397,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsProjectIdKeywordsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/projects/$projectId_/reports': {
+      id: '/_app/projects/$projectId_/reports'
+      path: '/projects/$projectId/reports'
+      fullPath: '/projects/$projectId/reports'
+      preLoaderRoute: typeof AppProjectsProjectIdReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -416,6 +456,7 @@ interface AppRouteChildren {
   AppProjectsProjectIdDashboardRoute: typeof AppProjectsProjectIdDashboardRoute
   AppProjectsProjectIdExplorerRoute: typeof AppProjectsProjectIdExplorerRoute
   AppProjectsProjectIdKeywordsRoute: typeof AppProjectsProjectIdKeywordsRoute
+  AppProjectsProjectIdReportsRoute: typeof AppProjectsProjectIdReportsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -434,6 +475,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProjectsProjectIdDashboardRoute: AppProjectsProjectIdDashboardRoute,
   AppProjectsProjectIdExplorerRoute: AppProjectsProjectIdExplorerRoute,
   AppProjectsProjectIdKeywordsRoute: AppProjectsProjectIdKeywordsRoute,
+  AppProjectsProjectIdReportsRoute: AppProjectsProjectIdReportsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -443,6 +485,7 @@ const rootRouteChildren: RootRouteChildren = {
   AcceptInviteRoute: AcceptInviteRoute,
   LoginRoute: LoginRoute,
   OrganizationsNewRoute: OrganizationsNewRoute,
+  PrintReportsReportIdRoute: PrintReportsReportIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

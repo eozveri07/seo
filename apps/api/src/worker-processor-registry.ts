@@ -16,6 +16,8 @@ import {
   RankPollProcessorModule,
   RankPostProcessorModule,
 } from './modules/rankings/rankings-processor.module';
+import { ReportDispatchProcessorModule } from './modules/reports/report-dispatch-processor.module';
+import { ReportProcessorModule } from './modules/reports/report-processor.module';
 import { SummaryProcessorModule } from './modules/summary/summary-processor.module';
 
 export interface WorkerProcessorRegistryEntry {
@@ -43,4 +45,9 @@ export const WORKER_PROCESSOR_REGISTRY: WorkerProcessorRegistryEntry[] = [
   { queueName: QueueName.Summary, module: SummaryProcessorModule },
   { queueName: QueueName.AlertEval, module: AlertEvalProcessorModule },
   { queueName: QueueName.Notify, module: NotifyProcessorModule },
+  { queueName: QueueName.Report, module: ReportProcessorModule },
+  {
+    queueName: QueueName.ReportDispatch,
+    module: ReportDispatchProcessorModule,
+  },
 ];

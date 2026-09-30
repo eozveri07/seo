@@ -11,10 +11,16 @@ import {
   QUEUE_DEFINITIONS,
   QueueName,
 } from '../../infra/queue/queues';
+import { REPORT_NOTIFIER } from '../reports/report-notifier';
+import type { ReportNotifier } from '../reports/report-notifier';
 import { MissingAlertEventIdError } from './alerts.errors';
 import { NotifyService } from './notify.service';
 
-/** `notify`: bir alert olayının tek bir kanala gönderilmesi. */
+/**
+ * `notify`: ya bir alert olayının tek bir kanala gönderilmesi (`alertEventId`
+ * + `channelId`) ya da bir raporun PDF ekli mailinin gönderilmesi
+ * (`reportId`, T1.15).
+ */
 @Processor(QueueName.Notify, {
   concurrency: QUEUE_DEFINITIONS[QueueName.Notify].concurrency,
 })
@@ -26,12 +32,16 @@ export class NotifyProcessor extends BaseProcessor<QueueName.Notify> {
     cls: ClsService<AppClsStore>,
     @Inject(JOB_RUN_RECORDER) jobRunRecorder: JobRunRecorder,
     private readonly notifyService: NotifyService,
+    @Inject(REPORT_NOTIFIER) private readonly reportNotifier: ReportNotifier,
   ) {
     super(cls, jobRunRecorder);
   }
 
   protected handle(job: Job<NotifyJobData>): Promise<unknown> {
-    if (!job.data.alertEventId) {
+    if (job.data.reportId) {
+      return this.reportNotifier.notifyReport(job.data.reportId);
+    }
+    if (!job.data.alertEventId || !job.data.channelId) {
       throw new MissingAlertEventIdError();
     }
     return this.notifyService.notify(job.data.channelId, job.data.alertEventId);

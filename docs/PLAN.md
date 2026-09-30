@@ -385,6 +385,8 @@ ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-pro
 - Grafikler PDF'te eksiksiz görünüyor.
 - Haftalık schedule doğru saatte mail atıyor.
 
+**Lokal doğrulama bekliyor:** Runner'da DB/Redis, gerçek Playwright/chromium çalıştırması ve bir SMTP sunucusu yok; bu yüzden kabul kriterlerinin üçü de (30 sn altı PDF üretimi, grafiklerin PDF'te eksiksiz görünmesi, haftalık schedule'ın gerçek zamanda mail atması) lokalde doğrulanmalı: `bunx playwright install --with-deps chromium`, `bun run db:up`, `bun run dev:api`/`dev:panel`/`dev:worker` (`WORKER_QUEUES=report,report-dispatch,notify`), bir proje için manuel rapor oluşturup PDF'in indirilip grafiklerinin (GSC trendi, keyword dağılımı) eksiksiz çizildiği kontrol edilmeli; bir `report_schedules` satırı yakın bir cron ile eklenip `report-dispatch`'in doğru saatte tetiklediği ve alıcıya PDF ekli mail (dev'de jsonTransport log'u) gittiği izlenmeli. Migration'ların gerçek Postgres'e uygulanması ve tenant izolasyon e2e testinin (`tenant-isolation.e2e-spec.ts`, yeni eklenen reports/report-schedules satırları) `E2E_DATABASE=true` ile geçtiği de lokalde doğrulanmalı. Birim testler (report token scope'u, `report-dispatch` zaman/timezone hesabı ve idempotency, `previousPeriod`) mock'lu, DB/Redis/gerçek chromium olmadan çalıştırıldı ve geçti (api 790/790, panel 19/19).
+
 ### [ ] T1.16 Bakım işleri, seed ve dokümantasyon
 - `HousekeepingModule` (ARCHITECTURE §8.2): partman bakımı, token ve davet temizliği, job_runs temizliği, takılı job düzeltme.
 - Seed script'i (ARCHITECTURE §15), 60 günlük sahte veri üretimi dahil.
