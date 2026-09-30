@@ -14,12 +14,14 @@
     "db:migrate": "bun run --filter api migration:run",
     "db:revert": "bun run --filter api migration:revert",
     "dev:api": "bun run --filter api dev",
+    "dev:worker": "bun run --filter api dev:worker",
     "dev:panel": "bun run --filter panel dev",
     "dev": "concurrently -n api,panel -c blue,magenta \"bun run dev:api\" \"bun run dev:panel\"",
     "lint": "bun run --filter api lint && bun run --filter panel lint",
     "typecheck": "bun run --filter api typecheck && bun run --filter panel typecheck",
-    "test": "bun run --filter api test",
-    "openapi:export": "bun run --filter api openapi:export"
+    "test": "bun run --filter api test && bun run --filter panel test",
+    "openapi:export": "bun run --filter api openapi:export",
+    "gen:api": "bun run --filter api openapi:export && bun run --filter panel gen:api"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

@@ -20,8 +20,11 @@ function requestIdFromHeader(req: Request): string | undefined {
         mount: true,
         generateId: true,
         idGenerator: (req: Request) => requestIdFromHeader(req) ?? uuidv7(),
-        setup: (cls, _req: Request, res: Response) => {
+        setup: (cls, req: Request, res: Response) => {
           res.setHeader('X-Request-Id', cls.getId());
+          if (req.ip) {
+            cls.set('ip', req.ip);
+          }
         },
       },
     }),

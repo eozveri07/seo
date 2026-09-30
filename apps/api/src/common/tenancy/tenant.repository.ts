@@ -2,6 +2,7 @@ import { ClsService } from 'nestjs-cls';
 import {
   DeepPartial,
   DeleteResult,
+  EntityManager,
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
@@ -41,6 +42,14 @@ export class TenantRepository<T extends TenantScopedEntity> {
     private readonly repository: Repository<T>,
     private readonly cls: ClsService<AppClsStore>,
   ) {}
+
+  /** Aynı tenant kapsamını çağıranın transaction'ına bağlar. */
+  withManager(manager: EntityManager): TenantRepository<T> {
+    return new TenantRepository(
+      manager.getRepository<T>(this.repository.target),
+      this.cls,
+    );
+  }
 
   find(options: FindManyOptions<T> = {}): Promise<T[]> {
     return this.repository.find(this.scopeOptions(options));
@@ -110,8 +119,12 @@ export class TenantRepository<T extends TenantScopedEntity> {
       }
     }
 
-    for (const entity of entities) {
+    for (const entity of entities as { id?: unknown; orgId?: unknown }[]) {
       this.assignOrg(entity, orgId);
+      // Düz objelerde @BeforeInsert çalışmaz; yeni satırın id'si burada üretilir.
+      if (!entity.id) {
+        entity.id = uuidv7();
+      }
     }
 
     if (Array.isArray(entityOrEntities)) {

@@ -9,8 +9,57 @@ import {
   IsString,
   Max,
   Min,
+  MinLength,
+  ValidateBy,
+  ValidationOptions,
   validateSync,
 } from 'class-validator';
+
+const ENCRYPTION_KEY_BYTE_LENGTH = 32;
+const JWT_ACCESS_SECRET_MIN_LENGTH = 32;
+
+/** `ENCRYPTION_KEY`'in base64 ile kodlanmış tam 32 byte olduğunu doğrular. */
+function IsBase64EncryptionKey(
+  validationOptions?: ValidationOptions,
+): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'isBase64EncryptionKey',
+      validator: {
+        validate: (value: unknown): boolean => {
+          if (typeof value !== 'string') {
+            return false;
+          }
+          try {
+            return (
+              Buffer.from(value, 'base64').length === ENCRYPTION_KEY_BYTE_LENGTH
+            );
+          } catch {
+            return false;
+          }
+        },
+        defaultMessage: () =>
+          `ENCRYPTION_KEY base64 ile kodlanmış ${ENCRYPTION_KEY_BYTE_LENGTH} byte olmalı`,
+      },
+    },
+    validationOptions,
+  );
+}
+
+/**
+ * `enableImplicitConversion` string'i `Boolean('false') === true` ile önceden
+ * çevirdiği için ham değer `obj[key]`'den okunur.
+ */
+function toBoolean({
+  obj,
+  key,
+}: {
+  obj: Record<string, unknown>;
+  key: string;
+}): unknown {
+  const raw = obj[key];
+  return typeof raw === 'string' ? raw === 'true' : raw;
+}
 
 export enum Environment {
   Development = 'development',
@@ -46,9 +95,7 @@ export class EnvironmentVariables {
 
   /** true iken TypeORM açılışta bağlanmaz; e2e testleri ve openapi:export DB'siz çalışır. */
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value === 'true' : value,
-  )
+  @Transform(toBoolean)
   @IsBoolean()
   DATABASE_SKIP_INITIALIZATION?: boolean;
 
@@ -56,27 +103,31 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   REDIS_URL!: string;
 
-  @IsOptional()
+  /** Access JWT imza anahtarı (HS256). En az 32 karakter. */
   @IsString()
-  JWT_ACCESS_SECRET?: string;
+  @IsNotEmpty()
+  @MinLength(JWT_ACCESS_SECRET_MIN_LENGTH)
+  JWT_ACCESS_SECRET!: string;
 
-  @IsOptional()
+  /** Access JWT ömrü, saniye. ARCHITECTURE §4.4: 900 (15 dk). */
   @Type(() => Number)
   @IsInt()
-  JWT_ACCESS_TTL?: number;
+  @Min(60)
+  JWT_ACCESS_TTL!: number;
 
-  @IsOptional()
   @Type(() => Number)
   @IsInt()
-  REFRESH_TOKEN_TTL_DAYS?: number;
+  @Min(1)
+  REFRESH_TOKEN_TTL_DAYS: number = 30;
 
   @IsOptional()
   @IsString()
   REPORT_TOKEN_SECRET?: string;
 
-  @IsOptional()
   @IsString()
-  ENCRYPTION_KEY?: string;
+  @IsNotEmpty()
+  @IsBase64EncryptionKey()
+  ENCRYPTION_KEY!: string;
 
   @IsOptional()
   @IsString()
@@ -120,9 +171,7 @@ export class EnvironmentVariables {
   STORAGE_DIR?: string;
 
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value === 'true' : value,
-  )
+  @Transform(toBoolean)
   @IsBoolean()
   SCHEDULER_ENABLED?: boolean;
 

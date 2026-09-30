@@ -1,5 +1,5 @@
 import { ClsService } from 'nestjs-cls';
-import { FindOperator, Repository } from 'typeorm';
+import { EntityManager, FindOperator, Repository } from 'typeorm';
 import { version as uuidVersion } from 'uuid';
 import { TenantScopedEntity } from '../../database/entities/tenant-scoped.entity';
 import { AppClsStore } from '../cls-store';
@@ -204,8 +204,46 @@ describe('TenantRepository', () => {
 
       await tenantRepository.save({ term: 'seo' });
 
-      expect(firstArg(repository.save)).toEqual({ term: 'seo', orgId: ORG_A });
+      expect(firstArg(repository.save)).toEqual({
+        term: 'seo',
+        orgId: ORG_A,
+        id: expect.any(String) as unknown,
+      });
       expect(repository.countBy).not.toHaveBeenCalled();
+    });
+
+    it('save id’siz düz objeye UUIDv7 id atar', async () => {
+      const { tenantRepository, repository } = setup(ORG_A);
+
+      await tenantRepository.save({ term: 'seo' });
+
+      const saved = firstArg(repository.save) as Keyword;
+      expect(uuidVersion(saved.id)).toBe(7);
+      expect(repository.countBy).not.toHaveBeenCalled();
+    });
+
+    it("withManager aynı org kapsamıyla transaction'ın repository'sini kullanır", async () => {
+      const { cls } = setup(ORG_A);
+      const managerRepository = {
+        target: Keyword,
+        find: jest.fn().mockResolvedValue([]),
+      };
+      const manager = {
+        getRepository: jest.fn().mockReturnValue(managerRepository),
+      };
+      const base = new TenantRepository<Keyword>(
+        { target: Keyword } as unknown as Repository<Keyword>,
+        cls as unknown as ClsService<AppClsStore>,
+      );
+
+      await base
+        .withManager(manager as unknown as EntityManager)
+        .find({ where: { term: 'seo' } });
+
+      expect(manager.getRepository).toHaveBeenCalledWith(Keyword);
+      expect(firstArg(managerRepository.find)).toEqual({
+        where: { term: 'seo', orgId: ORG_A },
+      });
     });
 
     it("save dizideki her entity'ye orgId set eder", async () => {
@@ -213,7 +251,7 @@ describe('TenantRepository', () => {
 
       await tenantRepository.save([{ term: 'a' }, { term: 'b', orgId: ORG_A }]);
 
-      expect(firstArg(repository.save)).toEqual([
+      expect(firstArg(repository.save)).toMatchObject([
         { term: 'a', orgId: ORG_A },
         { term: 'b', orgId: ORG_A },
       ]);

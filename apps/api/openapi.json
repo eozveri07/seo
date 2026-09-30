@@ -1,6 +1,4487 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token yok ya da geçersiz."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Oturumdaki kullanıcı.",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "REGISTRATION_CLOSED"
+          },
+          "429": {
+            "description": "İstek limiti aşıldı."
+          }
+        },
+        "summary": "Sadece hiç kullanıcı yokken ilk kullanıcıyı oluşturur ve oturum açar.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register-invited": {
+      "post": {
+        "operationId": "AuthController_registerInvited",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterInvitedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITATION_NOT_FOUND"
+          },
+          "409": {
+            "description": "INVITATION_ALREADY_ACCEPTED, INVITATION_ACCOUNT_EXISTS"
+          },
+          "410": {
+            "description": "INVITATION_EXPIRED"
+          },
+          "429": {
+            "description": "İstek limiti aşıldı."
+          }
+        },
+        "summary": "Davet bağlantısıyla hesap açar, üyeliği ekler ve oturum açar.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CREDENTIALS"
+          },
+          "429": {
+            "description": "İstek limiti aşıldı."
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_REFRESH_TOKEN"
+          },
+          "429": {
+            "description": "İstek limiti aşıldı."
+          }
+        },
+        "security": [
+          {
+            "refresh_token": []
+          }
+        ],
+        "summary": "Refresh token cookie'den okunur, rotation uygulanır ve yeni cookie yazılır.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "429": {
+            "description": "İstek limiti aşıldı."
+          }
+        },
+        "security": [
+          {
+            "refresh_token": []
+          }
+        ],
+        "summary": "Refresh token ailesini iptal eder ve cookie'yi siler.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/organizations": {
+      "post": {
+        "operationId": "OrganizationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_SLUG_TAKEN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Yeni organizasyon; oluşturan kullanıcı owner olur.",
+        "tags": [
+          "organizations"
+        ]
+      },
+      "get": {
+        "operationId": "OrganizationsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOrganizationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kullanıcının üye olduğu organizasyonlar. X-Org-Id gerekmez.",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/v1/organizations/current": {
+      "get": {
+        "operationId": "OrganizationsController_getCurrent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "X-Org-Id ile seçilen organizasyon.",
+        "tags": [
+          "organizations"
+        ]
+      },
+      "patch": {
+        "operationId": "OrganizationsController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE"
+          },
+          "409": {
+            "description": "ORG_SLUG_TAKEN"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "organizations"
+        ]
+      },
+      "delete": {
+        "operationId": "OrganizationsController_delete",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Organizasyonu, üyeliklerini ve davetlerini siler.",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/v1/members": {
+      "get": {
+        "operationId": "MembersController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/members/{userId}": {
+      "patch": {
+        "operationId": "MembersController_changeRole",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberRoleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "MEMBER_NOT_FOUND"
+          },
+          "409": {
+            "description": "LAST_OWNER"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Rol değiştirir. owner rolünü yalnız owner verir ya da alır; son owner düşürülemez.",
+        "tags": [
+          "members"
+        ]
+      },
+      "delete": {
+        "operationId": "MembersController_remove",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "MEMBER_NOT_FOUND"
+          },
+          "409": {
+            "description": "LAST_OWNER"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Üyeyi çıkarır; son owner çıkarılamaz.",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/v1/invitations": {
+      "post": {
+        "operationId": "InvitationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedInvitationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE, OWNER_ROLE_REQUIRED"
+          },
+          "409": {
+            "description": "ALREADY_MEMBER"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Aktif organizasyona davet; bağlantı mail ile gider.",
+        "tags": [
+          "invitations"
+        ]
+      },
+      "get": {
+        "operationId": "InvitationsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Aktif organizasyonun kabul edilmemiş davetleri.",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/invitations/{id}": {
+      "delete": {
+        "operationId": "InvitationsController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": "INVITATION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Bekleyen daveti geri çeker.",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/invitations/preview": {
+      "post": {
+        "operationId": "InvitationsController_preview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITATION_NOT_FOUND"
+          },
+          "409": {
+            "description": "INVITATION_ALREADY_ACCEPTED"
+          },
+          "410": {
+            "description": "INVITATION_EXPIRED"
+          }
+        },
+        "summary": "Kabul ekranı için davetin özeti. Oturum gerekmez; token yetki belgesidir.",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/invitations/accept": {
+      "post": {
+        "operationId": "InvitationsController_accept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInvitationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INVITATION_EMAIL_MISMATCH"
+          },
+          "404": {
+            "description": "INVITATION_NOT_FOUND"
+          },
+          "409": {
+            "description": "INVITATION_ALREADY_ACCEPTED, ALREADY_MEMBER"
+          },
+          "410": {
+            "description": "INVITATION_EXPIRED"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Oturumdaki mevcut kullanıcı daveti kabul eder. Hesabı olmayanlar\n`POST /auth/register-invited` ile kayıt olur.",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/clients": {
+      "get": {
+        "operationId": "ClientsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Client adında arama (ILIKE).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "`client_viewer` yalnız kendi client'ını görür.",
+        "tags": [
+          "clients"
+        ]
+      },
+      "post": {
+        "operationId": "ClientsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/api/v1/clients/{clientId}": {
+      "get": {
+        "operationId": "ClientsController_findOne",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CLIENT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "clients"
+        ]
+      },
+      "patch": {
+        "operationId": "ClientsController_update",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CLIENT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "clients"
+        ]
+      },
+      "delete": {
+        "operationId": "ClientsController_delete",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CLIENT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "operationId": "ProjectsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Proje adı ya da domaininde arama (ILIKE).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "required": false,
+            "in": "query",
+            "description": "Yalnız bu client'ın projelerini döner.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "`client_viewer` yalnız kendi client'ının projelerini görür.",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "operationId": "ProjectsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "409": {
+            "description": "PROJECT_DOMAIN_TAKEN"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/summary": {
+      "get": {
+        "operationId": "ProjectsController_cards",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSummaryCardsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Org genelindeki proje kartları (ARCHITECTURE §10, T1.12): son değerler,\n7/28 günlük değişim, mini seri. Tek sorguyla (`SummaryStore.cards`),\n`client_viewer` yalnız kendi client'ını görür.",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}": {
+      "get": {
+        "operationId": "ProjectsController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ]
+      },
+      "patch": {
+        "operationId": "ProjectsController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          },
+          "409": {
+            "description": "PROJECT_DOMAIN_TAKEN"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ]
+      },
+      "delete": {
+        "operationId": "ProjectsController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/connections": {
+      "get": {
+        "operationId": "ConnectionsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      },
+      "post": {
+        "operationId": "ConnectionsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConnectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          },
+          "409": {
+            "description": "CONNECTION_TYPE_TAKEN"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/connections/gsc/sites": {
+      "get": {
+        "operationId": "ConnectionsController_listGscSites",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscSiteListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Kullanıcı elle yazmak yerine service account'un erişebildiği GSC property'lerinden seçsin.",
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/connections/service-account": {
+      "get": {
+        "operationId": "ConnectionController_getServiceAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceAccountResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Kullanıcının property'ye ekleyeceği sistem service account e-postası.",
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/connections/{connectionId}": {
+      "get": {
+        "operationId": "ConnectionController_findOne",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CONNECTION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      },
+      "delete": {
+        "operationId": "ConnectionController_delete",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CONNECTION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/connections/{connectionId}/verify": {
+      "post": {
+        "operationId": "ConnectionController_verify",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "CONNECTION_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/v1/usage": {
+      "get": {
+        "operationId": "UsageController_report",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UsageGroupBy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReportResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "usage"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/sync/gsc": {
+      "post": {
+        "operationId": "GscController_triggerSync",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscSyncResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          },
+          "409": {
+            "description": "GSC_CONNECTION_NOT_ACTIVE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Son 5 günü yeniden çeker; iş kuyrukta yapılır (CLAUDE.md kural 6).",
+        "tags": [
+          "gsc"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/gsc/overview": {
+      "get": {
+        "operationId": "GscController_overview",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "compare",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GscCompareMode"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscOverviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Site toplamları ve günlük seri (`gsc_site_daily`); `compare` ile karşılaştırma dönemi.",
+        "tags": [
+          "gsc"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/gsc/queries": {
+      "get": {
+        "operationId": "GscController_queries",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GscSortField"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscQueryListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Sorgu bazında toplanmış tablo (`gsc_daily`).",
+        "tags": [
+          "gsc"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/gsc/pages": {
+      "get": {
+        "operationId": "GscController_pages",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GscSortField"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscPageListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Sayfa bazında toplanmış tablo (`gsc_page_daily`).",
+        "tags": [
+          "gsc"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/gsc/queries/{hash}/pages": {
+      "get": {
+        "operationId": "GscController_queryPages",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GscSortField"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscPageListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Bir sorgunun sayfaları (`gsc_daily`); `hash` = `queryHash`.",
+        "tags": [
+          "gsc"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/gsc/pages/{hash}/queries": {
+      "get": {
+        "operationId": "GscController_pageQueries",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GscSortField"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Sorgu ya da sayfa metninde arama (ILIKE, trigram index'li).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GscQueryListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Bir sayfanın sorguları (`gsc_daily`); `hash` = `pageHash`.",
+        "tags": [
+          "gsc"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/sync/ga4": {
+      "post": {
+        "operationId": "Ga4Controller_triggerSync",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ga4SyncResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          },
+          "409": {
+            "description": "GA4_CONNECTION_NOT_ACTIVE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Son 3 günü yeniden çeker; iş kuyrukta yapılır (CLAUDE.md kural 6).",
+        "tags": [
+          "ga4"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/ga4/overview": {
+      "get": {
+        "operationId": "Ga4Controller_overview",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ga4OverviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Kanal kırılımlı toplamlar (`ga4_daily`).",
+        "tags": [
+          "ga4"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/ga4/landing-pages": {
+      "get": {
+        "operationId": "Ga4Controller_landingPages",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "required": false,
+            "in": "query",
+            "description": "`channel_group` filtresi, ör. `Organic Search`. Sorgu tarafında uygulanır (ARCHITECTURE §5.4).",
+            "schema": {
+              "maxLength": 50,
+              "example": "Organic Search",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Ga4SortField"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Landing page metninde arama (ILIKE).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ga4LandingPageListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Landing page bazında toplanmış tablo; `channel` ile filtrelenir (ör. `Organic Search`).",
+        "tags": [
+          "ga4"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keyword-groups": {
+      "get": {
+        "operationId": "KeywordGroupsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Grup adında arama (ILIKE).",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "post": {
+        "operationId": "KeywordGroupsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKeywordGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keyword-groups/{groupId}": {
+      "get": {
+        "operationId": "KeywordGroupsController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "patch": {
+        "operationId": "KeywordGroupsController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKeywordGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordGroupResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "delete": {
+        "operationId": "KeywordGroupsController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords": {
+      "get": {
+        "operationId": "TrackedKeywordsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Keyword metninde arama (ILIKE).",
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          {
+            "name": "groupId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "device",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "desktop",
+                "mobile"
+              ]
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "description": "Etiketle filtre: keyword'ün tags dizisinde geçmeli.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "post": {
+        "operationId": "TrackedKeywordsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrackedKeywordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND, KEYWORD_GROUP_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/suggestions": {
+      "get": {
+        "operationId": "TrackedKeywordsController_suggestions",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordSuggestionsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Son 28 günde gösterimi yüksek, takipte olmayan GSC sorguları.",
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/bulk": {
+      "post": {
+        "operationId": "TrackedKeywordsController_bulkAdd",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkAddKeywordsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkAddKeywordsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Satır satır metin ya da CSV; tek transaction, satır numaralı rapor döner.",
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/{keywordId}": {
+      "get": {
+        "operationId": "TrackedKeywordsController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "TRACKED_KEYWORD_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "patch": {
+        "operationId": "TrackedKeywordsController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrackedKeywordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "TRACKED_KEYWORD_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      },
+      "delete": {
+        "operationId": "TrackedKeywordsController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "TRACKED_KEYWORD_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "keywords"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/keywords/{keywordId}/check-now": {
+      "post": {
+        "operationId": "RankingsController_checkNow",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankCheckNowResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND, TRACKED_KEYWORD_NOT_FOUND"
+          },
+          "429": {
+            "description": "Kullanıcı başına limit aşıldı"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Keyword'ü şimdi `live/advanced` ile kontrol eder; iş kuyrukta yapılır\n(CLAUDE.md kural 6), sonuç `source = dfs_live` olarak bugünün satırına\nyazılır.",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/rankings/history": {
+      "get": {
+        "operationId": "RankingsController_history",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordIds",
+            "required": true,
+            "in": "query",
+            "description": "Virgülle ayrılmış ya da tekrar eden; en fazla 50.",
+            "schema": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankHistoryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Keyword'lerin günlük pozisyon geçmişi (`rank_daily`).",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/rankings/serp/{keywordId}": {
+      "get": {
+        "operationId": "RankingsController_serp",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keywordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankSerpResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND, RANK_RESULT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "O günün SERP'i: pozisyon, URL, SERP özellikleri ve ilk 10 rakip.",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/summary": {
+      "get": {
+        "operationId": "SummaryController_forProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-28",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR, INVALID_DATE_RANGE"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "summary": "Günlük seri (`project_daily_summary`).",
+        "tags": [
+          "summary"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/alert-rules": {
+      "get": {
+        "operationId": "AlertRulesController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rank_drop",
+                "rank_exit",
+                "traffic_drop",
+                "sync_failure"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRuleListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      },
+      "post": {
+        "operationId": "AlertRulesController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAlertRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRuleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/alert-rules/{ruleId}": {
+      "get": {
+        "operationId": "AlertRulesController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRuleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "ALERT_RULE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      },
+      "patch": {
+        "operationId": "AlertRulesController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlertRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRuleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "ALERT_RULE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      },
+      "delete": {
+        "operationId": "AlertRulesController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "ALERT_RULE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/alert-events": {
+      "get": {
+        "operationId": "AlertEventsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "ruleId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertEventListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/notification-channels": {
+      "get": {
+        "operationId": "NotificationChannelsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationChannelListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      },
+      "post": {
+        "operationId": "NotificationChannelsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationChannelResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/notification-channels/{channelId}": {
+      "get": {
+        "operationId": "NotificationChannelsController_findOne",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationChannelResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "NOTIFICATION_CHANNEL_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      },
+      "patch": {
+        "operationId": "NotificationChannelsController_update",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationChannelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationChannelResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "NOTIFICATION_CHANNEL_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      },
+      "delete": {
+        "operationId": "NotificationChannelsController_delete",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "NOTIFICATION_CHANNEL_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/notification-channels/{channelId}/test": {
+      "post": {
+        "operationId": "NotificationChannelsController_test",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "NOTIFICATION_CHANNEL_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/reports": {
+      "get": {
+        "operationId": "ReportsController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "description": "1'den başlar.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "weekly",
+                "monthly",
+                "custom"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "rendering",
+                "ready",
+                "failed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      },
+      "post": {
+        "operationId": "ReportsController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReportResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/reports/{reportId}": {
+      "get": {
+        "operationId": "ReportsController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "REPORT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/reports/{reportId}/download": {
+      "get": {
+        "operationId": "ReportsController_download",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF stream"
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "REPORT_NOT_FOUND, REPORT_FILE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/report-schedules": {
+      "get": {
+        "operationId": "ReportSchedulesController_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportScheduleListResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      },
+      "post": {
+        "operationId": "ReportSchedulesController_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportScheduleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "PROJECT_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/report-schedules/{scheduleId}": {
+      "get": {
+        "operationId": "ReportSchedulesController_findOne",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scheduleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportScheduleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "REPORT_SCHEDULE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      },
+      "patch": {
+        "operationId": "ReportSchedulesController_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scheduleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReportScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportScheduleResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "REPORT_SCHEDULE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      },
+      "delete": {
+        "operationId": "ReportSchedulesController_delete",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scheduleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "ORG_ACCESS_DENIED, INSUFFICIENT_ROLE"
+          },
+          "404": {
+            "description": "REPORT_SCHEDULE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearer": [],
+            "org": []
+          }
+        ],
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/{id}/data": {
+      "get": {
+        "operationId": "ReportDataController_data",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDataResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_REPORT_TOKEN"
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/locations": {
+      "get": {
+        "operationId": "LocationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationReferenceListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "locations"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -42,7 +4523,3340 @@
   "tags": [],
   "servers": [],
   "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "refresh_token": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refresh_token"
+      },
+      "org": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Org-Id",
+        "description": "Aktif organizasyon (TenantGuard)"
+      }
+    },
     "schemas": {
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lastLoginAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "lastLoginAt",
+          "createdAt"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "password": {
+            "type": "string",
+            "description": "En az 8, en fazla 256 karakter.",
+            "minLength": 8,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "tokenType": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ]
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "Access token ömrü, saniye."
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "tokenType",
+          "accessToken",
+          "expiresIn",
+          "user"
+        ]
+      },
+      "RegisterInvitedDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Davet bağlantısındaki token.",
+            "maxLength": 256
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "password": {
+            "type": "string",
+            "description": "En az 8, en fazla 256 karakter.",
+            "minLength": 8,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "token",
+          "name",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "ReportBrandingDto": {
+        "type": "object",
+        "properties": {
+          "logoUrl": {
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          },
+          "primaryColor": {
+            "type": "string",
+            "description": "`#1d4ed8` biçiminde.",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          }
+        }
+      },
+      "OrganizationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "description": "IANA saat dilimi, ör. `Europe/Istanbul`."
+          },
+          "defaultLanguage": {
+            "type": "string",
+            "description": "Varsayılan dil kodu, ör. `tr`.",
+            "minLength": 2,
+            "maxLength": 10
+          },
+          "reportBranding": {
+            "$ref": "#/components/schemas/ReportBrandingDto"
+          }
+        }
+      },
+      "CreateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "description": "Küçük harf, rakam ve tire. Verilmezse addan üretilir.",
+            "maxLength": 60
+          },
+          "settings": {
+            "$ref": "#/components/schemas/OrganizationSettingsDto"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "OrgRole": {
+        "type": "string",
+        "enum": [
+          "owner",
+          "admin",
+          "analyst",
+          "client_viewer"
+        ]
+      },
+      "UserOrganizationResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true,
+            "description": "client_viewer ise görebildiği client."
+          }
+        },
+        "required": [
+          "role",
+          "id",
+          "name",
+          "slug",
+          "clientId"
+        ]
+      },
+      "UserOrganizationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserOrganizationResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "OrganizationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/OrganizationSettingsDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "settings": {
+            "description": "Verilirse mevcut ayarların tamamının yerine geçer.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationSettingsDto"
+              }
+            ]
+          }
+        }
+      },
+      "MemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Üyeliğin başladığı an."
+          }
+        },
+        "required": [
+          "role",
+          "userId",
+          "email",
+          "name",
+          "clientId",
+          "joinedAt"
+        ]
+      },
+      "MemberListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "UpdateMemberRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "clientId": {
+            "type": "string",
+            "description": "client_viewer için zorunlu, diğer rollerde verilmez.",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "MemberRoleResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "role",
+          "userId",
+          "clientId"
+        ]
+      },
+      "CreateInvitationDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "client_viewer için zorunlu, diğer rollerde verilmez.",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "role",
+          "email"
+        ]
+      },
+      "CreatedInvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "Mail gönderilemediyse false; davet geçerlidir, tekrar oluşturularak yeniden gönderilebilir."
+          },
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "invitedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "emailSent",
+          "id",
+          "email",
+          "clientId",
+          "expiresAt",
+          "invitedBy",
+          "createdAt"
+        ]
+      },
+      "InvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "invitedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "id",
+          "email",
+          "clientId",
+          "expiresAt",
+          "invitedBy",
+          "createdAt"
+        ]
+      },
+      "InvitationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "InvitationTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "InvitationPreviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userExists": {
+            "type": "boolean",
+            "description": "true ise kullanıcı giriş yapıp kabul eder; false ise ad ve şifreyle kayıt olur."
+          }
+        },
+        "required": [
+          "role",
+          "organizationName",
+          "email",
+          "expiresAt",
+          "userExists"
+        ]
+      },
+      "AcceptInvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrgRole"
+              }
+            ]
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "role",
+          "organizationId",
+          "clientId"
+        ]
+      },
+      "ClientResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contactEmails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "branding": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "contactEmails",
+          "notes",
+          "branding",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ClientListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "CreateClientDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "contactEmails": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "branding": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateClientDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "contactEmails": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "branding": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProjectStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "paused",
+          "archived"
+        ]
+      },
+      "ProjectResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectStatus"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "countryCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "languageCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "dfsLocationCode": {
+            "type": "number",
+            "nullable": true
+          },
+          "dfsLanguageCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "id",
+          "clientId",
+          "name",
+          "domain",
+          "countryCode",
+          "languageCode",
+          "dfsLocationCode",
+          "dfsLanguageCode",
+          "timezone",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ProjectListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "ProjectSummaryMetricDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "nullable": true
+          },
+          "change7d": {
+            "type": "number",
+            "nullable": true
+          },
+          "change28d": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "value",
+          "change7d",
+          "change28d"
+        ]
+      },
+      "ProjectSummaryCardDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true,
+            "description": "Son özetin ait olduğu gün; hiç özet yoksa `null`."
+          },
+          "clicks": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "organicSessions": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "avgPosition": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "visibilityScore": {
+            "$ref": "#/components/schemas/ProjectSummaryMetricDto"
+          },
+          "visibilitySeries": {
+            "description": "Son 28 günün visibility skoru serisi (mini grafik), eskiden yeniye.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "projectId",
+          "projectName",
+          "clientId",
+          "date",
+          "clicks",
+          "organicSessions",
+          "avgPosition",
+          "visibilityScore",
+          "visibilitySeries"
+        ]
+      },
+      "ProjectSummaryCardsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectSummaryCardDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "domain": {
+            "type": "string",
+            "description": "Normalize edilir (protokol, www, path ve sondaki slash atılır).",
+            "maxLength": 255
+          },
+          "countryCode": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "languageCode": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "dfsLocationCode": {
+            "type": "number"
+          },
+          "dfsLanguageCode": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "clientId",
+          "name",
+          "domain"
+        ]
+      },
+      "UpdateProjectDto": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "domain": {
+            "type": "string",
+            "description": "Normalize edilir (protokol, www, path ve sondaki slash atılır).",
+            "maxLength": 255
+          },
+          "countryCode": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "languageCode": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "dfsLocationCode": {
+            "type": "number"
+          },
+          "dfsLanguageCode": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "archived"
+            ]
+          }
+        }
+      },
+      "ConnectionType": {
+        "type": "string",
+        "enum": [
+          "gsc",
+          "ga4"
+        ]
+      },
+      "ConnectionAuthType": {
+        "type": "string",
+        "enum": [
+          "service_account",
+          "oauth"
+        ]
+      },
+      "ConnectionStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "active",
+          "error",
+          "revoked"
+        ]
+      },
+      "ConnectionBackfillStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "done",
+          "failed"
+        ]
+      },
+      "ConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionType"
+              }
+            ]
+          },
+          "authType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionAuthType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionStatus"
+              }
+            ]
+          },
+          "backfillStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionBackfillStatus"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "lastVerifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          },
+          "backfillProgress": {
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "authType",
+          "status",
+          "backfillStatus",
+          "id",
+          "projectId",
+          "externalId",
+          "lastVerifiedAt",
+          "lastSyncedAt",
+          "lastError",
+          "backfillProgress",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ConnectionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateConnectionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "gsc",
+              "ga4"
+            ]
+          },
+          "externalId": {
+            "type": "string",
+            "description": "GSC: `sc-domain:example.com` ya da `https://example.com/`. GA4: `properties/123456789`.",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "type",
+          "externalId"
+        ]
+      },
+      "GscSiteResponseDto": {
+        "type": "object",
+        "properties": {
+          "siteUrl": {
+            "type": "string"
+          },
+          "permissionLevel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "siteUrl",
+          "permissionLevel"
+        ]
+      },
+      "GscSiteListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GscSiteResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ServiceAccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "UsageGroupBy": {
+        "type": "string",
+        "enum": [
+          "project",
+          "provider",
+          "day"
+        ]
+      },
+      "UsageReportRowDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "`groupBy`'a göre: `project_id`, `provider` ya da `YYYY-MM-DD`."
+          },
+          "cost": {
+            "type": "number"
+          },
+          "units": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "cost",
+          "units"
+        ]
+      },
+      "UsageReportResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "groupBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageGroupBy"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportRowDto"
+            }
+          },
+          "totalCost": {
+            "type": "number"
+          },
+          "totalUnits": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "groupBy",
+          "items",
+          "totalCost",
+          "totalUnits"
+        ]
+      },
+      "GscSyncResponseDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "`job_runs` kaydının id'si; durum bu kayıttan izlenir."
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "GscCompareMode": {
+        "type": "string",
+        "enum": [
+          "previous",
+          "year"
+        ]
+      },
+      "GscTotalsDto": {
+        "type": "object",
+        "properties": {
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number",
+            "description": "clicks / impressions (0-1)."
+          },
+          "position": {
+            "type": "number",
+            "description": "Gösterimle ağırlıklı ortalama pozisyon."
+          }
+        },
+        "required": [
+          "clicks",
+          "impressions",
+          "ctr",
+          "position"
+        ]
+      },
+      "GscDailyPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number",
+            "description": "clicks / impressions (0-1)."
+          },
+          "position": {
+            "type": "number",
+            "description": "Gösterimle ağırlıklı ortalama pozisyon."
+          }
+        },
+        "required": [
+          "date",
+          "clicks",
+          "impressions",
+          "ctr",
+          "position"
+        ]
+      },
+      "GscPeriodDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/GscTotalsDto"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GscDailyPointDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "totals",
+          "series"
+        ]
+      },
+      "GscOverviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "compare": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GscPeriodDto"
+              }
+            ]
+          },
+          "totals": {
+            "$ref": "#/components/schemas/GscTotalsDto"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GscDailyPointDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "compare",
+          "totals",
+          "series"
+        ]
+      },
+      "GscSortField": {
+        "type": "string",
+        "enum": [
+          "clicks",
+          "impressions",
+          "ctr",
+          "position"
+        ]
+      },
+      "SortOrder": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ]
+      },
+      "GscQueryRowDto": {
+        "type": "object",
+        "properties": {
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number",
+            "description": "clicks / impressions (0-1)."
+          },
+          "position": {
+            "type": "number",
+            "description": "Gösterimle ağırlıklı ortalama pozisyon."
+          },
+          "queryHash": {
+            "type": "string",
+            "description": "`md5(query)`; `queries/:hash/pages` için."
+          },
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "clicks",
+          "impressions",
+          "ctr",
+          "position",
+          "queryHash",
+          "query"
+        ]
+      },
+      "GscQueryListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GscQueryRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "GscPageRowDto": {
+        "type": "object",
+        "properties": {
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number",
+            "description": "clicks / impressions (0-1)."
+          },
+          "position": {
+            "type": "number",
+            "description": "Gösterimle ağırlıklı ortalama pozisyon."
+          },
+          "pageHash": {
+            "type": "string",
+            "description": "`md5(page)`; `pages/:hash/queries` için."
+          },
+          "page": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "clicks",
+          "impressions",
+          "ctr",
+          "position",
+          "pageHash",
+          "page"
+        ]
+      },
+      "GscPageListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GscPageRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "Ga4SyncResponseDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "`job_runs` kaydının id'si; durum bu kayıttan izlenir."
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "Ga4TotalsDto": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "number"
+          },
+          "engagedSessions": {
+            "type": "number"
+          },
+          "keyEvents": {
+            "type": "number"
+          },
+          "totalRevenue": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "sessions",
+          "engagedSessions",
+          "keyEvents",
+          "totalRevenue"
+        ]
+      },
+      "Ga4ChannelTotalsDto": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "number"
+          },
+          "engagedSessions": {
+            "type": "number"
+          },
+          "keyEvents": {
+            "type": "number"
+          },
+          "totalRevenue": {
+            "type": "number"
+          },
+          "channelGroup": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessions",
+          "engagedSessions",
+          "keyEvents",
+          "totalRevenue",
+          "channelGroup"
+        ]
+      },
+      "Ga4OverviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Ga4TotalsDto"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ga4ChannelTotalsDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "totals",
+          "channels"
+        ]
+      },
+      "Ga4SortField": {
+        "type": "string",
+        "enum": [
+          "sessions",
+          "engagedSessions",
+          "keyEvents",
+          "totalRevenue"
+        ]
+      },
+      "Ga4LandingPageRowDto": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "number"
+          },
+          "engagedSessions": {
+            "type": "number"
+          },
+          "keyEvents": {
+            "type": "number"
+          },
+          "totalRevenue": {
+            "type": "number"
+          },
+          "landingPageHash": {
+            "type": "string",
+            "description": "`md5(landingPage)`."
+          },
+          "landingPage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessions",
+          "engagedSessions",
+          "keyEvents",
+          "totalRevenue",
+          "landingPageHash",
+          "landingPage"
+        ]
+      },
+      "Ga4LandingPageListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ga4LandingPageRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "KeywordGroupResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "name",
+          "color",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "KeywordGroupListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeywordGroupResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "CreateKeywordGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateKeywordGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 20
+          }
+        }
+      },
+      "TrackedKeywordResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyword": {
+            "type": "string"
+          },
+          "keywordNormalized": {
+            "type": "string"
+          },
+          "device": {
+            "enum": [
+              "desktop",
+              "mobile"
+            ],
+            "type": "string"
+          },
+          "locationCode": {
+            "type": "number"
+          },
+          "languageCode": {
+            "type": "string"
+          },
+          "frequency": {
+            "enum": [
+              "daily",
+              "weekly"
+            ],
+            "type": "string"
+          },
+          "depth": {
+            "type": "number"
+          },
+          "targetUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "searchVolume": {
+            "type": "number",
+            "nullable": true
+          },
+          "cpc": {
+            "type": "number",
+            "nullable": true
+          },
+          "volumeUpdatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "groupId",
+          "keyword",
+          "keywordNormalized",
+          "device",
+          "locationCode",
+          "languageCode",
+          "frequency",
+          "depth",
+          "targetUrl",
+          "tags",
+          "isActive",
+          "searchVolume",
+          "cpc",
+          "volumeUpdatedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TrackedKeywordListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackedKeywordResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "KeywordSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "clicks": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number"
+          },
+          "position": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "query",
+          "impressions",
+          "clicks",
+          "ctr",
+          "position"
+        ]
+      },
+      "KeywordSuggestionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Öneri hesaplanan pencere."
+          },
+          "to": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeywordSuggestionDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "items"
+        ]
+      },
+      "BulkAddKeywordsDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Satır satır metin. Her satır ya sadece `keyword`, ya da virgülle ayrılmış\n`keyword,grup,cihaz,hedef url` (CSV) biçiminde olabilir; grup/cihaz/hedef\nurl boş bırakılabilir ve o durumda `defaultGroupName`/`defaultDevice`\nkullanılır.",
+            "maxLength": 501000
+          },
+          "defaultGroupName": {
+            "type": "string",
+            "description": "Satırda grup verilmezse kullanılacak grup adı; yoksa grupsuz eklenir.",
+            "maxLength": 200
+          },
+          "defaultDevice": {
+            "type": "string",
+            "description": "Satırda cihaz verilmezse kullanılacak varsayılan; yoksa `desktop`.",
+            "enum": [
+              "desktop",
+              "mobile"
+            ]
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "BulkAddKeywordsErrorDto": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "number",
+            "description": "1 tabanlı, boş satırlar dahil edilmeden orijinal metindeki satır no."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "line",
+          "message"
+        ]
+      },
+      "BulkAddKeywordsResponseDto": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "number"
+          },
+          "skipped": {
+            "type": "number"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkAddKeywordsErrorDto"
+            }
+          }
+        },
+        "required": [
+          "added",
+          "skipped",
+          "errors"
+        ]
+      },
+      "CreateTrackedKeywordDto": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "desktop",
+              "mobile"
+            ]
+          },
+          "locationCode": {
+            "type": "number",
+            "description": "Verilmezse projenin `dfsLocationCode`'u, o da yoksa varsayılan (US) kullanılır."
+          },
+          "languageCode": {
+            "type": "string",
+            "description": "Verilmezse projenin `dfsLanguageCode`'u, o da yoksa varsayılan (en) kullanılır.",
+            "maxLength": 10
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "weekly"
+            ]
+          },
+          "targetUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "keyword"
+        ]
+      },
+      "UpdateTrackedKeywordDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "weekly"
+            ]
+          },
+          "targetUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RankCheckNowResponseDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "`job_runs` kaydının id'si; sonuç bu kayıttan ve `rankings/serp`'ten izlenir."
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "RankSource": {
+        "type": "string",
+        "enum": [
+          "dfs_standard",
+          "dfs_live"
+        ]
+      },
+      "RankHistoryPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "position": {
+            "type": "number",
+            "nullable": true,
+            "description": "Organik sıra; depth içinde bulunamadıysa null."
+          },
+          "rankAbsolute": {
+            "type": "number",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankSource"
+              }
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "position",
+          "rankAbsolute",
+          "url",
+          "source"
+        ]
+      },
+      "RankHistoryKeywordDto": {
+        "type": "object",
+        "properties": {
+          "trackedKeywordId": {
+            "type": "string"
+          },
+          "points": {
+            "description": "Eskiden yeniye; sonucu olmayan günler yer almaz.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankHistoryPointDto"
+            }
+          }
+        },
+        "required": [
+          "trackedKeywordId",
+          "points"
+        ]
+      },
+      "RankHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-30"
+          },
+          "keywords": {
+            "description": "İstekteki `keywordIds` sırasıyla.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankHistoryKeywordDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "keywords"
+        ]
+      },
+      "RankCompetitorDto": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "position": {
+            "type": "number",
+            "description": "Organik sıra (`rank_group`)."
+          }
+        },
+        "required": [
+          "domain",
+          "position"
+        ]
+      },
+      "RankSerpResponseDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-30"
+          },
+          "position": {
+            "type": "number",
+            "nullable": true
+          },
+          "rankAbsolute": {
+            "type": "number",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankSource"
+              }
+            ]
+          },
+          "trackedKeywordId": {
+            "type": "string"
+          },
+          "serpFeatures": {
+            "description": "Organik dışındaki SERP öğe tipleri, ör. `featured_snippet`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "competitorsTop": {
+            "description": "İlk 10 organik sonucun domain'i ve sırası.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankCompetitorDto"
+            }
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "position",
+          "rankAbsolute",
+          "url",
+          "source",
+          "trackedKeywordId",
+          "serpFeatures",
+          "competitorsTop",
+          "checkedAt"
+        ]
+      },
+      "ProjectDailySummaryPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "gscClicks": {
+            "type": "number"
+          },
+          "gscImpressions": {
+            "type": "number"
+          },
+          "gscCtr": {
+            "type": "number"
+          },
+          "gscPosition": {
+            "type": "number"
+          },
+          "organicSessions": {
+            "type": "number"
+          },
+          "organicKeyEvents": {
+            "type": "number"
+          },
+          "kwTracked": {
+            "type": "number"
+          },
+          "kwTop3": {
+            "type": "number"
+          },
+          "kwTop10": {
+            "type": "number"
+          },
+          "kwTop20": {
+            "type": "number"
+          },
+          "kwTop100": {
+            "type": "number"
+          },
+          "kwAvgPosition": {
+            "type": "number",
+            "nullable": true
+          },
+          "visibilityScore": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "gscClicks",
+          "gscImpressions",
+          "gscCtr",
+          "gscPosition",
+          "organicSessions",
+          "organicKeyEvents",
+          "kwTracked",
+          "kwTop3",
+          "kwTop10",
+          "kwTop20",
+          "kwTop100",
+          "kwAvgPosition",
+          "visibilityScore"
+        ]
+      },
+      "ProjectSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "2026-09-01"
+          },
+          "to": {
+            "type": "string",
+            "example": "2026-09-28"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectDailySummaryPointDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "points"
+        ]
+      },
+      "AlertRuleType": {
+        "type": "string",
+        "enum": [
+          "rank_drop",
+          "rank_exit",
+          "traffic_drop",
+          "sync_failure"
+        ]
+      },
+      "AlertRuleResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlertRuleType"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "config": {
+            "type": "object"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "cooldownHours": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "projectId",
+          "name",
+          "config",
+          "channels",
+          "isActive",
+          "cooldownHours",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AlertRuleListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertRuleResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "CreateAlertRuleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "rank_drop",
+              "rank_exit",
+              "traffic_drop",
+              "sync_failure"
+            ]
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Kural tipine göre şekli değişir; `alert-rule-config.ts` doğrular."
+          },
+          "channels": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "cooldownHours": {
+            "type": "number",
+            "default": 24,
+            "minimum": 1,
+            "maximum": 168
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "config",
+          "channels"
+        ]
+      },
+      "UpdateAlertRuleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "channels": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "cooldownHours": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 168
+          }
+        }
+      },
+      "AlertEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string"
+          },
+          "ruleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dedupeKey": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "severity": {
+            "type": "string"
+          },
+          "triggeredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "notifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "notifyError": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "ruleId",
+          "ruleName",
+          "dedupeKey",
+          "payload",
+          "severity",
+          "triggeredAt",
+          "notifiedAt",
+          "notifyError"
+        ]
+      },
+      "AlertEventListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertEventResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "NotificationChannelType": {
+        "type": "string",
+        "enum": [
+          "email",
+          "discord",
+          "slack"
+        ]
+      },
+      "NotificationChannelResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationChannelType"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "config",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "NotificationChannelListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationChannelResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateNotificationChannelDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "email",
+              "discord",
+              "slack"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Tipine göre şekli değişir: `email` -> `{ to: string[] }`,\n`discord`/`slack` -> `{ webhookUrl: string }`. `notification-channel-config.ts`\ndoğrular; servis şifreleyip saklar, düz metin hiçbir zaman response'a yazılmaz."
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "config"
+        ]
+      },
+      "UpdateNotificationChannelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Verilirse config tamamen değiştirilir (tip aynı kalır)."
+          }
+        }
+      },
+      "ReportType": {
+        "type": "string",
+        "enum": [
+          "weekly",
+          "monthly",
+          "custom"
+        ]
+      },
+      "ReportStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "rendering",
+          "ready",
+          "failed"
+        ]
+      },
+      "ReportResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportType"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportStatus"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "periodStart": {
+            "type": "string"
+          },
+          "periodEnd": {
+            "type": "string"
+          },
+          "fileSize": {
+            "type": "number",
+            "nullable": true
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "sentAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "sentTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "analystNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "id",
+          "projectId",
+          "periodStart",
+          "periodEnd",
+          "fileSize",
+          "generatedAt",
+          "sentAt",
+          "sentTo",
+          "error",
+          "analystNote",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ReportListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "CreateReportDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "weekly",
+              "monthly",
+              "custom"
+            ]
+          },
+          "periodStart": {
+            "type": "string"
+          },
+          "periodEnd": {
+            "type": "string"
+          },
+          "analystNote": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "type",
+          "periodStart",
+          "periodEnd"
+        ]
+      },
+      "CreateReportResponseDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "ReportScheduleResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportType"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "cron": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "projectId",
+          "cron",
+          "timezone",
+          "recipients",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ReportScheduleListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportScheduleResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateReportScheduleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "weekly",
+              "monthly"
+            ]
+          },
+          "cron": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "cron",
+          "timezone",
+          "recipients"
+        ]
+      },
+      "UpdateReportScheduleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "weekly",
+              "monthly"
+            ]
+          },
+          "cron": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReportPeriodMetricsDto": {
+        "type": "object",
+        "properties": {
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number"
+          },
+          "position": {
+            "type": "number"
+          },
+          "organicSessions": {
+            "type": "number"
+          },
+          "organicKeyEvents": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "clicks",
+          "impressions",
+          "ctr",
+          "position",
+          "organicSessions",
+          "organicKeyEvents"
+        ]
+      },
+      "ReportGscTrendPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number"
+          },
+          "position": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "clicks",
+          "impressions",
+          "ctr",
+          "position"
+        ]
+      },
+      "ReportKeywordDistributionDto": {
+        "type": "object",
+        "properties": {
+          "top3": {
+            "type": "number"
+          },
+          "top10": {
+            "type": "number"
+          },
+          "top20": {
+            "type": "number"
+          },
+          "top100": {
+            "type": "number"
+          },
+          "beyond": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "top3",
+          "top10",
+          "top20",
+          "top100",
+          "beyond",
+          "total"
+        ]
+      },
+      "ReportKeywordMoverDto": {
+        "type": "object",
+        "properties": {
+          "trackedKeywordId": {
+            "type": "string"
+          },
+          "keyword": {
+            "type": "string"
+          },
+          "position": {
+            "type": "number",
+            "nullable": true
+          },
+          "change30d": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "trackedKeywordId",
+          "keyword",
+          "position",
+          "change30d"
+        ]
+      },
+      "ReportTopPageDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "string"
+          },
+          "clicks": {
+            "type": "number"
+          },
+          "impressions": {
+            "type": "number"
+          },
+          "ctr": {
+            "type": "number"
+          },
+          "position": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "page",
+          "clicks",
+          "impressions",
+          "ctr",
+          "position"
+        ]
+      },
+      "ReportDataResponseDto": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "clientName": {
+            "type": "string"
+          },
+          "branding": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportType"
+              }
+            ]
+          },
+          "periodStart": {
+            "type": "string"
+          },
+          "periodEnd": {
+            "type": "string"
+          },
+          "previousPeriodStart": {
+            "type": "string"
+          },
+          "previousPeriodEnd": {
+            "type": "string"
+          },
+          "period": {
+            "$ref": "#/components/schemas/ReportPeriodMetricsDto"
+          },
+          "previousPeriod": {
+            "$ref": "#/components/schemas/ReportPeriodMetricsDto"
+          },
+          "gscTrend": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportGscTrendPointDto"
+            }
+          },
+          "keywordDistribution": {
+            "$ref": "#/components/schemas/ReportKeywordDistributionDto"
+          },
+          "topGainers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportKeywordMoverDto"
+            }
+          },
+          "topLosers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportKeywordMoverDto"
+            }
+          },
+          "topPages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportTopPageDto"
+            }
+          },
+          "analystNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reportId",
+          "projectId",
+          "projectName",
+          "clientName",
+          "branding",
+          "type",
+          "periodStart",
+          "periodEnd",
+          "previousPeriodStart",
+          "previousPeriodEnd",
+          "period",
+          "previousPeriod",
+          "gscTrend",
+          "keywordDistribution",
+          "topGainers",
+          "topLosers",
+          "topPages",
+          "analystNote",
+          "generatedAt"
+        ]
+      },
+      "LocationReferenceDto": {
+        "type": "object",
+        "properties": {
+          "locationCode": {
+            "type": "number"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "languageCode": {
+            "type": "string"
+          },
+          "languageName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "locationCode",
+          "locationName",
+          "languageCode",
+          "languageName"
+        ]
+      },
+      "LocationReferenceListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationReferenceDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "HealthCheckResultDto": {
         "type": "object",
         "properties": {

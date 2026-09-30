@@ -53,6 +53,7 @@ bun run gen:api            # OpenAPI export + orval client üretimi
 bun run --filter api migration:generate src/database/migrations/<Isim>
 bun run --filter api test
 bun run --filter api test:e2e
+bun run --filter api seed    # geliştirme verisi (yalnız NODE_ENV=development)
 bun run lint
 bun run typecheck
 ```

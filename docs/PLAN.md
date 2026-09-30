@@ -69,7 +69,18 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 - `bun run dev:worker` açılıyor.
 - API'den eklenen ping job'u worker'da işleniyor, bull-board'da görünüyor.
 
-### [ ] T0.6 Ortak altyapı servisleri
+**Lokal doğrulama bekliyor:** Runner'da Redis yok; sandbox'ta `dev:worker`'ın
+açıldığı ve `WORKER_QUEUES` filtresinin doğru modülleri yüklediği doğrulandı
+(bkz. `worker.module.spec.ts` ve manuel çalıştırma), ama gerçek bir job'un
+worker'da işlenmesi ve bull-board'da görünmesi doğrulanamadı. Lokalde:
+1. `bun run db:up` (Redis ayağa kalksın).
+2. `bun run dev:api` ve ayrı bir terminalde `bun run dev:worker`.
+3. `ping` kuyruğu T1.5'te silindi; yerine aktif GSC bağlantısı olan bir
+   projede `POST /api/v1/projects/:id/sync/gsc` çağır.
+4. Worker log'unda job'un başladığını, `http://localhost:3000/admin/queues`'ta
+   `gsc-sync` kuyruğunda tamamlanan job'u kontrol et.
+
+### [x] T0.6 Ortak altyapı servisleri
 - `CryptoService`: AES-256-GCM, `v1:` önekli format, encrypt/decrypt, unit test.
 - `MailService`: nodemailer, dev'de console transport seçeneği.
 - `StorageService`: local disk (`STORAGE_DIR`), interface S3'e geçişe uygun (`put`, `get`, `delete`, `getStream`).
@@ -78,7 +89,16 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 
 **Kabul:** Crypto testleri geçiyor (şifrele, çöz, farklı IV, bozuk veri hatası).
 
-### [ ] T0.7 Panel iskeleti
+**Lokal doğrulama bekliyor:** Runner'da Redis yok. `SCHEDULER_ENABLED=true` ile
+`dev:worker` çalıştırılıp `HousekeepingModule`, `CryptoModule`, `MailModule` ve
+`StorageModule`'ün hatasız yüklendiği manuel doğrulandı ("Worker başladı" log'u
+görüldü), ama gerçek Redis bağlantısıyla `ScheduleModule`'ün cron'ları
+kaydettiği ve worker kapanışının sorunsuz olduğu doğrulanamadı. Lokalde:
+1. `bun run db:up` (Redis ayağa kalksın).
+2. `.env`'de `SCHEDULER_ENABLED=true` ile `bun run dev:worker` çalıştır, hata
+   olmadan açıldığını doğrula.
+
+### [x] T0.7 Panel iskeleti
 - Tailwind + shadcn/ui kurulumu (temel bileşenler: button, input, form, dialog, dropdown-menu, table, card, badge, tabs, toast, sheet, skeleton, select, popover, calendar).
 - TanStack Router (file-based), TanStack Query client, temel layout (sidebar, üst bar, içerik alanı), dark/light tema.
 - Vite proxy: `/api` → `http://localhost:3000`.
@@ -91,13 +111,15 @@ Amaç: Boş ama çalışan, kuralları yerinde bir monorepo. Bu fazın sonunda h
 - Panel health sonucunu gösteriyor.
 - Tema değişimi çalışıyor.
 
+**Lokal doğrulama bekliyor:** Runner'da Postgres/Redis olmadığı için `apps/api` gerçek dev sunucusu ayağa kaldırılamadı; health sayfası panel tarafında Vite proxy'sinin 502'si (API kapalı) ve gerçek `HealthResponseDto` şekliyle birebir mock bir sunucu (ok / kısmi arıza / tam arıza) ile doğrulandı. `bun run db:up` sonrası gerçek API'ye karşı da doğrulanmalı.
+
 ---
 
 ## Faz 1: Ajans çekirdeği (MVP)
 
 Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiği, haftalık rapor ve uyarı üreten, kendi kullanımımıza hazır sistem.
 
-### [ ] T1.1 Kullanıcılar ve auth
+### [x] T1.1 Kullanıcılar ve auth
 - Tablolar: `users`, `refresh_tokens`.
 - Endpoint'ler: `POST /auth/register` (sadece ilk kullanıcı ya da davetle), `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /me`.
 - argon2id, JWT access (15 dk), refresh rotation ve reuse tespiti (ARCHITECTURE §4.4).
@@ -108,7 +130,20 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - e2e: login, refresh ile yeni token, eski refresh token'ı tekrar kullanınca tüm ailenin iptal edilmesi, logout.
 - Yanlış şifrede genel hata mesajı (kullanıcı var mı yok mu belli olmuyor).
 
-### [ ] T1.2 Organizasyonlar ve tenancy
+**Not:** `POST /auth/register` şimdilik yalnız hiç kullanıcı yokken çalışır; davetle kayıt T1.2'de gelir.
+e2e testi (`apps/api/test/auth.e2e-spec.ts`) migration'ları uygulanmış bir test DB'si ister ve
+`E2E_DATABASE=true` ile açılır (komut dosyanın başında). Runner'da geçici bir Postgres ile
+`CreateUsersAndRefreshTokens` migration'ı uygulandı/geri alındı, entity'lerle şema farkı olmadığı
+doğrulandı ve e2e geçti. Bu sırada `DATABASE_SKIP_INITIALIZATION=false`'un `true` okunması
+hatası (T0.4/T0.6'daki boolean env dönüşümü) düzeltildi.
+
+**Lokal doğrulama bekliyor:** Runner'da Redis yok. Throttler'ın Redis storage'ı unit testte
+(`buildThrottlerOptions`) ve limitler bellek içi storage ile HTTP testinde doğrulandı; gerçek Redis'e
+karşı: `bun run db:up`, `bun run dev:api`, ardından aynı IP'den dakikada 6 kez
+`POST /api/v1/auth/login` → 6.'sı 429 dönmeli ve `redis-cli --scan --pattern '*:default}:hits'` sayaç anahtarını göstermeli.
+Docker Compose'daki Postgres 17 imajında `bun run db:migrate` ve e2e'nin de bir kez çalıştırılması önerilir.
+
+### [x] T1.2 Organizasyonlar ve tenancy
 - Tablolar: `organizations`, `memberships`, `invitations`, `audit_logs`.
 - `TenantGuard` (X-Org-Id, Redis membership cache), `RolesGuard`, `@Roles`, `@CurrentOrg`, `@SkipTenant`.
 - Endpoint'ler: org oluşturma, listeleme (kullanıcının üyelikleri), güncelleme; üye listeleme, rol değiştirme, çıkarma; davet oluşturma, kabul etme (mail ile link).
@@ -120,7 +155,26 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - Rol matrisi (ARCHITECTURE §4.2) testlerle doğrulanıyor.
 - Membership değiştiğinde cache invalidation çalışıyor.
 
-### [ ] T1.3 Client'lar ve projeler
+**Not:** Endpoint'ler: `POST/GET /organizations` (`@SkipTenant`), `GET/PATCH/DELETE /organizations/current`,
+`GET /members`, `PATCH/DELETE /members/:userId`, `POST/GET /invitations`, `DELETE /invitations/:id`,
+`POST /invitations/preview` (public), `POST /invitations/accept` (oturumdaki mevcut kullanıcı) ve
+`POST /auth/register-invited` (davetle yeni hesap). Org kapsamlı endpoint'ler org'u yalnız `X-Org-Id`'den alır.
+Rol matrisi `ROLE_MATRIX` (`common/tenancy/org-role.ts`) olarak tek yerde; sonraki kartlar `@Roles(...ROLE_MATRIX.x)` kullanır.
+Davet token'ı 7 gün geçerli, DB'de SHA-256 hash'i durur, tek kullanımlıktır. `client_id` kolonları var,
+FK'leri T1.3'te `clients` ile eklenecek. `audit_logs` bilerek FK'siz (org silinince kayıt kalır).
+İzolasyon testi: `apps/api/test/tenant-isolation.e2e-spec.ts`'teki `RESOURCES` listesine her yeni kaynak bir satır
+olarak eklenir; yeni tenant tabloları `test/support/e2e-app.ts`'teki `TABLES`'a da eklenmeli.
+Runner'da geçici bir Postgres 17 ile migration uygulandı/geri alındı, entity'lerle şema farkı olmadığı doğrulandı;
+izolasyon ve organizasyon e2e'leri (`E2E_DATABASE=true`) bu DB'ye karşı geçti. Unit testler: TenantGuard, cache
+invalidation, rol matrisi (HTTP, gerçek guard zinciri), davet servisi ve global guard sırası.
+
+**Lokal doğrulama bekliyor:** Runner'da Redis yok; membership cache e2e'de bellek içi cache ile doğrulandı.
+Gerçek Redis'e karşı: `bun run db:up`, `bun run dev:api`; bir org kapsamlı istekten sonra
+`redis-cli --scan --pattern 'tenancy:membership:*'` anahtarı göstermeli (`TTL` ≤ 60), üyenin rolü değişince ya da
+üye çıkarılınca anahtar silinmeli. `bun run db:migrate` ve e2e'nin Docker Compose'daki Postgres imajında
+(pgvector/pg_partman'lı `InitExtensions` dahil) bir kez çalıştırılması önerilir.
+
+### [x] T1.3 Client'lar ve projeler
 - Tablolar: `clients`, `projects`.
 - CRUD endpoint'leri, sayfalı listeler, arama.
 - `ProjectAccessGuard`: `:projectId` route'larında org ve client_viewer kontrolü.
@@ -130,6 +184,19 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 **Kabul:**
 - client_viewer sadece kendi client'ının projelerini görüyor.
 - İzolasyon testine client ve project eklendi.
+
+Guard zinciri artık JwtAuthGuard → TenantGuard → RolesGuard → `ProjectAccessGuard` (ARCHITECTURE §4.3); sıra
+`app.module.spec.ts`'te doğrulanır. `memberships.client_id` ve `invitations.client_id`'nin FK'leri de bu migration'da
+eklendi (T1.2'de `clients` tablosu henüz yoktu). Migration'daki PK/FK/index adları TypeORM'un `SnakeNamingStrategy`'si
+kullanılarak entity metadata'sından programatik olarak üretildi (gerçek bir DB'ye bağlanmadan). Unit ve mock'lu HTTP
+testler: domain normalizasyonu, `ClientsService`/`ProjectsService`, `ProjectAccessGuard`, rol matrisi (HTTP, gerçek
+guard zinciri).
+
+**Lokal doğrulama bekliyor:** Runner'da Docker/Postgres yok; migration'ın gerçek DB'de temiz uygulanıp geri
+alınabildiği ve `migration:generate`'in entity'lerle fark bulmadığı doğrulanmadı. `bun run db:up`, `bun run db:migrate`,
+ardından `E2E_DATABASE=true DATABASE_URL=postgres://seo:seo@localhost:5432/seo_test bun run --filter api test:e2e`
+ile `tenant-isolation.e2e-spec.ts`'teki client/proje satırları ve `clients-projects` uçları gerçek DB'ye karşı
+çalıştırılmalı.
 
 ### [ ] T1.4 Bağlantılar (GSC ve GA4)
 - Tablo: `connections`.
@@ -141,6 +208,8 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 **Kabul:**
 - Gerçek bir property ile doğrulama `active` sonucunu veriyor.
 - Yetkisiz property'de anlaşılır bir hata mesajı ve `error` durumu.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres ve gerçek `GOOGLE_SA_JSON_BASE64` yok; `GscClient`/`Ga4Client` yalnız mock'lu unit testlerle (hata sınıflandırması, `verifyProperty`) ve `ConnectionsService`/controller'lar mock servislerle (http spec) doğrulandı. `bun run db:up`, `bun run db:migrate`, gerçek bir service account ve gerçek bir GSC/GA4 property ile: migration'ı uygula, service account e-postasını GSC property'sine ekle, `POST /connections` ile bağlantı oluştur, `POST /connections/:id/verify` çağır ve `active` sonucunu, yetkisiz bir property'de `error` + anlaşılır mesajı doğrula. `tenant-isolation.e2e-spec.ts`'teki yeni bağlantı satırları da `E2E_DATABASE=true` ile çalıştırılmalı.
 
 ### [ ] T1.5 GSC senkronizasyonu
 - Tablolar: `gsc_site_daily`, `gsc_page_daily` (partition), `gsc_daily` (partition), `job_runs`, `api_usage`.
@@ -161,6 +230,14 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - Site toplamları ile GSC arayüzündeki toplamlar tutuyor.
 - Query tablosu 100 binlerce satırda 1 saniyenin altında dönüyor (index kontrolü).
 
+**Lokal doğrulama bekliyor:** Runner'da Postgres, Redis ve gerçek `GOOGLE_SA_JSON_BASE64` yok; sayfalama döngüsü, 3 aşamalı çekim, batch upsert SQL'i, jobId determinizmi, round-robin dispatch, backfill planı, `job_runs` kayıtları ve sorgu endpoint'leri mock'lu unit/http testleriyle doğrulandı. Kabul maddelerinin hiçbiri runner'da doğrulanamadı:
+- Migration: `bun run db:up && bun run db:migrate` sonrası `\d+ gsc_daily` ile partition'ları (2024-01'den itibaren aylık + default) ve `IDX_gsc_daily_query_trgm` index'ini, `bun run --filter api migration:revert` ile `partman.part_config`'ten kaydın ve `partman.template_public_gsc_daily`'nin silindiğini kontrol et.
+- Idempotency: `E2E_DATABASE=true DATABASE_URL=... DATABASE_SKIP_INITIALIZATION=false bun run --filter api test:e2e` ile `test/gsc-sync.e2e-spec.ts` (aynı gün iki kez → satır sayısı aynı, metrikler güncel; hash'ler Postgres `md5(text)` ile aynı) ve `tenant-isolation.e2e-spec.ts`'teki yeni GSC satırları.
+- Backfill: gerçek service account ve property ile bağlantıyı `POST /connections/:id/verify` ile aktifleştir, `bun run dev:worker` çalışırken `/admin/queues`'ta ~488 `gsc-backfill` job'u (priority 10) ve `connections.backfill_progress.done`'ın `total`'a ulaşıp `backfill_status = done` olduğunu gör.
+- Site toplamı: `GET /projects/:id/gsc/overview?from&to` toplamlarını GSC arayüzündeki aynı tarih aralığıyla karşılaştır.
+- Performans: 100 binlerce satırlık projede `GET /projects/:id/gsc/queries` süresini ve `EXPLAIN ANALYZE` ile `IDX_gsc_daily_project_id_date` kullanımını kontrol et.
+- Zamanlama: worker açılışında `daily-dispatch` scheduler'ının (`0 4 * * *` UTC) Redis'e kaydedildiğini ve `POST /projects/:id/sync/gsc`'nin döndüğü `runId`'nin `job_runs`'ta `queued → running → succeeded` ilerlediğini doğrula.
+
 ### [ ] T1.6 GA4 senkronizasyonu
 - Tablo: `ga4_daily` (partition).
 - `ga4-sync` ve backfill processor'ları (ARCHITECTURE §9.2), dispatch'e ekleme.
@@ -168,7 +245,14 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 
 **Kabul:** Organik oturum toplamı GA4 arayüzüyle (aynı tarih aralığı, aynı kanal) tutuyor.
 
-### [ ] T1.7 DataForSEO client ve kullanım takibi
+**Lokal doğrulama bekliyor:** Runner'da Postgres, Redis ve gerçek `GOOGLE_SA_JSON_BASE64` yok; sayfalama döngüsü, tek istekle son 3 gün/backfill günü çekimi, batch upsert SQL'i, jobId determinizmi, backfill planı, `job_runs` kayıtları ve sorgu endpoint'leri (kanal kırılımı, `channel` filtresi) mock'lu unit/http testleriyle doğrulandı. Kabul maddesi runner'da doğrulanamadı:
+- Migration: `bun run db:up && bun run db:migrate` sonrası `\d+ ga4_daily` ile partition'ları (2024-01'den itibaren aylık + default) kontrol et, `bun run --filter api migration:revert` ile `partman.part_config`'ten kaydın ve `partman.template_public_ga4_daily`'nin silindiğini doğrula.
+- Idempotency: `E2E_DATABASE=true DATABASE_URL=... DATABASE_SKIP_INITIALIZATION=false bun run --filter api test:e2e` ile `test/ga4-sync.e2e-spec.ts` (aynı gün iki kez → satır sayısı aynı, metrikler güncel; hash Postgres `md5(text)` ile aynı) ve `tenant-isolation.e2e-spec.ts`'teki yeni GA4 satırları.
+- Backfill: gerçek service account ve property ile bağlantıyı `POST /connections/:id/verify` ile aktifleştir, `bun run dev:worker` çalışırken `ga4-sync` kuyruğunda ~427 backfill job'u (priority 10, job adı `ga4-backfill`) ve `connections.backfill_progress.done`'ın `total`'a ulaşıp `backfill_status = done` olduğunu gör.
+- Organik toplam: `GET /projects/:id/ga4/overview?from&to` içindeki `Organic Search` kanalının oturum toplamını GA4 arayüzündeki aynı tarih aralığı ve kanalla karşılaştır.
+- Zamanlama: `daily-dispatch`'in aktif GA4 bağlantıları için `ga4-sync` job'u eklediğini ve `POST /projects/:id/sync/ga4`'ün döndüğü `runId`'nin `job_runs`'ta `queued → running → succeeded` ilerlediğini doğrula.
+
+### [x] T1.7 DataForSEO client ve kullanım takibi
 - `connectors/dataforseo/DataForSeoClient`: basic auth, retry, response `status_code` kontrolü, `cost` okuma.
 - Metotlar: `serpTaskPost(tasks[])`, `serpTasksReady()`, `serpTaskGetAdvanced(id)`, `serpLiveAdvanced(task)`, `locations()`, `languages()`, `keywordSearchVolume(keywords, location, language)`.
 - `UsageService.record(...)`: her ücretli çağrı `api_usage`'a yazılır.
@@ -178,7 +262,9 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - Client unit testleri (mock HTTP).
 - Tek bir gerçek live çağrısının maliyeti `api_usage`'da görünüyor.
 
-### [ ] T1.8 Keyword yönetimi
+**Lokal doğrulama bekliyor:** Runner'da `DFS_LOGIN`/`DFS_PASSWORD` (gerçek DataForSEO kimlik bilgisi) yok; "tek bir gerçek live çağrısının maliyeti `api_usage`'da görünüyor" kriteri mock HTTP testleriyle doğrulandı, gerçek API'ye karşı doğrulanmadı. Lokalde doğrulamak için: `.env`'e gerçek `DFS_LOGIN`/`DFS_PASSWORD` girin, `bun run db:up` ile Postgres'i açın, bir serviste (ör. bir Nest REPL/script) `DataForSeoClient.serpLiveAdvanced({ keyword: 'test', locationCode: 2792, languageCode: 'tr' }, { orgId, projectId })` çağırın ve `SELECT * FROM api_usage ORDER BY created_at DESC LIMIT 1;` ile maliyetin yazıldığını doğrulayın.
+
+### [x] T1.8 Keyword yönetimi
 - Tablolar: `keyword_groups`, `tracked_keywords`.
 - CRUD endpoint'leri, gruplar, etiketler.
 - Toplu ekleme: `POST /projects/:id/keywords/bulk`. Satır satır metin ya da CSV kabul eder (keyword, grup, cihaz, hedef URL). Normalizasyon ve tekrar tespiti yapılır, sonuç raporu döner (eklenen, atlanan, hatalı).
@@ -189,6 +275,8 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - 40 keyword'lük CSV tek istekte ekleniyor.
 - Tekrar eden satırlar atlanıyor.
 - Öneriler takiptekileri hariç tutuyor.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres ve Redis yok; migration'ın gerçek DB'ye uygulanması (unique kısıt, FK'ler), `keyword-volume` kuyruğunun worker'da işlenmesi, `daily-dispatch`'in 30 günden eski `volume_updated_at`'li projeleri toplaması ve `tenant-isolation.e2e-spec.ts`'e eklenen `keyword-groups`/`keywords` satırları mock'lu unit testlerle doğrulandı, gerçek DB/Redis'e karşı doğrulanmadı. Lokalde doğrulamak için: `bun run db:up`, `bun run --filter api migration:run` (ya da `dev:api` ilk açılışta), `bun run dev:api` ve `bun run dev:worker`; bir projeye `POST /projects/:id/keywords/bulk` ile 40 satırlık bir CSV gönderin, `{ added: 40, skipped: 0, errors: [] }` dönmeli; `SELECT * FROM tracked_keywords` ile satırları, `keyword-volume` kuyruğunun (gerçek `DFS_LOGIN`/`DFS_PASSWORD` ile) `search_volume`/`cpc`/`volume_updated_at`'i doldurduğunu ve `api_usage`'a maliyet yazıldığını doğrulayın; `tenant-isolation.e2e-spec.ts`'i `bun run --filter api test:e2e` ile çalıştırın.
 
 ### [ ] T1.9 Rank tracking
 - Tablolar: `rank_tasks`, `rank_daily` (partition), `keyword_rank_latest`.
@@ -203,6 +291,18 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - Aynı gün tekrar dispatch edilince yeni task açılmıyor.
 - Domain eşleştirme testleri geçiyor (www, subdomain, trailing slash, farklı protokol).
 
+**Durum:** "Aynı gün tekrar dispatch" ve "domain eşleştirme" kriterleri unit testlerle doğrulandı (`rank-post.service.spec.ts`, `rank-flow.spec.ts`, `domain-match.spec.ts`). Post → poll → fetch zinciri 40 keyword'lük bellek içi store ve DataForSEO dokümantasyonu biçimindeki fixture'larla (`__fixtures__/serp-task-get-advanced.fixture.ts`) uçtan uca test edildi; `rank_tasks`'ın aynı gün tekrar ayrılmaması SQL'de `INSERT ... ON CONFLICT (tracked_keyword_id, check_date)` ile sağlanır. Başlık, gerçek Standard queue kriteri doğrulanana kadar işaretsiz.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres, Redis ve gerçek `DFS_LOGIN`/`DFS_PASSWORD` yok. Migration'ın (`rank_daily` partman partition'ı dahil) gerçek DB'ye uygulanması, `rank-poll` Job Scheduler'ının (2 dk) ve `weekly-dispatch`'in (`0 4 * * 1`) Redis'te kaydı, `RankStore`'un raw SQL'i, `check-now` rate limitinin Redis throttler storage'ıyla çalışması ve `tenant-isolation.e2e-spec.ts`'e eklenen rank satırları gerçek ortamda çalıştırılmadı. Lokalde doğrulamak için:
+1. `bun run db:up`, `bun run --filter api migration:run`, `.env`'e gerçek `DFS_LOGIN`/`DFS_PASSWORD`; `bun run dev:api` ve `SCHEDULER_ENABLED=true bun run dev:worker`.
+2. Bir projeye (domain'i gerçek bir site) `POST /projects/:id/keywords/bulk` ile 40 keyword ekleyin.
+3. Dispatch'i elle tetikleyin: bull-board'dan (`/admin/queues`) `dispatch` kuyruğuna `daily-dispatch` adlı, `{}` datalı bir job ekleyin (ya da 04:00 UTC'yi bekleyin). `SELECT status, count(*) FROM rank_tasks GROUP BY 1` 40 `posted` göstermeli; `api_usage`'da `serp/google/organic/task_post` satırı (units 40) olmalı.
+4. Aynı job'u tekrar ekleyin: `rank_tasks` hâlâ 40 satır, yeni `task_post` maliyeti yok.
+5. Birkaç dakika içinde `rank-poll` task'ları `ready`/`fetched` yapmalı; `SELECT * FROM rank_daily WHERE project_id = ...` 40 satır (bulunamayanlarda `position` null), `competitors_top` ve `serp_features` dolu. Worker logunda `rank günü tamamlandı` görünmeli.
+6. `GET /projects/:id/rankings/history?keywordIds=<id>` ve `GET /projects/:id/rankings/serp/<id>` sonuçları dönmeli; panelde bir keyword'ün pozisyonunu Google'da elle kontrol edin.
+7. `POST /projects/:id/keywords/:kid/check-now` 202 ve `runId` dönmeli; `job_runs` kaydı `succeeded`, `rank_daily`'de bugünün satırı `source = dfs_live`. Aynı kullanıcıyla dakikada 6. istek 429 dönmeli.
+8. `bun run --filter api test:e2e` ile `tenant-isolation.e2e-spec.ts`'i çalıştırın.
+
 ### [ ] T1.10 Özetler
 - Tablo: `project_daily_summary`.
 - `summary` processor'ı (ARCHITECTURE §10): project_daily_summary upsert, keyword_rank_latest güncelleme, visibility skoru.
@@ -214,7 +314,16 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 
 **Kabul:** 20 projelik org'da proje listesi özeti tek sorguyla, 200 ms altında dönüyor.
 
-### [ ] T1.11 Panel: auth ve yönetim ekranları
+**Durum:** Migration, `summary` processor'ı (`SummaryService`), `keyword_rank_latest` güncellemesi (`RankSummaryService`, saf hesap `rank-summary-calc.ts`), visibility skoru (`visibility.constants.ts`) ve her iki endpoint eklendi. Tetikleme `sync.completed` (gsc/ga4, yeni event) ve `rank.day_completed` ile: `SummaryTriggerListener` deterministik jobId (`summary:{projectId}:{date}`) ile `summary` kuyruğuna ekler, bitince `alert-eval` job'u eklenir. Unit testlerle doğrulandı: `rank-summary-calc.spec.ts` (değişim/best/sparkline), `visibility.constants.spec.ts` (0-100 aralığı), `rank-summary.service.spec.ts` ve `summary.service.spec.ts` (idempotency). `GET /projects/summary` tek sorguyla (`SummaryStore.cards`, CTE'ler) döner; `client_viewer` kapsaması `clients-projects.http.spec.ts`'te test edildi. Başlık, 200 ms ölçümü gerçek DB'de yapılamadığı için işaretsiz.
+
+**Lokal doğrulama bekliyor:** Runner'da Postgres ve Redis yok. Migration'ın gerçek DB'ye uygulanması ve 200 ms hedefinin 20 projelik seed'le ölçülmesi lokalde yapılmalı:
+1. `bun run db:up`, `bun run --filter api migration:run`, `bun run dev:api` ve `SCHEDULER_ENABLED=true bun run dev:worker`.
+2. 20 proje, her birine birkaç gün `gsc_site_daily`/`ga4_daily`/`rank_daily` satırı (seed script ya da gerçek sync) oluşturun.
+3. `GET /api/v1/projects/summary` isteğini ölçün (`curl -w '%{time_total}'` ya da panelden); 200 ms altında dönmeli, sorgu planını `EXPLAIN ANALYZE` ile N+1 olmadığını doğrulayın.
+4. Bir proje için GSC ya da GA4 sync'i (`POST /projects/:id/sync/gsc`) tetikleyin; worker logunda `summary job eklendi` ve `project_daily_summary güncellendi` görünmeli, `SELECT * FROM project_daily_summary` ilgili günün satırını göstermeli.
+5. Aynı günü iki kez tetikleyin (`SELECT count(*)` hâlâ 1 satır); `keyword_rank_latest`'i rank verisi olan bir proje için kontrol edin.
+
+### [x] T1.11 Panel: auth ve yönetim ekranları
 - Login, davet kabul, şifre belirleme.
 - Org seçici (üst bar), aktif org localStorage'da (try/catch ile), X-Org-Id header'ı mutator'dan.
 - Client listesi ve formu, proje listesi ve formu (lokasyon ve dil seçicili).
@@ -225,7 +334,9 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 
 **Kabul:** Sıfırdan org oluşturup client, proje ve GSC bağlantısı eklemek ve backfill'in başladığını görmek panelden yapılabiliyor.
 
-### [ ] T1.12 Panel: proje dashboard'u ve GSC explorer
+**Lokal doğrulama bekliyor:** Runner'da DB/Redis ve gerçek API çalışmadığı için uçtan uca akış, orval tiplerine uyan ve OpenAPI sözleşmesiyle birebir eşleşen sahte bir HTTP sunucusuyla tarayıcıda doğrulandı (login → org seçici → client/proje CRUD → bağlantılar ekranı, SA e-postası kopyalama, GSC/GA4 bağlama, doğrulama, backfill ilerleme çubuğu → üyeler/davetler; açık/koyu tema ve mobil genişlik). Gerçek API ve DB ile uçtan uca (özellikle davet e-postası gönderimi, gerçek Google SA/GA4 doğrulaması ve backfill polling'i) lokalde tekrar doğrulanmalı.
+
+### [x] T1.12 Panel: proje dashboard'u ve GSC explorer
 - **Org ana sayfası:** proje kartları (tıklama, oturum, ortalama pozisyon, visibility; 7/28 günlük değişim, mini grafik).
 - **Proje özeti:** tarih aralığı seçici + önceki dönem karşılaştırması. KPI satırı, GSC trend grafiği (tıklama/gösterim), organik oturum grafiği, pozisyon dağılımı (top 3/10/20/100), son sync durumu.
 - **GSC explorer:** Queries ve Pages sekmeleri, arama, sıralama, sayfalama, dönem karşılaştırması (değişim kolonları). Satır tıklanınca sorgunun sayfalarını ya da sayfanın sorgularını gösteren detay paneli (sheet).
@@ -233,7 +344,9 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 
 **Kabul:** Explorer, büyük bir projede sayfalama ve arama ile akıcı çalışıyor.
 
-### [ ] T1.13 Panel: keyword ekranı
+**Lokal doğrulama bekliyor:** Explorer'ın backend `gsc/queries` ve `gsc/pages` endpoint'leri (sayfalama, arama, sıralama) gerçek DB ve büyük bir veri setiyle (binlerce satır) performans açısından test edilmedi; runner'da DB olmadığı için sahte bir HTTP sunucusuyla (137 satır, 7 sayfa) uçtan uca doğrulandı. Dönem karşılaştırması (değişim kolonları) backend'de satır bazlı desteklenmediği için client tarafında önceki dönemin ilk 200 satırını çekip anahtara göre eşleştirerek hesaplanıyor; gerçek veride bu yaklaşımın kabul edilebilir olup olmadığı ürün sahibiyle teyit edilmeli.
+
+### [x] T1.13 Panel: keyword ekranı
 - Keyword tablosu: keyword, grup, cihaz, pozisyon, 1/7/30 günlük değişim (renkli), en iyi pozisyon, URL, hacim, sparkline, son kontrol.
 - Filtreler: grup, etiket, pozisyon aralığı (top 3/10/20/dışarıda), yükselen/düşen.
 - Toplu ekleme dialog'u (metin/CSV yapıştırma, önizleme, sonuç raporu).
@@ -243,7 +356,9 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 
 **Kabul:** 40 keyword'lük bir projede tüm akış (ekle, kontrol et, geçmişi gör) panelden yapılabiliyor.
 
-### [ ] T1.14 Alertler
+**Lokal doğrulama bekliyor:** Backend `keyword_rank_latest`'i doğrudan liste olarak döndüren bir endpoint sunmuyor; tablo kolonları (pozisyon, 1/7/30g değişim, en iyi pozisyon, sparkline, son kontrol) `rankings/history`'den (T1.9) istemci tarafında hesaplanıyor (`rank-calc.ts`, backend'deki `calculateRankLatest`'in testli bir benzeri). "En iyi pozisyon" bu yüzden tüm zamanların değil yalnız görüntülenen 30 günlük pencerenin en iyisi; pozisyon aralığı/yükselen-düşen filtreleri de bu hesaba göre client tarafında uygulanıyor. Runner'da DB/Redis olmadığı için uçtan uca akış (ekle, GSC önerisini takibe al, filtrele, "şimdi kontrol et" + rate limit + grup yönetimi, client_viewer kısıtı, açık/koyu tema, mobil) OpenAPI sözleşmesiyle birebir eşleşen sahte bir HTTP sunucusuyla tarayıcıda doğrulandı; gerçek API/DB ve 40+ keyword'lük bir projede (özellikle `rankings/history`'nin `MAX_HISTORY_KEYWORDS=50` sınırı) lokalde tekrar doğrulanmalı.
+
+### [x] T1.14 Alertler
 - Tablolar: `alert_rules`, `alert_events`, `notification_channels`.
 - `alert-eval` processor'ı (ARCHITECTURE §11): dört kural tipi, dedupe, cooldown.
 - `notify` processor'ı: e-posta, Discord, Slack gönderimi; kanal hatası `notify_error`'a yazılır.
@@ -253,6 +368,8 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 **Kabul:**
 - Sahte veriyle rank düşüşü üretildiğinde Discord'a tek bildirim düşüyor.
 - Cooldown içinde tekrar üretilince bildirim gitmiyor.
+
+**Lokal doğrulama bekliyor:** Runner'da DB/Redis ve gerçek Discord/Slack webhook'u olmadığı için: migration'ların gerçek Postgres'e uygulanması, `alert-eval`/`notify` job'larının worker'da uçtan uca (kuyruk → job_runs → alert_events → gerçek Discord/Slack'e bildirim) çalıştığı, `notification_channels.config_encrypted`'in DB'de gerçekten şifreli göründüğü ve tenant izolasyon e2e testinin (`tenant-isolation.e2e-spec.ts`, yeni eklenen alert-rules/alert-events/notification-channels satırları) `E2E_DATABASE=true` ile geçtiği lokalde doğrulanmalı. Birim testler (`alert-rule-config`, `alert-eval.service`, `notify.service`, `channel-sender.service`, `notification-channels.service`, webhook client) mock'lu, DB/Redis'siz çalıştırıldı ve geçti.
 
 ### [ ] T1.15 Raporlar
 - Tablolar: `reports`, `report_schedules`.
@@ -268,6 +385,8 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 - Grafikler PDF'te eksiksiz görünüyor.
 - Haftalık schedule doğru saatte mail atıyor.
 
+**Lokal doğrulama bekliyor:** Runner'da DB/Redis, gerçek Playwright/chromium çalıştırması ve bir SMTP sunucusu yok; bu yüzden kabul kriterlerinin üçü de (30 sn altı PDF üretimi, grafiklerin PDF'te eksiksiz görünmesi, haftalık schedule'ın gerçek zamanda mail atması) lokalde doğrulanmalı: `bunx playwright install --with-deps chromium`, `bun run db:up`, `bun run dev:api`/`dev:panel`/`dev:worker` (`WORKER_QUEUES=report,report-dispatch,notify`), bir proje için manuel rapor oluşturup PDF'in indirilip grafiklerinin (GSC trendi, keyword dağılımı) eksiksiz çizildiği kontrol edilmeli; bir `report_schedules` satırı yakın bir cron ile eklenip `report-dispatch`'in doğru saatte tetiklediği ve alıcıya PDF ekli mail (dev'de jsonTransport log'u) gittiği izlenmeli. Migration'ların gerçek Postgres'e uygulanması ve tenant izolasyon e2e testinin (`tenant-isolation.e2e-spec.ts`, yeni eklenen reports/report-schedules satırları) `E2E_DATABASE=true` ile geçtiği de lokalde doğrulanmalı. Birim testler (report token scope'u, `report-dispatch` zaman/timezone hesabı ve idempotency, `previousPeriod`) mock'lu, DB/Redis/gerçek chromium olmadan çalıştırıldı ve geçti (api 790/790, panel 19/19).
+
 ### [ ] T1.16 Bakım işleri, seed ve dokümantasyon
 - `HousekeepingModule` (ARCHITECTURE §8.2): partman bakımı, token ve davet temizliği, job_runs temizliği, takılı job düzeltme.
 - Seed script'i (ARCHITECTURE §15), 60 günlük sahte veri üretimi dahil.
@@ -275,12 +394,29 @@ Amaç: Mevcut müşteri domain'lerinin GSC, GA4 ve rank verisiyle takip edildiğ
 
 **Kabul:** Temiz bir makinede README takip edilerek 15 dakikada sistem ayağa kalkıyor ve seed verisiyle panel dolu görünüyor.
 
+**Lokal doğrulama bekliyor:** Runner'da Postgres/Redis yok; dört cron'un yalnız `SCHEDULER_ENABLED=true` worker'da kaydolduğu (`HousekeepingModule`'ün API'de hiç import edilmediği) ve her cron'un doğru tabloyu/koşulu hedeflediği unit testlerle (`housekeeping.service.spec.ts`, `housekeeping.module.spec.ts`) doğrulandı; gerçek Postgres'e karşı `partman.run_maintenance_proc()`'un hatasız çalıştığı ve gerçek silinen/failed yapılan satır sayıları lokalde doğrulanmalı. Seed script'i mock veri üretimi ve SQL'i gözden geçirilerek yazıldı; `bun run db:up`, `bun run db:migrate`, `NODE_ENV=development bun run --filter api seed` ile gerçek bir DB'ye karşı hiç çalıştırılmadı — owner/org/client/proje/keyword satırlarının oluştuğu, 60 günlük GSC/GA4/rank verisinin ve hesaplanan `project_daily_summary`/`keyword_rank_latest`'in panelde göründüğü ve `--reset` ile yeniden çalıştırmanın güvenli olduğu lokalde doğrulanmalı. README'deki adımların (service account, DataForSEO, Playwright, ilk proje akışı) temiz bir makinede uçtan uca 15 dakika kriterine uyduğu da lokalde doğrulanmalı.
+
 ### Faz 1 çıkış kriterleri
 - Mevcut ajans müşterilerinin tamamı sistemde, GSC ve GA4 bağlı, backfill tamamlanmış.
 - Proje başına 30-40 keyword takipte, günlük rank verisi akıyor.
 - Haftalık raporlar otomatik gidiyor, alertler Discord'a düşüyor.
 - Tenant izolasyon testi yeşil.
 - Aylık DataForSEO maliyeti `/usage` ekranından okunabiliyor.
+
+### Lokal doğrulama bekleyen görevler
+
+Runner'da DB, Redis ve gerçek dış API kimlik bilgileri (Google service account, DataForSEO,
+SMTP, Discord/Slack webhook) yok; bu yüzden aşağıdaki görevlerin kabul kriterlerinin bir kısmı
+yalnız mock'lu testlerle doğrulandı ve gerçek ortamda tekrar doğrulanmayı bekliyor (her
+görevin kendi "Lokal doğrulama bekliyor" notunda ayrıntı var): T0.5 (BullMQ/Redis), T0.6
+(Redis'le worker cron kaydı), T0.7 (gerçek API'ye karşı panel), T1.1 (Redis throttler), T1.2
+(Redis membership cache), T1.3 (gerçek DB migration), T1.4 (gerçek service account ile
+GSC/GA4 bağlantı doğrulama), T1.5 (GSC sync uçtan uca), T1.6 (GA4 sync uçtan uca), T1.7
+(gerçek DataForSEO live çağrısı), T1.8 (keyword bulk/volume uçtan uca), T1.9 (rank
+post/poll/fetch uçtan uca), T1.10 (performans ölçümü), T1.11 (gerçek API/DB ile panel akışı),
+T1.12 (büyük veri setiyle performans), T1.13 (gerçek API/DB ile panel akışı), T1.14 (gerçek
+Discord/Slack bildirimi), T1.15 (gerçek Playwright/chromium PDF üretimi ve SMTP), T1.16
+(gerçek DB'ye karşı bakım cron'ları ve seed script'i).
 
 ---
 

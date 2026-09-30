@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RequestContextModule } from './cls.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { AppLogger } from './logger/app-logger.service';
 
 @Module({
-  imports: [RequestContextModule],
+  imports: [RequestContextModule, EventEmitterModule.forRoot()],
   providers: [
     AppLogger,
     {
