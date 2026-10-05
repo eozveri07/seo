@@ -51,7 +51,9 @@ bun run --filter api test
 bun run --filter api test:e2e
 bun run --filter api seed    # geliştirme verisi (bkz. aşağı)
 bun run lint
+bun run lint:ci              # lint, --fix olmadan (CI)
 bun run typecheck
+bun run ci:db                # DB doğrulaması, bkz. aşağı
 ```
 
 ## `.env` ve secret üretimi
@@ -183,3 +185,28 @@ satır eklenmez. Demo org'u sıfırdan oluşturmak isterseniz:
 ```bash
 bun run --filter api seed -- --reset
 ```
+
+## DB doğrulaması
+
+`scripts/ci/verify-db.sh` migration'ların, seed'in, `E2E_DATABASE=true` e2e
+testlerinin ve API/worker açılışının gerçek bir Postgres (pgvector + pg_partman)
+ve Redis'e karşı çalıştığını tek komutla doğrular (ARCHITECTURE §15). GitHub
+Actions bu script'i ayrı bir karttaki workflow'dan çağıracak; lokalde de
+aynı şekilde çalışır:
+
+```bash
+bun run ci:db            # container'lar ayakta kalır (veri silinmez)
+bun run ci:db -- --down  # bitince `docker compose down` çalıştırır
+```
+
+Script sırasıyla: `docker compose up -d --wait postgres redis` yapar; `.env`
+yoksa `.env.example`'dan üretip secret'ları `openssl` ile doldurur (var olan
+`.env`'i ezmez); migration'ları uygular ve extension/pg_partman kaydını
+kontrol eder; tüm migration'ları geri alıp yeniden uygular; seed'i iki kez
+(`--reset` dahil) çalıştırıp satır sayılarını kontrol eder; `seo_test`
+veritabanında e2e testlerini çalıştırır; son olarak `dist/main.js` ve
+`dist/worker.js`'i başlatıp `/api/v1/health`'in 200 döndüğünü ve worker'ın
+ayakta kaldığını doğrular, sonra ikisine de SIGTERM gönderir. Loglar
+`.ci-logs/main.log` ve `.ci-logs/worker.log`'a yazılır (ilk hatada script
+anlaşılır bir mesajla çıkar). `dist/`, migration adımındaki `nest build`
+tarafından zaten üretilir.
