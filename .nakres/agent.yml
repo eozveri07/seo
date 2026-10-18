@@ -1,8 +1,35 @@
 version: 1
 setup: bun install --frozen-lockfile
+cache:
+  - node_modules
+  - apps/api/node_modules
+  - apps/panel/node_modules
 test: bun run test
 lint: bun run lint
 typecheck: bun run typecheck
 dev:
   command: bun run dev
   port: 5173
+  ready: /
+services:
+  - name: redis
+    image: redis:7-alpine
+env:
+  NODE_ENV: development
+  PORT: "3000"
+  API_PREFIX: /api/v1
+  PANEL_ORIGIN: http://localhost:5173
+  PANEL_URL: http://localhost:5173
+  REDIS_URL: redis://redis:6379
+  JWT_ACCESS_TTL: "900"
+  REFRESH_TOKEN_TTL_DAYS: "30"
+  ENCRYPTION_KEY_VERSION: v1
+  STORAGE_DIR: ./storage
+  SCHEDULER_ENABLED: "false"
+  # Postgres'in resmi imajı POSTGRES_PASSWORD ister ve services env almaz; bu yüzden
+  # servis yok. API DB'ye bağlanmadan açılır (DATABASE_SKIP_INITIALIZATION).
+  DATABASE_URL: postgres://seo:seo@localhost:5432/seo
+  DATABASE_SKIP_INITIALIZATION: "true"
+requiredEnv:
+  - JWT_ACCESS_SECRET
+  - ENCRYPTION_KEY
